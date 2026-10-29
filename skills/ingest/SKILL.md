@@ -44,8 +44,8 @@ contains sensitive data (ID numbers, finance, health, passwords), stop and ask.
      (e.g. `gist.githubusercontent.com/<user>/<id>/raw`).
   3. Check the type: PDFs start with `%PDF-`; HTML/markdown is text.
   4. **HTML:** `html_to_md.py <page.html> --out <scratch>/<slug>.md` keeps the article body
-     (auto-detected; `--selector tag.class` to override) and prints the selector, word count
-     and estimated tokens. On a "very little text" warning the page is JS-rendered or the
+     (auto-detected; `--selector tag.class` to override) and prints the selector, word count,
+     estimated tokens and `meta` (title, author, published, modified) for the provenance keys. On a "very little text" warning the page is JS-rendered or the
      selector missed: try `--selector`, a print/raw view, or ask the user for a saved copy.
      Skim the result for leftover navigation before capturing.
   5. Text captures: prepend provenance frontmatter (`source_url`, `author`, `retrieved` =
@@ -72,24 +72,32 @@ works natively (text + page image) for PDFs of **at most 10 pages**.
 3. **≤ 10 pages and visual (slides, figures):** native Read is simplest; skip the modes.
 4. Otherwise, by mode:
    - **text** — `pdf_pages.py text <pdf> --out <scratch>/<slug>.txt`, read the text file.
-     ~50 tokens/slide, ~900 tokens/dense paper page. Loses tables and figures.
+     ~50 tokens/slide, ~900 tokens/dense paper page. Loses tables and figures. For papers add
+     `--skip-references` (the bibliography is often 20–50% of the text); the output says which
+     pages were dropped.
    - **smart (default)** — text as above, then `pdf_pages.py candidates <pdf>`. It selects pages
-     with little text (excluding section dividers), table/figure mentions, text ending in ":", or
-     garbled text. Show the list with previews; let the user drop pages that are only logos or
+     with little text (excluding section dividers), table/figure mentions, number-heavy
+     (table-like) text, a "...:" line on a short page, or garbled text. Show the list with
+     previews; offer each `screenshot_runs` entry (same title over ≥ 3 pages, e.g. GUI
+     walkthroughs) as one item to keep or drop; let the user drop pages that are only logos or
      screenshots. Then `pdf_pages.py extract <pdf> <pages> --out <scratch>/<slug>-pN.pdf`
      (≤ 10 pages per extract) and read each extract natively. The JSON output maps extract pages
      back to original page numbers — cite original numbers.
    - **full** — every page natively, extracting ≤ 10-page chunks. ~1,650 tokens/page.
      Only for visual material the user marks as important.
 5. In any mode, a page whose numbers you will cite from a table gets a native read: text
-   extraction merges table rows and drops multirow structure.
+   extraction merges table rows and drops multirow structure. Simple tables often come through
+   exactly; the native read is a check, and it also shows what figures contain.
+
+**Read size:** `pdf_pages.py text` and `html_to_md.py` print `est_tokens`. Above ~20k tokens,
+read the file in parts (offset/limit): Read truncates around 25k tokens regardless of line count.
 
 Page images stay in context for the rest of the session. After a heavy native read, suggest
 `/compact` or a fresh session at the end (hot.md carries the state).
 
 ### Web pages and markdown/text
 
-Read the captured file. If it is longer than ~2,000 lines, read it in parts.
+Read the captured file; above ~20k estimated tokens, read it in parts.
 
 ## 4. Extract by type
 
@@ -106,6 +114,11 @@ Read the captured file. If it is longer than ~2,000 lines, read it in parts.
 While extracting:
 - **Cross-check numbers** stated in prose against tables and figures. On a mismatch, keep both,
   cite both locations, mark (disputed).
+- **Recompute worked examples** (sums, products, probabilities, percentages) and check derived
+  tables against the data they come from. Slides and papers contain arithmetic slips; record a
+  wrong result as (disputed) with your recomputed value, never silently correct it.
+- **Figure-only numbers:** a number stated in prose about a figure you did not read natively
+  gets the label "prose only".
 - **Missing content** (slide ends in ":" with no follow-up, cut-off figure, lost animation):
   record it under "Open questions". Never fill the gap from general knowledge.
 - **Quotes:** copy them exactly from the source text. Paraphrase without quote marks.
@@ -154,13 +167,16 @@ Then update `index.md` (one line per new page), append to `log.md`
 Run:
 
 ```
-python ${CLAUDE_SKILL_DIR}/scripts/verify_ingest.py --vault . --pages <every page you created or changed> --source-text <source text file(s)>
+python ${CLAUDE_SKILL_DIR}/scripts/verify_ingest.py --vault . --pages <every page you created or changed> [--source-text <file> ...]
 ```
 
-- `--source-text`: the captured markdown/text, or the `pdf_pages.py text` output. Without it the
-  quote check is skipped — say so.
+- The quote check reads every raw/ file in each page's `sources:` frontmatter (PDFs need
+  pypdf). Pass `--source-text` for text it cannot read that way, e.g. the `pdf_pages.py text`
+  output when pypdf is missing. A "quote check skipped" NOTE goes into your report.
 - Fix every ERROR. For each WARN about a quote, check it: if it is a paraphrase, remove the quote
-  marks; if it is quoted from another source, pass that source too.
+  marks; if it is quoted from a source missing from `sources:`, add that source. Warnings marked
+  "(pre-existing)" were already committed: report them separately, fix them only if the user
+  agrees.
 - Also check by hand what the script cannot: every new claim cites a source, freshness rule.
 
 ## 9. Report

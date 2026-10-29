@@ -228,3 +228,26 @@ Source: a public ML course web page on classification metrics
 - **Quote check:** 0 warnings; existing short quotes on the page (< 4 words) are below
   `MIN_QUOTE_WORDS`, so passing only the new source text was enough. Cost: discussion + one
   existing page read, ~10k tokens total — the cheap path is genuinely cheap.
+
+## Cleanup after tests 1–4 (2026-10-30)
+
+Done, with regression runs on the 4 test PDFs and 2 HTML pages:
+- `pdf_pages.py`: `file://` URLs (percent-decoded); `text` prints `est_tokens`;
+  `text --skip-references` (paper 1: 4 reference pages dropped, 10.6k chars; paper 2: 8 pages, 23k chars;
+  both stop at the first appendix heading). `candidates`: `table-like` (≥ 3 mostly-numeric lines)
+  caught the frequency tables of deck B and its probability tables; `colon-then-little-text`
+  caught the screenshot slide; `screenshot_runs` groups the GUI-step run (5 selected pages) into one item.
+  Trade-off: more pages selected (deck B: 12 → 20), offset by dropping runs at once.
+- `html_to_md.py`: `meta` from `<title>`, `<meta>`, JSON-LD and a visible "Last updated" date;
+  Test-2 page dates match the test-2 capture.
+- `verify_ingest.py`: reads each page's `sources:` raw files (md/txt; PDFs with pypdf), skips
+  system files, marks warnings already present at git HEAD "(pre-existing)". Tested on a
+  throwaway git vault (real md + PDF quotes found, old/new fake quotes told apart, hot.md skipped).
+- SKILL.md: token-based read-in-parts, recompute worked examples, "prose only" label, native
+  table read = check, new candidates/runs, verify behaviour.
+- Windows encoding: no change needed; the scripts already reconfigure stdout to UTF-8 and
+  `html_to_md.py` prints ASCII JSON (the test-2 crash came from a throwaway script).
+
+Decided to keep: capture body re-typed via Write (vault rule 8); cost accepted.
+
+Still open: `candidates` misses dividers whose next slide has a different title (Phase 2a note).
