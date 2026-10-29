@@ -1,0 +1,13 @@
+{
+  "name": "your-2ndbrain",
+  "owner": {
+    "name": "erayozenn"
+  },
+  "plugins": [
+    {
+      "name": "your-2ndbrain",
+      "source": "./",
+      "description": "A personal second brain for Claude Code + Obsidian, built on Karpathy's LLM Wiki pattern."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "your-2ndbrain",
+  "version": "0.0.1",
+  "description": "A personal second brain for Claude Code + Obsidian, built on Karpathy's LLM Wiki pattern: immutable raw sources, an LLM-maintained wiki, and a schema file.",
+  "author": {
+    "name": "erayozenn",
+    "url": "https://github.com/erayozenn"
+  },
+  "license": "MIT",
+  "keywords": ["obsidian", "knowledge-base", "llm-wiki", "second-brain", "pkm"]
+}

@@ -1,0 +1,34 @@
+{
+  "version": "0.2",
+  "placeholders": {
+    "{{DATE}}": "today, YYYY-MM-DD",
+    "{{CHAT_LANGUAGE}}": "language Claude uses with the user, e.g. Turkish",
+    "{{WIKI_LANGUAGE}}": "language of wiki pages, e.g. English"
+  },
+  "dirs": [
+    "raw/web",
+    "raw/assets",
+    "wiki/sources",
+    "wiki/concepts",
+    "wiki/entities",
+    "wiki/syntheses",
+    "notes/daily",
+    "projects",
+    "areas",
+    "archive"
+  ],
+  "files": {
+    "vault/CLAUDE.md.tmpl": "CLAUDE.md",
+    "vault/CRITICAL_FACTS.md": "CRITICAL_FACTS.md",
+    "vault/hot.md": "hot.md",
+    "vault/index.md": "index.md",
+    "vault/log.md": "log.md",
+    "vault/Threads.md": "Threads.md",
+    "vault/rules.md": "rules.md",
+    "vault/wiki/source-register.md": "wiki/source-register.md",
+    "vault/claude-settings.json.tmpl": ".claude/settings.json",
+    "vault/gitattributes.tmpl": ".gitattributes",
+    "vault/gitignore.tmpl": ".gitignore"
+  },
+  "never_overwrite": true
+}
