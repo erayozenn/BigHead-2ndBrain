@@ -10,8 +10,9 @@ Drops navigation, scripts, buttons, forms, SVG and hidden elements. Maps heading
 lists, links, images, emphasis, code, pre, blockquotes, tables (cell paragraphs -> <br>),
 definition lists and details/summary. Writes UTF-8 with LF line endings.
 
-Prints JSON: selector used, words, estimated tokens, and a warning when the body is so short
-that the page is probably rendered by JavaScript (then capture another way).
+Prints JSON: selector used, words, estimated tokens, page metadata for provenance (title,
+author, published, modified from <title>, <meta> and JSON-LD), and a warning when the body is
+so short that the page is probably rendered by JavaScript (then capture another way).
 """
 from __future__ import annotations
 
@@ -239,7 +240,66 @@ def _text(node: Node | str) -> str:
     return "".join(_text(c) for c in node.children)
 
 
-def convert(html: str, selector: str | None) -> tuple[str, str]:
+META_KEYS = {
+    "article:published_time": "published", "article:modified_time": "modified",
+    "og:updated_time": "modified", "author": "author", "article:author": "author",
+    "og:title": "title",
+}
+LAST_UPDATED_RE = re.compile(r"Last (?:updated|modified)\s*:?\s*(\d{4}-\d{2}-\d{2})", re.IGNORECASE)
+
+
+def _walk(node: Node):
+    yield node
+    for child in node.children:
+        if isinstance(child, Node):
+            yield from _walk(child)
+
+
+def _ld_items(data):
+    if isinstance(data, list):
+        for item in data:
+            yield from _ld_items(item)
+    elif isinstance(data, dict):
+        yield data
+        yield from _ld_items(data.get("@graph", []))
+
+
+def _ld_author(value) -> str:
+    items = value if isinstance(value, list) else [value]
+    names = [i.get("name", "") if isinstance(i, dict) else str(i) for i in items]
+    return ", ".join(n for n in names if n)
+
+
+def page_meta(root: Node) -> dict[str, str]:
+    """Provenance candidates from <title>, <meta> and JSON-LD; first value per key wins."""
+    meta: dict[str, str] = {}
+    for node in _walk(root):
+        if node.tag == "title" and "title" not in meta:
+            meta["title"] = _normalize(_text(node))
+        elif node.tag == "meta":
+            key = (node.attrs.get("property") or node.attrs.get("name") or "").lower()
+            if key in META_KEYS and node.attrs.get("content"):
+                meta.setdefault(META_KEYS[key], node.attrs["content"].strip())
+        elif node.tag == "script" and node.attrs.get("type") == "application/ld+json":
+            try:
+                data = json.loads(_text(node))
+            except ValueError:
+                continue
+            for item in _ld_items(data):
+                for src, dst in (("datePublished", "published"), ("dateModified", "modified"),
+                                 ("headline", "title")):
+                    if isinstance(item.get(src), str):
+                        meta.setdefault(dst, item[src])
+                if item.get("author"):
+                    meta.setdefault("author", _ld_author(item["author"]))
+    if "modified" not in meta:  # e.g. Google docs: visible "Last updated 2026-01-12 UTC."
+        m = LAST_UPDATED_RE.search(_text(root))
+        if m:
+            meta["modified"] = m.group(1)
+    return {k: " ".join(v.split()) for k, v in meta.items() if v}
+
+
+def convert(html: str, selector: str | None) -> tuple[str, str, dict[str, str]]:
     builder = TreeBuilder()
     builder.feed(html)
     builder.close()
@@ -258,7 +318,7 @@ def convert(html: str, selector: str | None) -> tuple[str, str]:
     md = _normalize(renderer.render(body)).replace(INDENT, " ")
     md = re.sub(PRE + r"(\d+)" + PRE,
                 lambda m: "```\n" + renderer.pre_blocks[int(m.group(1))] + "\n```", md)
-    return md + "\n", used
+    return md + "\n", used, page_meta(builder.root)
 
 
 def main() -> int:
@@ -268,13 +328,14 @@ def main() -> int:
     ap.add_argument("--selector", help="CSS-like selector for the article body")
     args = ap.parse_args()
     try:
-        md, used = convert(args.html.read_text(encoding="utf-8", errors="replace"), args.selector)
+        md, used, meta = convert(args.html.read_text(encoding="utf-8", errors="replace"), args.selector)
     except (LookupError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
     args.out.write_text(md, encoding="utf-8", newline="\n")
     words = len(md.split())
-    report = {"out": str(args.out), "selector": used, "words": words, "est_tokens": len(md) // 4}
+    report = {"out": str(args.out), "selector": used, "words": words, "est_tokens": len(md) // 4,
+              "meta": meta}
     if words < MIN_WORDS:
         report["warning"] = ("very little text: the page is probably rendered by JavaScript, "
                              "or the selector missed the body; try --selector or another capture")
