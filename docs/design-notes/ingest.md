@@ -53,6 +53,21 @@ or a fresh session (hot.md carries the state).
 - Source pages are named `src-<slug>` so they never collide with the raw file's basename.
 - hot.md word count ≤ 500.
 
+## Second test ingest (arXiv paper, 19 pages, 2026-10-29)
+
+- **Text mode + targeted native read worked.** pypdf text (~71 KB) for all pages; references
+  (pp. 10–16) skimmed only. Native read of 3 pages (6–8) to check tables.
+- **Tables break in text mode even on clean papers:** pypdf merged two table rows into one line
+  and dropped the structure of shared (multirow) cells. Rule for the skill: pages whose text has
+  "Table N:" get a native read when the numbers will be cited.
+- **The source can contradict itself.** Body text said "17%", the table said 11.7% / 17.7%.
+  The skill should cross-check numbers quoted in prose against tables and mark (disputed).
+- **Quote check needs normalization:** ligatures (ﬁ, ﬂ) and curly quotes in PDF text make a
+  naive verbatim check fail. Normalize both sides before matching.
+- **"Risky claims" rule vs papers:** every benchmark number is single-source. Section-level
+  "(provisional)" note was used instead of marking each number. Revisit in the skill spec.
+- Read budget: 2 existing pages read (concept + grep on source page).
+
 ## Cost of the first ingest (web idea file, ~12 KB)
 
 Source read ~3k tokens; no existing pages read (empty wiki). Far under budget.
