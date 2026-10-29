@@ -8,6 +8,11 @@ __pycache__/
 venv/
 .pytest_cache/
 
+# Tool and editor output (never part of the kit)
+.playwright-mcp/
+.cache/
+.obsidian/
+
 # Secrets
 .env
 .env.*
