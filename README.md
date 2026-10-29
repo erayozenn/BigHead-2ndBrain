@@ -1,5 +1,7 @@
 # Your_2ndBRAIN
 
+![Your_2ndBRAIN — your sources in, a linked, cited wiki out](docs/images/hero.svg)
+
 > Status: v0.1 in preparation. Working name; the final name is chosen before the public release.
 
 A personal second brain for **Claude Code + Obsidian**, built on Andrej Karpathy's
@@ -18,9 +20,13 @@ wiki from them, and a short schema file keeps both of you on the same rules.
   or touches your Obsidian config.
 - **Subscription-friendly.** Built for a Claude Pro/Max plan; no API key required.
 
+![Anatomy of a wiki page: frontmatter, summary for future agents, cited claims, dated facts, disputed and provisional markers](docs/images/page-anatomy.svg)
+
 ## How it works
 
-See [docs/architecture.md](docs/architecture.md).
+![How it works: raw sources are compiled into the wiki by /ingest, answered from by /query, extended by /save; session memory is kept by /handoff](docs/images/how-it-works.svg)
+
+Details: [docs/architecture.md](docs/architecture.md).
 
 ```
 raw/     your sources (read-only for Claude)

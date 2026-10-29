@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">How it works</title>
+  <desc id="desc">Sources in raw/ are compiled by /ingest into the wiki. /query answers from the wiki with citations, and /save turns good answers into synthesis pages. CLAUDE.md, CRITICAL_FACTS.md and hot.md load every session; /handoff rewrites hot.md at session end; /init creates the layout from templates.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path class="ahf" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+  <style>
+    svg { --bg:#FBFAF7; --card:#FFFFFF; --line:#E4E1DA; --ink:#1F2328; --muted:#656D76; --raw:#B45309; --wiki:#0F766E; --syn:#7C3AED; --soft:#F3F1EC; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#0F141A; --card:#161B22; --line:#30363D; --ink:#E6EDF3; --muted:#8B949E; --raw:#F0A35E; --wiki:#3FB8A8; --syn:#B392F0; --soft:#1C232C; }
+    }
+    .bg { fill:var(--bg); stroke:var(--line); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1.2; }
+    .soft { fill:var(--soft); stroke:var(--line); }
+    .sans { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+    .mono { font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace; }
+    .ink { fill:var(--ink); } .muted { fill:var(--muted); }
+    .c-raw { fill:var(--raw); } .c-wiki { fill:var(--wiki); } .c-syn { fill:var(--syn); }
+    .bar-raw { fill:var(--raw); } .bar-wiki { fill:var(--wiki); } .bar-syn { fill:var(--syn); }
+    .rule { stroke:var(--line); }
+    .arrow { fill:none; stroke:var(--ink); stroke-width:1.8; }
+    .ahf { fill:var(--ink); }
+    .pill { fill:var(--ink); }
+    .pill-t { fill:var(--bg); }
+    .icon { fill:none; stroke:var(--muted); stroke-width:1.2; }
+  </style>
+
+  <rect class="bg" x="0.5" y="0.5" width="1199" height="559" rx="16"/>
+  <text class="sans c-wiki" x="40" y="46" font-size="13" font-weight="700" letter-spacing="2.5">HOW IT WORKS</text>
+
+  <!-- raw/ card -->
+  <rect class="card" x="40" y="120" width="280" height="180" rx="12"/>
+  <rect class="bar-raw" x="40" y="120" width="6" height="180" rx="3"/>
+  <text class="mono ink" x="64" y="156" font-size="20" font-weight="700">raw/</text>
+  <text class="sans c-raw" x="64" y="178" font-size="13" font-weight="600">your sources · never modified</text>
+  <line class="rule" x1="64" y1="194" x2="300" y2="194"/>
+  <g class="mono ink" font-size="14">
+    <rect class="icon" x="64" y="208" width="10" height="13" rx="1.5"/><text x="84" y="219">paper.pdf</text>
+    <rect class="icon" x="64" y="232" width="10" height="13" rx="1.5"/><text x="84" y="243">lecture-03.pdf</text>
+    <rect class="icon" x="64" y="256" width="10" height="13" rx="1.5"/><text x="84" y="267">web/article.md</text>
+  </g>
+
+  <!-- wiki/ card -->
+  <rect class="card" x="460" y="120" width="280" height="180" rx="12"/>
+  <rect class="bar-wiki" x="460" y="120" width="6" height="180" rx="3"/>
+  <text class="mono ink" x="484" y="156" font-size="20" font-weight="700">wiki/</text>
+  <text class="sans c-wiki" x="484" y="178" font-size="13" font-weight="600">Claude writes · linked · cited</text>
+  <line class="rule" x1="484" y1="194" x2="720" y2="194"/>
+  <g class="mono ink" font-size="14">
+    <text x="484" y="217">sources/</text>
+    <text x="484" y="239">concepts/</text>
+    <text x="484" y="261">entities/</text>
+    <text x="484" y="283" class="c-syn">syntheses/</text>
+  </g>
+  <g class="mono muted" font-size="12" text-anchor="end">
+    <text x="720" y="217">index.md</text>
+    <text x="720" y="239">log.md</text>
+    <text x="720" y="261">hot.md</text>
+  </g>
+
+  <!-- answer card -->
+  <rect class="card" x="880" y="120" width="280" height="180" rx="12"/>
+  <rect class="bar-syn" x="880" y="120" width="6" height="180" rx="3"/>
+  <text class="sans ink" x="904" y="156" font-size="20" font-weight="700">Answer</text>
+  <text class="sans c-syn" x="904" y="178" font-size="13" font-weight="600">in chat · every claim cited</text>
+  <line class="rule" x1="904" y1="194" x2="1140" y2="194"/>
+  <g class="sans ink" font-size="13">
+    <text x="904" y="217">Self-testing beats rereading</text>
+    <text x="904" y="237">for recall <tspan class="c-wiki">[[retrieval-practice]]</tspan>.</text>
+    <text x="904" y="261">The gain grows with delay</text>
+    <text x="904" y="281"><tspan class="muted">(provisional)</tspan> <tspan class="c-wiki">[[src-paper]]</tspan>.</text>
+  </g>
+
+  <!-- ingest arrow -->
+  <path class="arrow" d="M322,232 L456,232" marker-end="url(#ah)"/>
+  <rect class="pill" x="347" y="203" width="86" height="26" rx="13"/>
+  <text class="mono pill-t" x="390" y="221" font-size="13" font-weight="700" text-anchor="middle">/ingest</text>
+  <text class="sans muted" x="390" y="254" font-size="12" text-anchor="middle">discuss, then</text>
+  <text class="sans muted" x="390" y="270" font-size="12" text-anchor="middle">compile</text>
+
+  <!-- query arrow -->
+  <path class="arrow" d="M742,232 L876,232" marker-end="url(#ah)"/>
+  <rect class="pill" x="771" y="203" width="78" height="26" rx="13"/>
+  <text class="mono pill-t" x="810" y="221" font-size="13" font-weight="700" text-anchor="middle">/query</text>
+  <text class="sans muted" x="810" y="254" font-size="12" text-anchor="middle">hot → index</text>
+  <text class="sans muted" x="810" y="270" font-size="12" text-anchor="middle">→ pages</text>
+
+  <!-- save arc -->
+  <path class="arrow" d="M1020,118 C1020,58 600,58 600,114" marker-end="url(#ah)"/>
+  <rect class="pill" x="776" y="60" width="68" height="26" rx="13"/>
+  <text class="mono pill-t" x="810" y="78" font-size="13" font-weight="700" text-anchor="middle">/save</text>
+  <text class="sans muted" x="810" y="108" font-size="12" text-anchor="middle">good answers become syntheses</text>
+
+  <text class="sans muted" x="600" y="330" font-size="13" text-anchor="middle">Browse it all in Obsidian: graph view, backlinks, search.</text>
+
+  <!-- session memory strip -->
+  <rect class="soft" x="40" y="366" width="1120" height="158" rx="12"/>
+  <text class="sans c-wiki" x="64" y="398" font-size="12" font-weight="700" letter-spacing="2">SESSION MEMORY</text>
+  <text class="sans ink" x="64" y="422" font-size="14">Loaded at the start of every session, so Claude picks up where you left off.</text>
+  <text class="sans muted" x="1136" y="398" font-size="12" text-anchor="end"><tspan class="mono ink" font-weight="700">/init</tspan> creates this whole layout from templates</text>
+
+  <g>
+    <rect class="card" x="64" y="440" width="230" height="60" rx="10"/>
+    <text class="mono ink" x="80" y="465" font-size="14" font-weight="700">CLAUDE.md</text>
+    <text class="sans muted" x="80" y="486" font-size="12">schema: map and rules</text>
+
+    <rect class="card" x="310" y="440" width="230" height="60" rx="10"/>
+    <text class="mono ink" x="326" y="465" font-size="14" font-weight="700">CRITICAL_FACTS.md</text>
+    <text class="sans muted" x="326" y="486" font-size="12">who you are, your goals</text>
+
+    <rect class="card" x="556" y="440" width="230" height="60" rx="10"/>
+    <text class="mono ink" x="572" y="465" font-size="14" font-weight="700">hot.md</text>
+    <text class="sans muted" x="572" y="486" font-size="12">now · recent · key facts</text>
+  </g>
+
+  <path class="arrow" d="M884,470 L792,470" marker-end="url(#ah)"/>
+  <rect class="pill" x="886" y="457" width="96" height="26" rx="13"/>
+  <text class="mono pill-t" x="934" y="475" font-size="13" font-weight="700" text-anchor="middle">/handoff</text>
+  <text class="sans ink" x="996" y="466" font-size="13">rewrites hot.md</text>
+  <text class="sans muted" x="996" y="484" font-size="12">at session end</text>
+</svg>

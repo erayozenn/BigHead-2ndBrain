@@ -1,5 +1,7 @@
 # Your_2ndBRAIN
 
+![Your_2ndBRAIN — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
+
 > Durum: v0.1 hazırlanıyor. Çalışma adı; kesin isim herkese açık sürümden önce verilecek.
 
 **Claude Code + Obsidian** için kişisel bir ikinci beyin. Andrej Karpathy'nin "LLM Wiki"
@@ -18,9 +20,13 @@ wiki derler ve bakımını yapar; kısa bir şema dosyası ikinizi aynı kuralla
   yeniden adlandırmaz, Obsidian ayarlarına dokunmaz.
 - **Aboneliğe uygun.** Claude Pro/Max için tasarlandı; API key gerekmez.
 
+![Bir wiki sayfasının anatomisi: frontmatter, gelecekteki ajan için özet, kaynaklı iddialar, tarihli bilgiler, tartışmalı ve geçici işaretleri](docs/images/page-anatomy.svg)
+
 ## Nasıl çalışır
 
-Bkz. [docs/architecture.md](docs/architecture.md) (İngilizce).
+![Nasıl çalışır: ham kaynaklar /ingest ile wiki'ye derlenir, /query wiki'den cevaplar, /save wiki'yi genişletir; oturum hafızasını /handoff korur](docs/images/how-it-works.svg)
+
+Ayrıntılar: [docs/architecture.md](docs/architecture.md) (İngilizce).
 
 ```
 raw/     senin kaynakların (Claude için salt okunur)
