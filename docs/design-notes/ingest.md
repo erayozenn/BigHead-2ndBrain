@@ -200,3 +200,28 @@ writing ~6k).
   (e.g. compare against `git stash`/HEAD version).
 - **Gate outcome:** source page + 1 new concept (`concept-e`) + 2 extended pages
   (RAG failure modes, wiki-vs-RAG evidence section and eval design). User approved.
+
+## End-to-end test 4: short, low-value web page (2026-10-29/30)
+
+Source: a public ML course web page on classification metrics
+(~1,450 words, devsite HTML, 155 KB). Chosen because it mostly duplicates `concept-b`.
+
+- **Gate worked as intended.** Proposed register line + extend the existing concept page; user
+  approved. The outcome "no page, but the source still fixes a citation" (precision definition was
+  marked unsupported) is a real, useful path — name it in step 6 as a third option:
+  *register line + cite `[[raw/...]]` from existing pages*. Today the skill implies register = no
+  further writes.
+- **HTML converter missing, second time.** The test-2 converter was not kept, so the model wrote
+  a new stdlib `html.parser` script (~120 lines). Site-specific body selector this time
+  (`div.devsite-article-body`, not `<article>`). Strong case for `scripts/html_to_md.py` with a
+  selector list (`article`, `main`, `div.devsite-article-body`, `--selector` override).
+- **Converter limits:** a table with multi-paragraph cells and the interactive quiz block came out
+  flattened (text complete, layout lost). Recorded in the capture's `format:` key. Acceptable for
+  a register-only source; a real converter should emit cell `<br>` and block-level quiz items.
+- **Capture still re-types the body** (~2k tokens here); diff against the scratchpad copy was
+  identical. Same trade-off as test 2.
+- **Date rollover mid-ingest.** Downloaded on 10-29, written on 10-30. Skill should say:
+  `retrieved` = download date; `updated`/log/register = write date.
+- **Quote check:** 0 warnings; existing short quotes on the page (< 4 words) are below
+  `MIN_QUOTE_WORDS`, so passing only the new source text was enough. Cost: discussion + one
+  existing page read, ~10k tokens total — the cheap path is genuinely cheap.
