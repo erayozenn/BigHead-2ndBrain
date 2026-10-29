@@ -68,6 +68,27 @@ or a fresh session (hot.md carries the state).
   "(provisional)" note was used instead of marking each number. Revisit in the skill spec.
 - Read budget: 2 existing pages read (concept + grep on source page).
 
+## Third test ingest (lecture slide deck, 2026-10-29)
+
+- **Smart mode worked, but the < 50-chars rule over-selects.** 17 slides had < 50 chars:
+  7 were section-divider slides (title only) and 4 were tool logos/screenshots. Only 8 slides
+  were read natively (~13k tokens est.) vs ~28k for all 17. Heuristic for the skill: skip a
+  short page whose text equals the title of the next slide (section divider); let the user skip
+  pages that are only tool/brand images.
+- **Also select slides whose text ends with ":"** — 3 slides ended in "categories:" / "overfitting:"
+  / "the task:". Native read showed the follow-up was missing entirely (lost slide animation);
+  for one (overfitting) the figure was on the next slide. Record such gaps as "Open questions"
+  instead of guessing the content.
+- **Extract chosen pages into one ≤ 10-page PDF** with pypdf, then one native Read. Cheaper
+  than chunking the whole deck.
+- **Course slides contain contestable claims** (model selection on the test set; a cost
+  judgement on Type I vs II errors). With no second source in the vault, the pattern used:
+  slide's claim cited, other side stated with "(unsupported in this vault)", whole point
+  "(disputed)". The user approved this; the skill should offer it as the default.
+- **Gate outcome for course material:** source page + concept pages that later lectures will
+  extend (`concept-a`, `concept-b`), not one page per lecture topic.
+- Read budget: 2 existing pages (heads only) + index/log.
+
 ## Cost of the first ingest (web idea file, ~12 KB)
 
 Source read ~3k tokens; no existing pages read (empty wiki). Far under budget.
