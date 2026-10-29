@@ -78,12 +78,17 @@ Read the ranked pages within budget. While reading:
 ## 5. When the wiki is not enough
 
 Say so explicitly first: what the wiki covers, and what is missing. Then:
-1. Look in `raw/` for a source that covers the gap (file names, `wiki/source-register.md`,
-   `sources:` lines of related pages). Read it within the remaining budget; for PDFs follow the
-   ingest skill's PDF rules (no `pages=` argument; ≤ 10 pages natively, longer via
-   `pdf_pages.py text` from the ingest skill's scripts).
-2. Answer from raw/, citing `[[raw/<full path>]]`, and say the answer is not compiled into the
-   wiki yet.
+1. Look in `raw/` for a source that covers the gap: `Grep` the terms over `raw/` (markdown
+   captures) **and** over `.cache/raw-text/` (PDF text). Pass `.cache/raw-text` as the explicit
+   path — a vault-wide Grep skips it because it is gitignored. Hits carry page numbers from the
+   `=== page N ===` markers above them. Also check file names, `wiki/source-register.md` and the
+   `sources:` lines of related pages.
+   - Cache missing or incomplete (a cited PDF has no `.txt`): offer to run the ingest skill's
+     `pdf_pages.py cache --vault . --all`. Never read PDFs that the wiki does not cite — they have
+     not passed the ingest checks (sensitive data); name them and suggest an ingest instead.
+   - Read matches within the remaining budget (offset/limit around the hit, not whole files).
+2. Answer from raw/, citing the raw file, not the cache — `[[raw/<full path>]]`, p. N — and say
+   the answer is not compiled into the wiki yet.
 3. Propose the fix: ingest that raw file (`/your-2ndbrain:ingest <path>`), or, if no source
    exists, add the gap to `Threads.md` (ask first — it is not free to write).
 

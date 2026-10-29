@@ -8,8 +8,16 @@ Subcommands:
                                       estimated token count; optionally drop the bibliography
   candidates <pdf> [--min-chars 50]   pages worth a native (text + image) read, with reasons
   extract <pdf> <pages> --out <pdf>   copy pages (e.g. "3,5,7-9", max 10) into one small PDF
+  cache --vault <dir> <pdf> [...]     write the text of raw/ PDFs to <vault>/.cache/raw-text/
+  cache --vault <dir> --all [--prune] cache every raw/ PDF the wiki cites; report PDFs not yet
+                                      ingested (never cached) and orphaned cache files
+                                      (deleted only with --prune)
 
 <pdf> may be a path or a file:// URL (percent-encoding is decoded).
+
+The cache mirrors raw/: raw/web/x.pdf -> .cache/raw-text/web/x.pdf.txt, same "=== page N ==="
+format as `text`, so Grep hits carry page numbers. It is derived data: gitignored, rebuilt per
+machine, skipped when the PDF's size and mtime are unchanged (manifest.json).
 
 Requires pypdf (optional dependency of the kit). Without it, every subcommand except
 `info` exits with code 3, and the skill falls back to native Read for PDFs of <= 10 pages.
@@ -180,10 +188,7 @@ def cmd_text(args: argparse.Namespace) -> None:
             skipped = {"from_page": sp + 1, "to_page": min(ep + 1, len(texts)),
                        "chars_dropped": dropped}
     out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open("w", encoding="utf-8", newline="\n") as f:
-        for i, text in enumerate(texts, start=1):
-            f.write(f"=== page {i} ===\n{text.strip()}\n\n")
+    _write_pages(out, texts)
     total = sum(len(t) for t in texts)
     # ~4 chars per token for English prose; Read truncates around 25k tokens.
     result = {"pages": len(texts), "chars": total, "est_tokens": total // 4, "out": str(out)}
@@ -228,6 +233,85 @@ def cmd_candidates(args: argparse.Namespace) -> None:
                       # Offer each run as one item the user can keep or drop at once.
                       "screenshot_runs": _runs(texts, set(selected)),
                       "pages": pages}, indent=2, ensure_ascii=False))
+
+
+CACHE_DIR = Path(".cache") / "raw-text"
+RAW_PDF_LINK_RE = re.compile(r"\[\[(raw/[^\]|#]+?\.pdf)(?:[#|][^\]]*)?\]\]", re.IGNORECASE)
+
+
+def _write_pages(out: Path, texts: list[str]) -> None:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", encoding="utf-8", newline="\n") as f:
+        for i, text in enumerate(texts, start=1):
+            f.write(f"=== page {i} ===\n{text.strip()}\n\n")
+
+
+def _cited_pdfs(vault: Path) -> set[str]:
+    """raw/ PDFs linked anywhere in wiki/ (pages, frontmatter, source register) = ingested."""
+    cited = set()
+    for page in (vault / "wiki").rglob("*.md"):
+        for m in RAW_PDF_LINK_RE.finditer(page.read_text(encoding="utf-8", errors="replace")):
+            cited.add(m.group(1).strip())
+    return cited
+
+
+def cmd_cache(args: argparse.Namespace) -> None:
+    _require_pypdf()
+    vault = Path(args.vault).resolve()
+    raw, cache = vault / "raw", vault / CACHE_DIR
+    manifest_path = cache / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+    if not args.all and not args.pdfs:
+        print("give PDF paths under raw/, or --all", file=sys.stderr)
+        sys.exit(2)
+    if args.all:
+        cited = _cited_pdfs(vault)
+        all_pdfs = sorted(p.relative_to(vault).as_posix() for p in raw.rglob("*")
+                          if p.is_file() and p.suffix.lower() == ".pdf")
+        targets = [p for p in all_pdfs if p in cited]
+        not_ingested = [p for p in all_pdfs if p not in cited]
+        missing = sorted(cited - set(all_pdfs))
+    else:
+        targets, not_ingested, missing = [], [], []
+        for arg in args.pdfs:
+            path = _pdf_path(arg).resolve()
+            if raw not in path.parents:
+                print(f"{arg} is not under {raw}; only raw/ files are cached", file=sys.stderr)
+                sys.exit(2)
+            targets.append(path.relative_to(vault).as_posix())
+
+    written, unchanged = [], []
+    for rel in targets:
+        src = vault / rel
+        _read_pdf_header(src)
+        stat = src.stat()
+        stamp = {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+        key = Path(rel).relative_to("raw").as_posix()
+        out = cache / f"{key}.txt"
+        if not args.force and out.exists() and \
+                {k: manifest.get(key, {}).get(k) for k in stamp} == stamp:
+            unchanged.append(rel)
+            continue
+        texts = _page_texts(src)
+        _write_pages(out, texts)
+        manifest[key] = {**stamp, "pages": len(texts)}
+        written.append(rel)
+
+    # Orphans: cache entries whose raw file is gone (e.g. moved to archive/).
+    orphans = sorted(k for k in manifest if not (raw / k).exists())
+    pruned = []
+    if args.prune:
+        for key in orphans:
+            (cache / f"{key}.txt").unlink(missing_ok=True)
+            del manifest[key]
+            pruned.append(key)
+    cache.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                             encoding="utf-8", newline="\n")
+    print(json.dumps({"cache": str(cache), "written": written, "unchanged": unchanged,
+                      "not_ingested_skipped": not_ingested, "cited_but_missing": missing,
+                      "orphans": [] if args.prune else orphans, "pruned": pruned},
+                     indent=2, ensure_ascii=False))
 
 
 def _parse_pages(spec: str, count: int) -> list[int]:
@@ -297,6 +381,15 @@ def main() -> None:
     p.add_argument("pages")
     p.add_argument("--out", required=True)
     p.set_defaults(func=cmd_extract)
+
+    p = sub.add_parser("cache")
+    p.add_argument("pdfs", nargs="*")
+    p.add_argument("--vault", default=".")
+    p.add_argument("--all", action="store_true", help="every raw/ PDF cited in wiki/")
+    p.add_argument("--prune", action="store_true",
+                   help="delete cache files whose raw PDF no longer exists (ask the user first)")
+    p.add_argument("--force", action="store_true", help="rebuild even if unchanged")
+    p.set_defaults(func=cmd_cache)
 
     args = parser.parse_args()
     args.func(args)

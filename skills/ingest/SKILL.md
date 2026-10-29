@@ -64,6 +64,10 @@ reading anything large.
 
 ### PDFs
 
+Once the PDF is in `raw/`: `pdf_pages.py cache --vault . <raw pdf>` writes its text to
+`.cache/raw-text/<path under raw>.txt` (gitignored, used by query and verify). In text/smart mode,
+read that file instead of running `text` again — unless you want `--skip-references`.
+
 Never pass `pages=` to Read: it needs poppler and fails hard without it. Read without `pages=`
 works natively (text + page image) for PDFs of **at most 10 pages**.
 

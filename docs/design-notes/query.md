@@ -30,5 +30,13 @@ Test vault: 9 concept/synthesis pages, 6 source pages.
   written by ingest and grepped by query; Phase 3 BM25 could index the same cache.
 - **General knowledge in a gap answer** was given, clearly labelled "(not in the vault)". The skill
   allows it; keep it short and always pair it with a source to ingest.
+  **Done 2026-10-30:** `pdf_pages.py cache` → `.cache/raw-text/<path under raw>.txt` + manifest
+  (size, mtime). Safeguards: `--all` caches only PDFs cited in `wiki/` (uncited = not ingested =
+  not checked for sensitive data → reported, never cached); orphans (raw file gone, e.g. archived)
+  reported, deleted only with `--prune` after the user agrees. Tested on a throwaway vault:
+  uncited PDF skipped, stale cache (mtime change) falls back to pypdf and is rewritten, path
+  outside raw/ and missing args exit 2, orphan reported then pruned. Real vault: cache text
+  byte-identical to `text` output; whole-wiki verify 1.5 s → 0.34 s. Grep finds the cache only
+  with `.cache/raw-text` as explicit path (gitignored + hidden), which the query skill now says.
 - **allowed-tools** only pre-approves `wc -c`. Grep/Read/Glob need no Bash. Searching raw PDF
   text through Bash would prompt — another argument for the cache.

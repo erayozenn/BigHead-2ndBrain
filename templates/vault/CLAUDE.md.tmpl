@@ -17,6 +17,7 @@ co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it un
 | raw/ | user | Immutable sources. Never modify existing files. |
 | raw/web/ | user+claude | Web captures. Claude may ADD new files only, with approval. |
 | raw/assets/ | user | Attachments (Obsidian attachment folder). |
+| .cache/raw-text/ | claude | Derived text of cited raw/ PDFs (gitignored; pdf_pages.py cache --all). |
 | wiki/sources/ | claude | Source pages `src-<slug>.md` (only if they pass the compile-value gate). |
 | wiki/concepts/, wiki/entities/ | claude | Concept and entity pages. |
 | wiki/syntheses/ | claude | Comparisons, saved query answers, cross-source synthesis. |

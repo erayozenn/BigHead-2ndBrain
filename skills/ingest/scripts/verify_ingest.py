@@ -11,7 +11,7 @@ Checks on the given pages:
   - quoted spans (4+ words) appear in a source text, after normalization (ligatures,
     curly quotes, dashes, hyphenated line breaks, whitespace, case). Source texts are the
     --source-text files plus every raw/ file in the page's `sources:` frontmatter (markdown and
-    text directly; PDFs when pypdf is installed). System files (hot, index, log, ...) are skipped.
+    text directly; PDFs from the fresh `.cache/raw-text/` copy, else via pypdf). System files (hot, index, log, ...) are skipped.
     A warning whose quote is already in the page's git HEAD version is marked "(pre-existing)".
 Vault-wide checks:
   - duplicate basenames outside raw/ (and wiki vs raw)
@@ -22,6 +22,7 @@ Exit code 1 if any ERROR, else 0. WARN lines need a human look but do not fail.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -90,6 +91,9 @@ class SourceTexts:
         if not path.is_file():
             return None
         if path.suffix.lower() == ".pdf":
+            cached = self._cached(rel, path)
+            if cached is not None:
+                return normalize(cached)
             if pypdf is None:
                 self.report.note(f"pypdf not installed; quote check cannot read {rel}")
                 return None
@@ -102,6 +106,21 @@ class SourceTexts:
         if path.suffix.lower() in (".md", ".txt"):
             return normalize(path.read_text(encoding="utf-8", errors="replace"))
         return None
+
+    def _cached(self, rel: str, path: Path) -> str | None:
+        """Text from `pdf_pages.py cache` (.cache/raw-text/), if fresh for this PDF."""
+        key = Path(rel).relative_to("raw").as_posix() if rel.startswith("raw/") else None
+        cache = self.vault / ".cache" / "raw-text"
+        if key is None or not (cache / f"{key}.txt").exists():
+            return None
+        try:
+            entry = json.loads((cache / "manifest.json").read_text(encoding="utf-8")).get(key, {})
+        except (OSError, ValueError):
+            return None
+        stat = path.stat()
+        if entry.get("size") != stat.st_size or entry.get("mtime_ns") != stat.st_mtime_ns:
+            return None  # stale: fall back to pypdf
+        return (cache / f"{key}.txt").read_text(encoding="utf-8", errors="replace")
 
 
 def head_version(vault: Path, rel: str) -> str | None:
