@@ -17,7 +17,7 @@ co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it un
 | raw/ | user | Immutable sources. Never modify existing files. |
 | raw/web/ | user+claude | Web captures. Claude may ADD new files only, with approval. |
 | raw/assets/ | user | Attachments (Obsidian attachment folder). |
-| wiki/sources/ | claude | Source pages (only if they pass the compile-value gate). |
+| wiki/sources/ | claude | Source pages `src-<slug>.md` (only if they pass the compile-value gate). |
 | wiki/concepts/, wiki/entities/ | claude | Concept and entity pages. |
 | wiki/syntheses/ | claude | Comparisons, saved query answers, cross-source synthesis. |
 | wiki/source-register.md | claude | One line per ingested source WITHOUT its own page. |
@@ -78,6 +78,7 @@ Forbidden: undated present-tense facts that change ("I have 3 open applications"
 
 ## Links
 - Basenames outside raw/ are unique vault-wide, so shortest-path links stay unambiguous.
+- Source pages are named `src-<slug>`, so they never share a basename with their raw file.
 
 ## Frontmatter (every page except raw/ and system files)
     ---
@@ -118,7 +119,7 @@ If the wiki is insufficient, say so explicitly, then go to raw/.
 Offer to save good answers to wiki/syntheses/.
 ### Lint (report first, fix only after approval)
 Contradictions · freshness violations · past "Goes stale" dates · orphan pages · broken links ·
-duplicate basenames · missing frontmatter/summary · important concepts without pages ·
+duplicate basenames (incl. wiki vs raw) · missing frontmatter/summary · important concepts without pages ·
 hot.md > 500 words · index.md > 16 KiB · paths in this file that don't exist.
 
 ## log.md
