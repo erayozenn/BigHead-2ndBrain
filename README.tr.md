@@ -1,6 +1,6 @@
 # Your_2ndBRAIN
 
-> Durum: pre-alpha (Faz 1a — iskelet). Henüz kullanılabilir değil. Çalışma adı; kesin isim v0.1'den önce verilecek.
+> Durum: v0.1 hazırlanıyor. Çalışma adı; kesin isim herkese açık sürümden önce verilecek.
 
 **Claude Code + Obsidian** için kişisel bir ikinci beyin. Andrej Karpathy'nin "LLM Wiki"
 desenine dayanır: sen değişmez ham kaynakları toplarsın, Claude bunlardan birbirine bağlı bir
@@ -34,7 +34,7 @@ notes/   senin notların (Claude asla düzenlemez)
 /plugin install your-2ndbrain --marketplace <owner>/<repo>
 ```
 
-Ardından boş bir klasörde init skill'ini çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
+Ardından boş bir klasörde (veya mevcut bir Obsidian vault'unda) `/your-2ndbrain:init` çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
 adımlarını izle.
 
 ## Gereksinimler
@@ -50,7 +50,16 @@ adımlarını izle.
 
 | Skill | Ne yapar |
 |---|---|
+| `/your-2ndbrain:init [hedef klasör]` | Şablonlardan bir vault kurar — klasörler, `CLAUDE.md` şeması, hot cache, index, log, ayarlar — boş bir klasörde veya mevcut bir Obsidian vault'unda. Önce deneme çalıştırması yapar; hiçbir dosyanın üzerine yazmaz. |
 | `/your-2ndbrain:ingest <yol-veya-url> [text\|smart\|full]` | Bir kaynağı `raw/` içine alır, uygun maliyetle okur, seninle tartışır, wiki sayfalarını yazar, index/log/hot cache'i günceller, link ve alıntıları doğrular. |
+| `/your-2ndbrain:query <soru> [quick\|standard\|deep]` | Wiki'den cevap verir — hot cache, index, sonra okuma bütçesi içinde en ilgili sayfalar — her iddiayı kaynaklar, wiki yetmediğinde bunu açıkça söyler. |
+| `/your-2ndbrain:save [başlık veya kaydedilecek şey]` | Oturumdaki iyi bir cevabı veya karşılaştırmayı sentez sayfası olarak kaydeder (veya mevcut birini genişletir); kaynakları ve belirsizlik işaretlerini korur. |
+| `/your-2ndbrain:handoff [sonraki oturum için not]` | Oturum sonu devri: hot cache'in "Now" bölümünü yeniden yazar, kelime sınırında tutar, commit edilmemiş işi bildirir, düzeltmelerinden öğrenilen kuralları önerir. |
+
+İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").
+
+> **Bir skill'i mi düzenledin?** Ardından `/reload-plugins` çalıştır — yoksa mevcut oturumda eski
+> metin çalışmaya devam eder.
 
 ## Teşekkür
 
