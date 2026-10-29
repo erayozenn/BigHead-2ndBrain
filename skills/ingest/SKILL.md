@@ -118,8 +118,13 @@ Wait for answers before writing.
 
 ## 6. Compile-value gate (propose, user confirms)
 
+Pick one outcome:
 - **Source page** `wiki/sources/src-<slug>.md` only if the source adds lasting synthesis,
-  connections or a decision. Otherwise one line in `wiki/source-register.md`.
+  connections or a decision.
+- **Register line + citations:** no page, one line in `wiki/source-register.md`, and the few new
+  or confirming facts go into existing pages, cited as `[[raw/<full path>]]`. Use it when the
+  source mostly duplicates the wiki but supports an `(unsupported)` claim or adds small details.
+- **Register line only:** nothing in it is worth citing yet.
 - **Concept/entity pages:** create or extend pages that later sources will also extend
   (e.g. one concept page per recurring topic), not one page per section of this source.
 - **Read budget:** at most 5 existing pages. Read heads first when that is enough.
