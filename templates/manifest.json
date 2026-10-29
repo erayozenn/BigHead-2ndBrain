@@ -26,6 +26,7 @@
     "vault/Threads.md": "Threads.md",
     "vault/rules.md": "rules.md",
     "vault/wiki/source-register.md": "wiki/source-register.md",
+    "vault/notes/templates/daily.md": "notes/templates/daily.md",
     "vault/claude-settings.json.tmpl": ".claude/settings.json",
     "vault/gitattributes.tmpl": ".gitattributes",
     "vault/gitignore.tmpl": ".gitignore"

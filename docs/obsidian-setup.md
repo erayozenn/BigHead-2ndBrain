@@ -11,7 +11,7 @@ Do these once, inside Obsidian, after the vault files exist. Claude never touche
 3. **Settings → Core plugins → Daily notes**: on
    - New file location: `notes/daily`
    - Date format: `YYYY-MM-DD`
-   - Template file: a note containing at least:
+   - Template file location: `notes/templates/daily` (created by init; it contains at least):
      ```
      ---
      type: note
