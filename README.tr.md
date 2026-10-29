@@ -42,8 +42,15 @@ adımlarını izle.
 - Claude Code (Pro veya Max abonelik)
 - Obsidian
 - Git
-- Python 3.10+ (hook'lar için)
-- pypdf (`pip install pypdf`), PDF kaynaklar için; daha iyi metin çıkarımı için poppler isteğe bağlı
+- Python 3.10+ (hook'lar ve skill script'leri için)
+- İsteğe bağlı: pypdf (`pip install pypdf`), 10 sayfadan uzun PDF'ler ve ucuz salt-metin okuma
+  için. Kurulu değilse `ingest` 10 sayfaya kadar olan PDF'leri doğrudan okur.
+
+## Skill'ler
+
+| Skill | Ne yapar |
+|---|---|
+| `/your-2ndbrain:ingest <yol-veya-url> [text\|smart\|full]` | Bir kaynağı `raw/` içine alır, uygun maliyetle okur, seninle tartışır, wiki sayfalarını yazar, index/log/hot cache'i günceller, link ve alıntıları doğrular. |
 
 ## Teşekkür
 

@@ -41,8 +41,15 @@ Then run the init skill in an empty folder and follow [docs/obsidian-setup.md](d
 - Claude Code (Pro or Max subscription)
 - Obsidian
 - Git
-- Python 3.10+ (for hooks)
-- pypdf (`pip install pypdf`) for PDF sources; poppler optional for better text extraction
+- Python 3.10+ (for hooks and skill scripts)
+- Optional: pypdf (`pip install pypdf`) for PDFs longer than 10 pages and for cheap text-only
+  reads. Without it, `ingest` reads PDFs of up to 10 pages natively.
+
+## Skills
+
+| Skill | What it does |
+|---|---|
+| `/your-2ndbrain:ingest <path-or-url> [text\|smart\|full]` | Capture one source into `raw/`, read it at the right cost, discuss it with you, write wiki pages, update index/log/hot cache, verify links and quotes. |
 
 ## Credits
 

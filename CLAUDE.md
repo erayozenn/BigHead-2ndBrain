@@ -25,6 +25,8 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 3. Before any push that makes this repo public: run the opensource-sanitizer agent; fix every CRITICAL.
 4. Hooks and scripts: Python 3.10+, standard library only, must run on Windows, macOS and Linux.
    Resolve the interpreter defensively (python3 / python / py -3).
+   Exception: skill scripts may use an OPTIONAL dependency (currently pypdf) if the skill has a
+   documented fallback without it. Hooks never use third-party packages.
 5. Template files that Claude Code or git would otherwise interpret (CLAUDE.md, settings.json,
    .gitignore, .gitattributes) end in `.tmpl`; destinations live in templates/manifest.json.
 6. Plugin, skill and hook formats change between Claude Code versions — check current docs before
@@ -34,7 +36,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
    `claude -p`, the Agent SDK or an API key is optional and documented as such.
 9. Before each git operation, state which repo you are in (kit vs vault).
 
-## Roadmap (current: Phase 1a)
+## Roadmap (current: Phase 2a)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer, public ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook ·

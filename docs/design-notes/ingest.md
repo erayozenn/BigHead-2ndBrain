@@ -92,3 +92,21 @@ or a fresh session (hot.md carries the state).
 ## Cost of the first ingest (web idea file, ~12 KB)
 
 Source read ~3k tokens; no existing pages read (empty wiki). Far under budget.
+
+## How these notes became the skill (Phase 2a)
+
+Implemented in `skills/ingest/` (SKILL.md + `scripts/pdf_pages.py` + `scripts/verify_ingest.py`).
+
+- pypdf became an **optional** dependency (kit rule 4 exception): without it, PDFs ≤ 10 pages
+  are read natively; longer ones ask the user to install it.
+- `pdf_pages.py candidates` implements smart mode: short text (minus section dividers detected as
+  "text equals next page's first line"), table/figure mentions, text ending in ":", garbled text.
+  On the test deck it selected 14 pages and skipped 5 dividers; dropping 4 tool-logo
+  slides leaves 10 = one native read. Two dividers were not detected (next slide's title differs).
+- `verify_ingest.py` checks frontmatter keys, summary callout, BOM/CRLF, link resolution and
+  ambiguity, duplicate basenames, hot.md size, and quotes after normalization (NFKC for
+  ligatures, one quote-mark kind for nested quotes, dashes, hyphenated line breaks, case).
+  Quote misses are WARN, not ERROR: a quote may come from another source.
+- First run on the test vault: 0 errors; 3 quote warnings, all in a synthesis page where
+  paraphrases were set in quote marks — the check catches exactly that.
+- "Risky claims" vs papers resolved as: section-level "(provisional)" for single-paper numbers.
