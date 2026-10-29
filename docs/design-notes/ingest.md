@@ -110,3 +110,34 @@ Implemented in `skills/ingest/` (SKILL.md + `scripts/pdf_pages.py` + `scripts/ve
 - First run on the test vault: 0 errors; 3 quote warnings, all in a synthesis page where
   paraphrases were set in quote marks — the check catches exactly that.
 - "Risky claims" vs papers resolved as: section-level "(provisional)" for single-paper numbers.
+
+## End-to-end test 1: skill on a course slide PDF (2026-10-29)
+
+`/your-2ndbrain:ingest file:///.../deck.pdf` (smart mode). Worked end to end: copy-into-raw
+approval, text extraction, candidates, one 7-page native extract, discussion, gate, write,
+verify. Cost ~20k tokens (text ~4k, native ~11.5k, 3 existing pages ~5k).
+
+- **`file:///` URL with percent-encoding** (e.g. `%C3%A9`) was passed as the argument; the
+  model decoded it by hand. The skill (or `pdf_pages.py`) should accept and decode `file://` URLs.
+- **`candidates` missed table slides without the word "table".** Two slides were pure frequency
+  tables (many short numeric tokens, lines like `buy 1 1 can 0 1 2 3`) and were not selected;
+  the model added them from reading the text. Heuristic: high ratio of numeric/fraction tokens
+  per line → `table-like`.
+- **`candidates` missed a screenshot slide ending in "?".** One slide = "The tool produced the following
+  result: … What does this tell us?" — the key result was an image. Heuristic: a line ending in
+  ":" anywhere on the page (not only at the end) followed by little text.
+- **Short GUI-step slides (a run of 12) are mostly selected or noise.** 5 of 12 candidates were tool
+  screenshots ("Click Apply"). Heuristic: a run of ≥ 3 consecutive short pages with the same title
+  → collapse into one "screenshot run" candidate the user can drop at once.
+- **Arithmetic errors on slides are only found by recomputing.** One slide printed a product
+  an order of magnitude off; another slide had a count that did not match its own dataset. Add to the
+  skill's extract step: recompute every worked example's arithmetic and cross-check tables
+  against the data they are derived from.
+- **`verify_ingest.py` warns on quotes in system files.** hot.md mentions a paper title in quote
+  marks (a paper title) → WARN. Skip the quote check for system files (hot, index, log),
+  or only check quotes in pages that cite the given source.
+- **Quote check needs every cited source's text.** Extended pages quoting an earlier deck warned until
+  that deck's text was also passed. The script could auto-extract text for each `raw/*.pdf` listed
+  in a page's `sources:` frontmatter (when pypdf is available).
+- **Gate outcome:** source page + 2 new concept pages (`concept-f`, `concept-g`) +
+  2 extended concept pages. User approved; matches the "pages later sources extend" rule.
