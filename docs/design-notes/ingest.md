@@ -168,3 +168,35 @@ end to end: scratchpad download, conversion, raw/web/ approval, discussion, gate
 - **Gate outcome:** source page + 2 new concept pages (`concept-c`,
   `concept-d`) + short links from 2 existing pages. User picked all four focus
   areas (pattern choice, vault mapping, ACI, practical angle).
+
+## End-to-end test 3: arXiv paper in text mode (2026-10-29)
+
+`/your-2ndbrain:ingest https://arxiv.org/pdf/<id> text` (an arXiv paper, 18 pages).
+Worked end to end: download, `%PDF-` check, binary copy into raw/web/ with explicit approval,
+`text` extraction, discussion, gate, one 2-page native extract (p. 5, 18) for table numbers, write,
+verify. Cost ~40k tokens (text ~28k incl. references, native 2 pages ~3.5k, 1 existing page ~2.5k,
+writing ~6k).
+
+- **Read cap hit below the 2,000-line rule.** The text file was 1,557 lines but ~26k tokens, so
+  Read truncated at 25k and needed a second call. Size the "read in parts" rule by tokens
+  (chars / 4 > ~20k), not by lines; `pdf_pages.py text` could print an estimated token count.
+- **References are ~30% of a paper's text.** Pages 11–14 were bibliography. Add
+  `pdf_pages.py text --skip-references` (cut from a line equal to "References" up to the first
+  appendix heading) — saves ~7k tokens here.
+- **Text-mode tables were exact.** Tables 1, 5–7 (single-line rows, no merged cells) matched the
+  native read cell for cell. The "native read for cited tables" rule still caught one useful fact:
+  Figure 5 visibly lacks a 4K GPT-3.5 series at 30 documents, confirming a prose/table naming
+  mismatch. Keep the rule, but say it is a check, not a fix.
+- **Prose vs table cross-check worked as designed.** "Drop by more than 20%" = 22.0 / 22.9 points;
+  "worst case lower than closed-book in 20- and 30-document settings" mixes the 4K and 16K models.
+  Both recorded in the source page, not marked (disputed) because the conclusion holds.
+- **Figure-only numbers.** Several numbers (KV worst case 45.6%, Flan-UL2 1.9 points) exist only in
+  prose describing figures not read natively. The source page labels them "prose only". Suggest
+  this label in the skill's extract step.
+- **verify_ingest.py quote check handled line-wrapped and hyphenated PDF text** (quotes across
+  line breaks passed). It flagged 2 of my own paraphrases in quote marks — the step works.
+- **Pre-existing warnings resurface.** Editing `synthesis-a` re-surfaced its 3 old paraphrase
+  warnings. Fine, but the report should separate "new in this ingest" from "already there"
+  (e.g. compare against `git stash`/HEAD version).
+- **Gate outcome:** source page + 1 new concept (`concept-e`) + 2 extended pages
+  (RAG failure modes, wiki-vs-RAG evidence section and eval design). User approved.
