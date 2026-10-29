@@ -141,3 +141,30 @@ verify. Cost ~20k tokens (text ~4k, native ~11.5k, 3 existing pages ~5k).
   in a page's `sources:` frontmatter (when pypdf is available).
 - **Gate outcome:** source page + 2 new concept pages (`concept-f`, `concept-g`) +
   2 extended concept pages. User approved; matches the "pages later sources extend" rule.
+
+## End-to-end test 2: skill on a web article (2026-10-29)
+
+`/your-2ndbrain:ingest <engineering blog post URL>`. Worked
+end to end: scratchpad download, conversion, raw/web/ approval, discussion, gate, write, verify
+(0 errors after removing one paraphrase from quote marks). Cost ~25k tokens (article ~4k read,
+~4k written back into raw/ via Write, 3 existing pages ~5k, new pages ~8k).
+
+- **HTML is not covered.** Step 2.4 says "keep the body byte-identical", which only fits
+  markdown/text downloads. The page came as 220 KB of Next.js HTML; no `html2text`/`markdownify`
+  installed, so the model wrote a throwaway stdlib `html.parser` converter (keep `<article>`, drop
+  nav/aside/header/button/svg, map h1–h3/p/li/strong/em/a/img/figcaption). Add `html_to_md.py`
+  (stdlib only) to `scripts/` and a `format:` provenance key that records the conversion.
+- **Writing the capture re-types the whole body.** Rule "write vault files only with Write" means
+  the model re-emits every byte of the converted article (~4k tokens) and then diffs it against the
+  scratchpad copy (identical here, even zero-width spaces). Either accept that cost, or allow one
+  approved shell copy for captures of model-converted text, as already done for binary files.
+- **Windows encoding trap.** `python -I` ignores `PYTHONIOENCODING`, so printing non-cp1254
+  characters crashed. Use `python -I -X utf8`, or write output with `encoding="utf-8"`. Put this in
+  the skill's Python note.
+- **Metadata worth capturing:** `article:published_time` and JSON-LD `dateModified` were both
+  present; the page had been revised ~2 years after publication (new model names, a "landscape has
+  changed" banner). The converter should pull both dates into provenance automatically.
+- **No embedded instructions or sensitive data found**; source-as-data rule was not exercised.
+- **Gate outcome:** source page + 2 new concept pages (`concept-c`,
+  `concept-d`) + short links from 2 existing pages. User picked all four focus
+  areas (pattern choice, vault mapping, ACI, practical angle).
