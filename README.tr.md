@@ -43,6 +43,7 @@ adımlarını izle.
 - Obsidian
 - Git
 - Python 3.10+ (hook'lar için)
+- pypdf (`pip install pypdf`), PDF kaynaklar için; daha iyi metin çıkarımı için poppler isteğe bağlı
 
 ## Teşekkür
 

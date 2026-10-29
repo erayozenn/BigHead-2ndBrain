@@ -42,6 +42,7 @@ Then run the init skill in an empty folder and follow [docs/obsidian-setup.md](d
 - Obsidian
 - Git
 - Python 3.10+ (for hooks)
+- pypdf (`pip install pypdf`) for PDF sources; poppler optional for better text extraction
 
 ## Credits
 
