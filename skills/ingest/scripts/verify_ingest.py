@@ -9,7 +9,10 @@ Checks on the given pages:
   - "For future agent" summary callout directly after the frontmatter (wiki pages)
   - every wikilink resolves to exactly one file
   - quoted spans (4+ words) appear in a source text, after normalization (ligatures,
-    curly quotes, dashes, hyphenated line breaks, whitespace, case)
+    curly quotes, dashes, hyphenated line breaks, whitespace, case). Source texts are the
+    --source-text files plus every raw/ file in the page's `sources:` frontmatter (markdown and
+    text directly; PDFs when pypdf is installed). System files (hot, index, log, ...) are skipped.
+    A warning whose quote is already in the page's git HEAD version is marked "(pre-existing)".
 Vault-wide checks:
   - duplicate basenames outside raw/ (and wiki vs raw)
   - hot.md <= 500 words
@@ -20,10 +23,16 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 import unicodedata
 from collections import defaultdict
 from pathlib import Path
+
+try:
+    import pypdf  # optional: lets the quote check read PDFs listed in `sources:`
+except ImportError:
+    pypdf = None
 
 SKIP_DIRS = {".git", ".obsidian", ".claude", ".trash", "node_modules"}
 SYSTEM_FILES = {"CLAUDE.md", "index.md", "log.md", "hot.md", "Threads.md",
@@ -45,14 +54,64 @@ class Report:
     def __init__(self) -> None:
         self.errors = 0
         self.warnings = 0
+        self.preexisting = 0
 
     def error(self, where: str, msg: str) -> None:
         self.errors += 1
         print(f"ERROR {where}: {msg}")
 
-    def warn(self, where: str, msg: str) -> None:
+    def warn(self, where: str, msg: str, preexisting: bool = False) -> None:
         self.warnings += 1
-        print(f"WARN  {where}: {msg}")
+        self.preexisting += preexisting
+        print(f"WARN  {where}: {msg}{' (pre-existing)' if preexisting else ''}")
+
+    def note(self, msg: str) -> None:
+        print(f"NOTE  {msg}")
+
+
+class SourceTexts:
+    """Normalized texts of raw/ files, loaded on first use."""
+
+    def __init__(self, vault: Path, report: Report) -> None:
+        self.vault = vault
+        self.report = report
+        self.cache: dict[str, str | None] = {}
+
+    def get(self, target: str) -> str | None:
+        rel = target.strip().replace("\\", "/").lstrip("/")
+        if rel not in self.cache:
+            self.cache[rel] = self._load(rel)
+        return self.cache[rel]
+
+    def _load(self, rel: str) -> str | None:
+        path = self.vault / rel
+        if not path.exists() and (self.vault / f"{rel}.md").exists():
+            path = self.vault / f"{rel}.md"
+        if not path.is_file():
+            return None
+        if path.suffix.lower() == ".pdf":
+            if pypdf is None:
+                self.report.note(f"pypdf not installed; quote check cannot read {rel}")
+                return None
+            try:
+                reader = pypdf.PdfReader(str(path))
+                return normalize("\n".join(p.extract_text() or "" for p in reader.pages))
+            except Exception as exc:  # broken PDFs: skip, do not fail the check
+                self.report.note(f"could not extract text from {rel}: {exc}")
+                return None
+        if path.suffix.lower() in (".md", ".txt"):
+            return normalize(path.read_text(encoding="utf-8", errors="replace"))
+        return None
+
+
+def head_version(vault: Path, rel: str) -> str | None:
+    """The page as committed at HEAD, or None (new file, no git)."""
+    try:
+        out = subprocess.run(["git", "-C", str(vault), "show", f"HEAD:{rel}"],
+                             capture_output=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.decode("utf-8", errors="replace") if out.returncode == 0 else None
 
 
 def split_frontmatter(text: str) -> tuple[dict[str, str] | None, str]:
@@ -115,7 +174,7 @@ def resolve_link(target: str, by_name: dict, rel_paths: set) -> int:
 
 
 def check_page(page: Path, vault: Path, by_name: dict, rel_paths: set,
-               sources: list[str], report: Report) -> None:
+               given: list[str], raw: SourceTexts, report: Report) -> None:
     where = page.relative_to(vault).as_posix()
     text = page.read_text(encoding="utf-8")
     if text.startswith("﻿"):
@@ -151,14 +210,28 @@ def check_page(page: Path, vault: Path, by_name: dict, rel_paths: set,
         elif hits > 1:
             report.error(where, f"ambiguous link [[{m.group(1)}]] ({hits} matches)")
 
-    if sources:
-        for m in QUOTE_RE.finditer(prose):
-            quote = m.group(1) or m.group(2)
-            if len(quote.split()) < MIN_QUOTE_WORDS:
-                continue
-            nq = normalize(quote)
-            if not any(nq in s for s in sources):
-                report.warn(where, f"quote not found verbatim in source text: \"{quote[:70]}\"")
+    if is_system:
+        return
+    sources = list(given)
+    for m in WIKILINK_RE.finditer((fm or {}).get("sources", "")):
+        if m.group(1).strip().startswith("raw/"):
+            text = raw.get(m.group(1))
+            if text is not None:
+                sources.append(text)
+    quotes = [q for m in QUOTE_RE.finditer(prose)
+              if len((q := m.group(1) or m.group(2)).split()) >= MIN_QUOTE_WORDS]
+    if quotes and not sources:
+        report.note(f"{where}: no readable source text; quote check skipped")
+        return
+    head = None
+    for quote in quotes:
+        nq = normalize(quote)
+        if any(nq in s for s in sources):
+            continue
+        if head is None:
+            head = normalize(head_version(vault, where) or "")
+        report.warn(where, f"quote not found verbatim in source text: \"{quote[:70]}\"",
+                    preexisting=bool(head) and nq in head)
 
 
 def check_vault(vault: Path, files: list[Path], report: Report) -> None:
@@ -198,10 +271,9 @@ def main() -> None:
     report = Report()
     files = vault_files(vault)
     by_name, rel_paths = build_link_index(vault, files)
-    sources = [normalize(Path(s).read_text(encoding="utf-8", errors="replace"))
-               for s in args.source_text]
-    if not sources:
-        print("NOTE  no --source-text given; quote check skipped")
+    given = [normalize(Path(s).read_text(encoding="utf-8", errors="replace"))
+             for s in args.source_text]
+    raw = SourceTexts(vault, report)
 
     for p in args.pages:
         page = Path(p)
@@ -209,10 +281,11 @@ def main() -> None:
         if not page.exists():
             report.error(p, "page does not exist")
             continue
-        check_page(page.resolve(), vault, by_name, rel_paths, sources, report)
+        check_page(page.resolve(), vault, by_name, rel_paths, given, raw, report)
     check_vault(vault, files, report)
 
-    print(f"\n{report.errors} error(s), {report.warnings} warning(s)")
+    pre = f" ({report.preexisting} pre-existing)" if report.preexisting else ""
+    print(f"\n{report.errors} error(s), {report.warnings} warning(s){pre}")
     sys.exit(1 if report.errors else 0)
 
 
