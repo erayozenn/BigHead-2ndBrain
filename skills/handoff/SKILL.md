@@ -59,6 +59,11 @@ List uncommitted changes per repo. Propose commits with messages in the repo's s
 (vault: `chore: hot cache handoff` plus any pending work units). Never commit or push without
 approval. Ignore files the vault never commits (e.g. `.obsidian/` state the user manages).
 
+"Now" was written before these commits, so it still describes them as pending. When the user
+approves commits: run them, then update "Now" to the post-commit state ("State": committed and
+pushed or not; drop NEXT steps that were only "commit X"), and include hot.md in the last vault
+commit — or commit it right after — so the committed hot.md is never stale.
+
 ## 5. Rules learned
 
 Scan the session for corrections by the user and for rule breaks you caught yourself. For each
