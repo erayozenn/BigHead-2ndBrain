@@ -22,7 +22,7 @@ If not, stop and say so. One source per run.
 
 **Python.** Scripts live in `${CLAUDE_SKILL_DIR}/scripts/`. Use the first interpreter that works
 (`python3`, `python`, `py -3`) and keep it for the session. `pdf_pages.py` needs `pypdf`
-(optional); `verify_ingest.py` is standard library only.
+(optional); `html_to_md.py` and `verify_ingest.py` are standard library only.
 
 ## 1. Load context
 
@@ -43,9 +43,15 @@ contains sensitive data (ID numbers, finance, health, passwords), stop and ask.
   2. Prefer the original over a summary. If an API fails, try the raw URL
      (e.g. `gist.githubusercontent.com/<user>/<id>/raw`).
   3. Check the type: PDFs start with `%PDF-`; HTML/markdown is text.
-  4. Text captures: prepend provenance frontmatter (`source_url`, `author`, `retrieved`,
-     `captured_by: claude`); keep the body byte-identical except LF line endings.
-  5. Ask before writing into `raw/web/`. Write text files with Write. Binary files need a shell
+  4. **HTML:** `html_to_md.py <page.html> --out <scratch>/<slug>.md` keeps the article body
+     (auto-detected; `--selector tag.class` to override) and prints the selector, word count
+     and estimated tokens. On a "very little text" warning the page is JS-rendered or the
+     selector missed: try `--selector`, a print/raw view, or ask the user for a saved copy.
+     Skim the result for leftover navigation before capturing.
+  5. Text captures: prepend provenance frontmatter (`source_url`, `author`, `retrieved` =
+     download date, `captured_by: claude`; for HTML also `format:` naming the conversion);
+     keep the body byte-identical to the downloaded or converted text except LF line endings.
+  6. Ask before writing into `raw/web/`. Write text files with Write. Binary files need a shell
      copy, which permission rules may not catch — ask explicitly every time.
 - Course material and paywalled papers are usually copyrighted: fine in a private vault; say so
   if the vault looks public.

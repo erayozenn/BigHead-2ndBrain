@@ -215,6 +215,9 @@ Source: a public ML course web page on classification metrics
   a new stdlib `html.parser` script (~120 lines). Site-specific body selector this time
   (`div.devsite-article-body`, not `<article>`). Strong case for `scripts/html_to_md.py` with a
   selector list (`article`, `main`, `div.devsite-article-body`, `--selector` override).
+  **Done 2026-10-30:** `scripts/html_to_md.py` (stdlib tree builder + renderer). Regression on
+  both test pages: The test-2 page output matches the test-2 capture word for word except two places
+  where the old converter misplaced bold/link markers; test-4 table and quiz now render properly.
 - **Converter limits:** a table with multi-paragraph cells and the interactive quiz block came out
   flattened (text complete, layout lost). Recorded in the capture's `format:` key. Acceptable for
   a register-only source; a real converter should emit cell `<br>` and block-level quiz items.
