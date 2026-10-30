@@ -38,8 +38,8 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 
 ## Roadmap (current: Phase 2a)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
-2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer, public ·
-2b lint + PostToolUse validation hook + PreToolUse guard hook ·
+2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
+2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public ·
 2c On demand: today, weekly, research-deep, challenge ·
 3 Search & eval (BM25 + Turkish stemming, queries.json, recall/MRR) · 4 Custom IDE (form TBD) · 5 Advanced.
 
