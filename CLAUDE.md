@@ -14,6 +14,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 | .claude-plugin/marketplace.json | Single-plugin marketplace (`/plugin marketplace add <owner>/<repo>`). |
 | skills/ | Workflows (ingest, query, save, handoff, lint, ...) — Phase 2. |
 | hooks/ | Validation + guard hooks (Python, stdlib only) — Phase 2b. |
+| lib/ | Shared Python modules (vault_schema.py: schema + page checks) for hooks and skill scripts. |
 | templates/manifest.json | Maps template files to their vault destinations; lists vault dirs. |
 | templates/vault/ | Files copied into a new vault. Live config names carry `.tmpl` so they don't act on this repo. |
 | docs/ | architecture.md, obsidian-setup.md. |
