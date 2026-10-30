@@ -34,12 +34,19 @@ wiki/    pages Claude writes: sources, concepts, entities, syntheses
 notes/   your own notes (never edited by Claude)
 ```
 
-## Install (planned for v0.1)
+## Install
+
+In your shell:
 
 ```
-/plugin marketplace add erayozenn/Your-2ndBrain
-/plugin install your-2ndbrain@your-2ndbrain
+claude plugin marketplace add erayozenn/Your-2ndBrain
+claude plugin install your-2ndbrain@your-2ndbrain
+claude plugin list        # your-2ndbrain@your-2ndbrain  Status: ✔ enabled
 ```
+
+Or inside a Claude Code session: `/plugin marketplace add erayozenn/Your-2ndBrain`, then
+`/plugin install your-2ndbrain@your-2ndbrain` — this opens the plugin's panel, where you
+confirm the install. Start a new session (or run `/reload-plugins`) afterwards.
 
 Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault) and follow [docs/obsidian-setup.md](docs/obsidian-setup.md).
 

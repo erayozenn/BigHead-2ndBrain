@@ -35,6 +35,7 @@ class LintTest(unittest.TestCase):
         self.vault = self.tmp.name
         write(self.vault, "CLAUDE.md", "# Vault Schema & Rules\n\n## Layout\n| Path | Owner |\n|---|---|\n"
                                        "| raw/ | user |\n| wiki/concepts/, wiki/ghost/ | claude |\n"
+                                       "| .cache/raw-text/ | claude |\n"
                                        "| archive/YYYY-MM/ | shared |\n\n## Rules\nLink [[source-page]].\n")
         write(self.vault, "raw/paper.md", "source\n")
         write(self.vault, "index.md", "# Index\n- [[a]]\n- [[b]]\n")

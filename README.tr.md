@@ -34,12 +34,19 @@ wiki/    Claude'un yazdığı sayfalar: kaynaklar, kavramlar, varlıklar, sentez
 notes/   senin notların (Claude asla düzenlemez)
 ```
 
-## Kurulum (v0.1 için planlanıyor)
+## Kurulum
+
+Terminalde:
 
 ```
-/plugin marketplace add erayozenn/Your-2ndBrain
-/plugin install your-2ndbrain@your-2ndbrain
+claude plugin marketplace add erayozenn/Your-2ndBrain
+claude plugin install your-2ndbrain@your-2ndbrain
+claude plugin list        # your-2ndbrain@your-2ndbrain  Status: ✔ enabled
 ```
+
+Ya da bir Claude Code oturumunda: `/plugin marketplace add erayozenn/Your-2ndBrain`, ardından
+`/plugin install your-2ndbrain@your-2ndbrain` — bu, plugin'in panelini açar; kurulumu orada
+onaylarsın. Sonra yeni bir oturum başlat (veya `/reload-plugins` çalıştır).
 
 Ardından boş bir klasörde (veya mevcut bir Obsidian vault'unda) `/your-2ndbrain:init` çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
 adımlarını izle.

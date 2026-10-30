@@ -13,7 +13,7 @@ Checks (the vault CLAUDE.md "Lint" list, minus the judgment checks):
   ERROR hot.md over 500 words, index.md over 16 KiB
   WARN  orphan pages (wiki/ pages no other file links to)
   WARN  wiki/ pages missing from index.md
-  WARN  paths in the vault CLAUDE.md "Layout" table that do not exist
+  WARN  paths in the vault CLAUDE.md "Layout" table that do not exist (except .cache/)
 
 Exit code 1 if any ERROR, else 0.
 """
@@ -71,7 +71,8 @@ def layout_paths(claude_md: str) -> list[str]:
             continue
         for p in m.group(1).split(","):
             p = p.strip().strip("`")
-            if p and "YYYY" not in p and "<" not in p:
+            # .cache/ is derived and created on first use; a fresh vault has none
+            if p and "YYYY" not in p and "<" not in p and not p.startswith(".cache"):
                 paths.append(p)
     return paths
 

@@ -1,5 +1,6 @@
 {
   "name": "your-2ndbrain",
+  "description": "Your 2ndBrain: a Claude Code plugin for an LLM-maintained Obsidian second brain.",
   "owner": {
     "name": "erayozenn"
   },
