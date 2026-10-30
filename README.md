@@ -49,6 +49,7 @@ Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault
 - Obsidian
 - Git
 - Python 3.10+ (for hooks and skill scripts)
+- Windows: Git for Windows (Git Bash) — the guard hook runs through bash
 - Optional: pypdf (`pip install pypdf`) for PDFs longer than 10 pages and for cheap text-only
   reads. Without it, `ingest` reads PDFs of up to 10 pages natively.
 
@@ -66,6 +67,23 @@ Claude also picks these skills up on its own when your request matches (e.g. "in
 
 > **Editing a skill?** Run `/reload-plugins` afterwards — otherwise the old text keeps running in
 > the current session.
+
+## Guard hook
+
+The plugin ships a `PreToolUse` hook that runs before every `Write`, `Edit` and `NotebookEdit`
+inside a vault (a folder with `raw/` and a `CLAUDE.md` starting with `# Vault Schema & Rules`).
+It denies:
+
+- changes to existing files under `raw/`, and new raw files outside `raw/web/`
+- edits to notes whose frontmatter says `author: me`
+- anything under `.obsidian/`
+
+Outside a vault it does nothing. If the guard itself fails inside a vault, it blocks the edit
+rather than letting it through.
+
+**Limit:** the guard sees file tools only. Shell commands (`rm`, `del`, `python -c "os.remove(...)"`,
+`>` redirection) are not inspected; the vault's permission rules deny the common ones, and git
+makes the rest reversible. If no Python 3 is found, the hook prints a warning and stays inactive.
 
 ## Credits
 

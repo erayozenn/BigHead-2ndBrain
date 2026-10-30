@@ -57,6 +57,9 @@ The vault is the single source of truth; Claude Code's own auto-memory only poin
 1. Rules in the vault's CLAUDE.md.
 2. Permission rules in the vault's `.claude/settings.json` (deny `.obsidian/` and secrets,
    ask before any write to `raw/`, deny shell move/rename/delete). Treated as a safety net, not a wall.
-3. Hooks (Phase 2b): a PreToolUse guard (no edits to existing raw files or `author: me` notes) and a
-   PostToolUse validator (frontmatter, summary callout, dates).
+3. Hooks: `hooks/guard.py`, a PreToolUse guard on Write/Edit/NotebookEdit — denies changes to
+   existing raw files, new raw files outside `raw/web/`, edits to `author: me` notes and anything
+   under `.obsidian/`. Inert outside a vault; fails closed inside one. Shell commands are not
+   inspected (layer 2 and git cover them). Tests: `python -m unittest discover hooks/tests`.
+   Planned (Phase 2b): a PostToolUse validator (frontmatter, summary callout, dates).
 4. Git: every change is reversible.

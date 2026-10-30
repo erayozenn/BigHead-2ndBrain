@@ -36,7 +36,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
    `claude -p`, the Agent SDK or an API key is optional and documented as such.
 9. Before each git operation, state which repo you are in (kit vs vault).
 
-## Roadmap (current: Phase 2a)
+## Roadmap (current: Phase 2b — guard hook done; next lint + PostToolUse validator)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public ·

@@ -50,6 +50,7 @@ adımlarını izle.
 - Obsidian
 - Git
 - Python 3.10+ (hook'lar ve skill script'leri için)
+- Windows: Git for Windows (Git Bash) — guard hook bash üzerinden çalışır
 - İsteğe bağlı: pypdf (`pip install pypdf`), 10 sayfadan uzun PDF'ler ve ucuz salt-metin okuma
   için. Kurulu değilse `ingest` 10 sayfaya kadar olan PDF'leri doğrudan okur.
 
@@ -67,6 +68,23 @@ adımlarını izle.
 
 > **Bir skill'i mi düzenledin?** Ardından `/reload-plugins` çalıştır — yoksa mevcut oturumda eski
 > metin çalışmaya devam eder.
+
+## Guard hook
+
+Plugin, bir vault içinde (`raw/` klasörü ve `# Vault Schema & Rules` ile başlayan bir `CLAUDE.md`
+olan klasör) her `Write`, `Edit` ve `NotebookEdit` öncesinde çalışan bir `PreToolUse` hook'u içerir.
+Şunları reddeder:
+
+- `raw/` altındaki mevcut dosyalarda değişiklik ve `raw/web/` dışında yeni raw dosyası
+- frontmatter'ında `author: me` olan notlarda düzenleme
+- `.obsidian/` altındaki her şey
+
+Vault dışında hiçbir şey yapmaz. Guard vault içinde kendisi hata verirse, düzenlemeyi geçirmek
+yerine engeller.
+
+**Sınır:** guard yalnızca dosya araçlarını görür. Shell komutları (`rm`, `del`,
+`python -c "os.remove(...)"`, `>` yönlendirme) incelenmez; yaygın olanları vault'un izin kuralları
+reddeder, kalanını git geri alınabilir kılar. Python 3 bulunamazsa hook bir uyarı yazar ve devre dışı kalır.
 
 ## Teşekkür
 
