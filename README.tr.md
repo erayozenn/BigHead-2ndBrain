@@ -69,9 +69,9 @@ adımlarını izle.
 > **Bir skill'i mi düzenledin?** Ardından `/reload-plugins` çalıştır — yoksa mevcut oturumda eski
 > metin çalışmaya devam eder.
 
-## Guard hook
+## Hook'lar
 
-Plugin, bir vault içinde (`raw/` klasörü ve `# Vault Schema & Rules` ile başlayan bir `CLAUDE.md`
+**Guard.** Plugin, bir vault içinde (`raw/` klasörü ve `# Vault Schema & Rules` ile başlayan bir `CLAUDE.md`
 olan klasör) her `Write`, `Edit` ve `NotebookEdit` öncesinde çalışan bir `PreToolUse` hook'u içerir.
 Şunları reddeder:
 
@@ -84,7 +84,16 @@ yerine engeller.
 
 **Sınır:** guard yalnızca dosya araçlarını görür. Shell komutları (`rm`, `del`,
 `python -c "os.remove(...)"`, `>` yönlendirme) incelenmez; yaygın olanları vault'un izin kuralları
-reddeder, kalanını git geri alınabilir kılar. Python 3 bulunamazsa hook bir uyarı yazar ve devre dışı kalır.
+reddeder, kalanını git geri alınabilir kılar.
+
+**Validator.** Bir `PostToolUse` hook'u, Claude'un az önce yazdığı veya düzenlediği her vault
+sayfasını şemaya göre kontrol eder: zorunlu frontmatter alanları ve izin verilen değerler, geçerli
+tarihler (`updated`, `created`'dan önce ya da gelecekte olamaz), "For future agent" özet callout'u,
+geçmiş bir "Goes stale" ayı, BOM/CRLF. Sorunlar doğrudan Claude'a döner ve Claude sayfayı aynı turda
+düzeltir. `raw/`, `notes/`, sistem dosyaları ve `author: me` notları atlanır. Validator kendi
+hatalarında hiçbir şeyi engellemez.
+
+Python 3 bulunamazsa iki hook da bir uyarı yazar ve devre dışı kalır.
 
 ## Teşekkür
 

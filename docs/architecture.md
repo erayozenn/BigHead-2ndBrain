@@ -60,6 +60,9 @@ The vault is the single source of truth; Claude Code's own auto-memory only poin
 3. Hooks: `hooks/guard.py`, a PreToolUse guard on Write/Edit/NotebookEdit — denies changes to
    existing raw files, new raw files outside `raw/web/`, edits to `author: me` notes and anything
    under `.obsidian/`. Inert outside a vault; fails closed inside one. Shell commands are not
-   inspected (layer 2 and git cover them). Tests: `python -m unittest discover hooks/tests`.
-   Planned (Phase 2b): a PostToolUse validator (frontmatter, summary callout, dates).
+   inspected (layer 2 and git cover them). `hooks/validate.py`, a PostToolUse validator on
+   Write/Edit — checks the written page against `lib/vault_schema.py` (frontmatter keys and values,
+   dates, summary callout, past "Goes stale" month, BOM/CRLF) and returns problems as a `block`
+   decision so Claude fixes them in the same turn; never blocks on its own errors.
+   Tests: `python -m unittest discover hooks/tests` and `python -m unittest discover lib/tests`.
 4. Git: every change is reversible.

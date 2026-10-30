@@ -1,5 +1,5 @@
 {
-  "description": "Your 2ndBrain guard: protects raw/ sources, author: me notes and .obsidian/ from file-tool edits.",
+  "description": "Your 2ndBrain: guard (protects raw/, author: me notes, .obsidian/) and schema validator for vault pages.",
   "hooks": {
     "PreToolUse": [
       {
@@ -8,6 +8,18 @@
           {
             "type": "command",
             "command": "for py in python3 python 'py -3'; do if $py -c '' >/dev/null 2>&1; then exec $py \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.py\"; fi; done; echo '[your-2ndbrain guard] no Python 3 found; guard inactive' >&2; exit 1",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for py in python3 python 'py -3'; do if $py -c '' >/dev/null 2>&1; then exec $py \"${CLAUDE_PLUGIN_ROOT}/hooks/validate.py\"; fi; done; echo '[your-2ndbrain validator] no Python 3 found; validator inactive' >&2; exit 1",
             "timeout": 10
           }
         ]

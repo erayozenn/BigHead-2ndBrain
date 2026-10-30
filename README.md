@@ -68,9 +68,9 @@ Claude also picks these skills up on its own when your request matches (e.g. "in
 > **Editing a skill?** Run `/reload-plugins` afterwards — otherwise the old text keeps running in
 > the current session.
 
-## Guard hook
+## Hooks
 
-The plugin ships a `PreToolUse` hook that runs before every `Write`, `Edit` and `NotebookEdit`
+**Guard.** The plugin ships a `PreToolUse` hook that runs before every `Write`, `Edit` and `NotebookEdit`
 inside a vault (a folder with `raw/` and a `CLAUDE.md` starting with `# Vault Schema & Rules`).
 It denies:
 
@@ -83,7 +83,16 @@ rather than letting it through.
 
 **Limit:** the guard sees file tools only. Shell commands (`rm`, `del`, `python -c "os.remove(...)"`,
 `>` redirection) are not inspected; the vault's permission rules deny the common ones, and git
-makes the rest reversible. If no Python 3 is found, the hook prints a warning and stays inactive.
+makes the rest reversible.
+
+**Validator.** A `PostToolUse` hook checks every vault page Claude just wrote or edited against
+the schema: required frontmatter keys and allowed values, valid dates (`updated` not before
+`created`, not in the future), the "For future agent" summary callout, a past "Goes stale" month,
+BOM/CRLF. Problems go straight back to Claude, which fixes the page in the same turn. `raw/`,
+`notes/`, system files and `author: me` notes are skipped. The validator never blocks on its own
+errors.
+
+If no Python 3 is found, both hooks print a warning and stay inactive.
 
 ## Credits
 
