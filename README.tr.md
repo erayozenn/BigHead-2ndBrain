@@ -63,6 +63,7 @@ adımlarını izle.
 | `/your-2ndbrain:query <soru> [quick\|standard\|deep]` | Wiki'den cevap verir — hot cache, index, sonra okuma bütçesi içinde en ilgili sayfalar — her iddiayı kaynaklar, wiki yetmediğinde bunu açıkça söyler. |
 | `/your-2ndbrain:save [başlık veya kaydedilecek şey]` | Oturumdaki iyi bir cevabı veya karşılaştırmayı sentez sayfası olarak kaydeder (veya mevcut birini genişletir); kaynakları ve belirsizlik işaretlerini korur. |
 | `/your-2ndbrain:handoff [sonraki oturum için not]` | Oturum sonu devri: hot cache'in "Now" bölümünü yeniden yazar, kelime sınırında tutar, commit edilmemiş işi bildirir, düzeltmelerinden öğrenilen kuralları önerir. |
+| `/your-2ndbrain:lint [quick\|standard\|deep]` | Wiki'nin sağlık kontrolü: script taraması (şema, kırık linkler, kopyalar, sahipsiz sayfalar, index kapsamı, boyutlar, eskimiş sayfalar) ve okuma bütçesi içinde yargı kontrolleri (çelişkiler, tarihsiz bilgiler, kaynak eksikleri, sayfası olmayan kavramlar). Önce rapor verir; yalnızca onayladıklarını düzeltir. |
 
 İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").
 

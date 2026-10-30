@@ -62,6 +62,7 @@ Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault
 | `/your-2ndbrain:query <question> [quick\|standard\|deep]` | Answer from the wiki — hot cache, index, then the most relevant pages within a read budget — with every claim cited and an explicit note when the wiki is not enough. |
 | `/your-2ndbrain:save [title or what to save]` | Save a good answer or comparison from the session as a synthesis page (or extend one), keeping citations and uncertainty markers. |
 | `/your-2ndbrain:handoff [note for the next session]` | End-of-session handoff: rewrite the hot cache's "Now", keep it within its word limit, flag uncommitted work, propose rules learned from your corrections. |
+| `/your-2ndbrain:lint [quick\|standard\|deep]` | Health-check the wiki: a script pass (schema, broken links, duplicates, orphans, index coverage, sizes, stale pages) plus judgment checks within a read budget (contradictions, undated facts, citation gaps, missing concept pages). Reports first; fixes only what you approve. |
 
 Claude also picks these skills up on its own when your request matches (e.g. "ingest this paper").
 
