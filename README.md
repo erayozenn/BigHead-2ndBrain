@@ -1,8 +1,8 @@
-# Your_2ndBRAIN
+# Your 2ndBrain
 
-![Your_2ndBRAIN — your sources in, a linked, cited wiki out](docs/images/hero.svg)
+![Your 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
 
-> Status: v0.1 in preparation. Working name; the final name is chosen before the public release.
+> Status: v0.1 in preparation.
 
 A personal second brain for **Claude Code + Obsidian**, built on Andrej Karpathy's
 "LLM Wiki" pattern: you collect immutable raw sources, Claude compiles and maintains a linked
@@ -37,7 +37,8 @@ notes/   your own notes (never edited by Claude)
 ## Install (planned for v0.1)
 
 ```
-/plugin install your-2ndbrain --marketplace <owner>/<repo>
+/plugin marketplace add erayozenn/Your-2ndBrain
+/plugin install your-2ndbrain@your-2ndbrain
 ```
 
 Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault) and follow [docs/obsidian-setup.md](docs/obsidian-setup.md).

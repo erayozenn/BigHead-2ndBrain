@@ -1,4 +1,4 @@
-# Your_2ndBRAIN — Kit Development Rules
+# Your 2ndBrain — Kit Development Rules
 
 This repo is the open-source ENGINE: a Claude Code plugin (skills, hooks) plus vault
 templates. It is NOT a vault. Personal vaults are separate, private repos.

@@ -1,8 +1,8 @@
-# Your_2ndBRAIN
+# Your 2ndBrain
 
-![Your_2ndBRAIN — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
+![Your 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
 
-> Durum: v0.1 hazırlanıyor. Çalışma adı; kesin isim herkese açık sürümden önce verilecek.
+> Durum: v0.1 hazırlanıyor.
 
 **Claude Code + Obsidian** için kişisel bir ikinci beyin. Andrej Karpathy'nin "LLM Wiki"
 desenine dayanır: sen değişmez ham kaynakları toplarsın, Claude bunlardan birbirine bağlı bir
@@ -37,7 +37,8 @@ notes/   senin notların (Claude asla düzenlemez)
 ## Kurulum (v0.1 için planlanıyor)
 
 ```
-/plugin install your-2ndbrain --marketplace <owner>/<repo>
+/plugin marketplace add erayozenn/Your-2ndBrain
+/plugin install your-2ndbrain@your-2ndbrain
 ```
 
 Ardından boş bir klasörde (veya mevcut bir Obsidian vault'unda) `/your-2ndbrain:init` çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
