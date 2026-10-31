@@ -70,8 +70,16 @@ Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault
 | `/your-2ndbrain:save [title or what to save]` | Save a good answer or comparison from the session as a synthesis page (or extend one), keeping citations and uncertainty markers. |
 | `/your-2ndbrain:handoff [note for the next session]` | End-of-session handoff: rewrite the hot cache's "Now", keep it within its word limit, flag uncommitted work, propose rules learned from your corrections. |
 | `/your-2ndbrain:lint [quick\|standard\|deep]` | Health-check the wiki: a script pass (schema, broken links, duplicates, orphans, index coverage, sizes, stale pages) plus judgment checks within a read budget (contradictions, undated facts, citation gaps, missing concept pages). Reports first; fixes only what you approve. |
+| `/your-2ndbrain:teach-back <topic or notes/ file>` | Check your understanding: you explain a topic in your own words, Claude compares it with the wiki and returns gaps, errors and vague spots as questions. Writes nothing. |
 
 Claude also picks these skills up on its own when your request matches (e.g. "ingest this paper").
+
+**Study mode.** The plugin also ships a `tutor` [output style](https://code.claude.com/docs/en/output-styles):
+for study questions Claude asks for your guess first, gives hints in steps and the full answer
+only when you ask; vault operations (ingest, lint, …) run as usual. Turn it on with
+`/output-style your-2ndbrain:tutor`, and back with `/output-style default`. It is never on
+by default. Ingest also offers (once, skippable) to take 2–5 of your questions before reading a
+paper or course source and answers them on the source page.
 
 > **Editing a skill?** Run `/reload-plugins` afterwards — otherwise the old text keeps running in
 > the current session.

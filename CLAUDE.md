@@ -12,7 +12,8 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 |---|---|
 | .claude-plugin/plugin.json | Plugin manifest. |
 | .claude-plugin/marketplace.json | Single-plugin marketplace (`/plugin marketplace add <owner>/<repo>`). |
-| skills/ | Workflows (ingest, query, save, handoff, lint, ...) — Phase 2. |
+| skills/ | Workflows (ingest, query, save, handoff, lint, teach-back, ...) — Phase 2. |
+| output-styles/ | Opt-in output styles (tutor). Never `force-for-plugin`. |
 | hooks/ | Validation + guard hooks (Python, stdlib only) — Phase 2b. |
 | lib/ | Shared Python modules (vault_schema.py: schema + page checks) for hooks and skill scripts. |
 | templates/manifest.json | Maps template files to their vault destinations; lists vault dirs. |
@@ -37,11 +38,12 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
    `claude -p`, the Agent SDK or an API key is optional and documented as such.
 9. Before each git operation, state which repo you are in (kit vs vault).
 
-## Roadmap (current: Phase 2b — guard hook done; next lint + PostToolUse validator)
+## Roadmap (current: Phase 2b code done + learning layer start; next credits list, then public)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public ·
-2c On demand: today, weekly, research-deep, challenge ·
+2c On demand: today, weekly, research-deep, challenge; learning layer (tutor style, teach-back and
+question-first ingest done; review cards, exam later) ·
 3 Search & eval (BM25 + Turkish stemming, queries.json, recall/MRR) · 4 Custom IDE (form TBD) · 5 Advanced.
 
 ## Commits

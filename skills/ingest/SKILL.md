@@ -62,6 +62,13 @@ Pick `source_type` (paper, course, transcript, web, code, decision, conversation
 `authority` (official, primary, secondary, community). Tell the user the plan and its cost before
 reading anything large.
 
+**Questions first (optional).** For a `paper` or `course` source, in the same message as the plan,
+offer once: "Before I read it — want to write 2–5 questions you expect it to answer, plus a
+one-line guess at the main point? (skip = go on)". Generating questions before reading helps the
+user retain the source. Never insist and never ask again in this run; for other source types
+offer it only if the user asks for a study ingest. Keep their questions and guess for steps 5
+and 7.
+
 ### PDFs
 
 Once the PDF is in `raw/`: `pdf_pages.py cache --vault . <raw pdf>` writes its text to
@@ -130,8 +137,10 @@ While extracting:
 ## 5. Discuss with the user
 
 Present 3–6 key ideas, focused on the user's interests, and how they connect to existing pages
-in index.md. Ask the user 1–3 questions (what matters to them, what they doubt, what to link).
-Wait for answers before writing.
+in index.md. If the user wrote questions first (step 3): answer each from the source with its
+location, say plainly which ones the source does not answer, and compare their guess with what
+the source says. Ask the user 1–3 questions (what matters to them, what they doubt, what to
+link). Wait for answers before writing.
 
 ## 6. Compile-value gate (propose, user confirms)
 
@@ -161,6 +170,10 @@ and citations. In addition:
 - **Single-paper numbers:** a section-level "(provisional)" note is fine instead of marking every
   number; say that the numbers come from one source.
 - Course/source gaps go in an "Open questions" section.
+- **Reader's questions** (only if the user wrote questions first and a source page is written):
+  a section listing each question with a short cited answer, or "not answered by this source"
+  (those also go to "Open questions"). Write the questions as plain text, never in quote marks —
+  they are not from the source, and the quote check would flag them.
 
 Then update `index.md` (one line per new page), append to `log.md`
 (`## [YYYY-MM-DD] ingest | <title>`), and update hot.md "Recent changes" (keep ~5) and

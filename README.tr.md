@@ -71,8 +71,16 @@ adımlarını izle.
 | `/your-2ndbrain:save [başlık veya kaydedilecek şey]` | Oturumdaki iyi bir cevabı veya karşılaştırmayı sentez sayfası olarak kaydeder (veya mevcut birini genişletir); kaynakları ve belirsizlik işaretlerini korur. |
 | `/your-2ndbrain:handoff [sonraki oturum için not]` | Oturum sonu devri: hot cache'in "Now" bölümünü yeniden yazar, kelime sınırında tutar, commit edilmemiş işi bildirir, düzeltmelerinden öğrenilen kuralları önerir. |
 | `/your-2ndbrain:lint [quick\|standard\|deep]` | Wiki'nin sağlık kontrolü: script taraması (şema, kırık linkler, kopyalar, sahipsiz sayfalar, index kapsamı, boyutlar, eskimiş sayfalar) ve okuma bütçesi içinde yargı kontrolleri (çelişkiler, tarihsiz bilgiler, kaynak eksikleri, sayfası olmayan kavramlar). Önce rapor verir; yalnızca onayladıklarını düzeltir. |
+| `/your-2ndbrain:teach-back <konu veya notes/ dosyası>` | Anlayışını sına: bir konuyu kendi cümlelerinle açıklarsın, Claude bunu wiki ile karşılaştırır ve eksikleri, hataları, belirsiz noktaları soru olarak döner. Hiçbir şey yazmaz. |
 
 İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").
+
+**Çalışma modu.** Plugin ayrıca bir `tutor` [output style](https://code.claude.com/docs/en/output-styles)
+içerir: çalışma sorularında Claude önce senin tahminini ister, ipuçlarını kademeli verir, tam
+cevabı yalnızca sen istediğinde gösterir; vault işlemleri (ingest, lint, …) her zamanki gibi
+çalışır. `/output-style your-2ndbrain:tutor` ile açılır, `/output-style default` ile kapanır.
+Varsayılan olarak asla açık değildir. Ingest de makale veya ders kaynaklarında, okumadan önce
+2–5 sorunu almayı bir kez (atlanabilir) teklif eder ve bunları kaynak sayfasında cevaplar.
 
 > **Bir skill'i mi düzenledin?** Ardından `/reload-plugins` çalıştır — yoksa mevcut oturumda eski
 > metin çalışmaya devam eder.
