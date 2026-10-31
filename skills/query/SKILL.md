@@ -41,6 +41,24 @@ clearly needs more, say so and ask whether to continue at the next budget.
 hot.md is already loaded. Read `index.md`. Note the user's focus (hot.md "Key facts") and any
 recent changes that touch the question.
 
+## 1b. Route by question type
+
+Browsing a compiled wiki pays off for synthesis and costs many tokens for a single fact, so pick
+the path by the question. A budget the user gave always wins; otherwise the type sets it:
+
+| Type | Example | Path | Default budget |
+|---|---|---|---|
+| Lookup | a definition, one number, "where is X" | Grep terms + `aliases:`, read the 1–2 best pages; stop when answered | quick |
+| Synthesis | compare, relate, "what does the vault say about X" | an existing synthesis first (step 2.4), then index-led pages and one link hop | standard |
+| Multi-part | two or more distinct sub-questions | split into sub-questions (at most 4), run each as Lookup or Synthesis, then combine | standard; deep only if a part needs it |
+
+- Say the chosen type in one line before reading (e.g. "Lookup — quick budget"), so the user can
+  redirect.
+- A Lookup that finds no page after the Grep becomes a gap (step 5); do not widen to browsing
+  the whole wiki.
+- Multi-part: every sub-answer keeps its own citations — splitting is where unsupported claims
+  slip in, so a combined sentence cites each page it draws on.
+
 ## 2. Find pages
 
 1. Extract the key terms of the question in both the chat language and the wiki language
