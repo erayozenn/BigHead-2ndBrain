@@ -2,7 +2,10 @@
 
 ![Your 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
 
-> Status: v0.1 in preparation.
+> **Status: v0.1 — experimental.** Skills and the vault schema may still change between 0.x
+> versions. Updates never rewrite an existing vault; the first line of your vault's `CLAUDE.md`
+> shows which template it was made from. Tested on Windows so far; macOS and Linux reports are
+> welcome.
 
 A personal second brain for **Claude Code + Obsidian**, built on Andrej Karpathy's
 "LLM Wiki" pattern: you collect immutable raw sources, Claude compiles and maintains a linked

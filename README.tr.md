@@ -2,7 +2,10 @@
 
 ![Your 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
 
-> Durum: v0.1 hazırlanıyor.
+> **Durum: v0.1 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
+> değişebilir. Güncellemeler mevcut bir vault'u asla yeniden yazmaz; vault'unun `CLAUDE.md`
+> dosyasının ilk satırı hangi şablondan kurulduğunu gösterir. Şimdiye kadar Windows'ta test
+> edildi; macOS ve Linux geri bildirimleri memnuniyetle karşılanır.
 
 **Claude Code + Obsidian** için kişisel bir ikinci beyin. Andrej Karpathy'nin "LLM Wiki"
 desenine dayanır: sen değişmez ham kaynakları toplarsın, Claude bunlardan birbirine bağlı bir
