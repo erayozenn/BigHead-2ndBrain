@@ -38,13 +38,14 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
    `claude -p`, the Agent SDK or an API key is optional and documented as such.
 9. Before each git operation, state which repo you are in (kit vs vault).
 
-## Roadmap (current: Phase 2b code done + learning layer start; next credits list, then public)
+## Roadmap (current: Phase 2b code done + learning layer start; next credits list + sanitizer, then public as v0.x — "experimental, schema may change")
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public ·
 2c On demand: today, weekly, research-deep, challenge; learning layer (tutor style, teach-back and
 question-first ingest done; review cards, exam later) ·
-3 Search & eval (BM25 + Turkish stemming, queries.json, recall/MRR) · 4 Custom IDE (form TBD) · 5 Advanced.
+3 Search & eval (BM25 + Turkish stemming, queries.json, recall/MRR) · 4 Custom IDE — deferred
+indefinitely (2026-10-31; Obsidian + terminal is the interface, no plan) · 5 Advanced.
 
 ## Commits
 Conventional Commits (feat:, fix:, docs:, chore:). One logical change per commit.
