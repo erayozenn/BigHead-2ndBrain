@@ -46,7 +46,13 @@ Run (the first interpreter that works: `python3`, `python`, `py -3`):
 It is read-only and prints `ERROR` / `WARN` lines plus stats: schema problems, past "Goes
 stale" months, broken or ambiguous links, duplicate basenames, orphans, pages missing from
 index.md, hot.md / index.md size, Layout paths that do not exist. Keep the output for the report;
-do not re-check these by hand.
+do not re-check these by hand, and do not try to read the script — it lives in the plugin, outside
+the vault.
+
+**Scope by design:** `raw/` and `notes/` belong to the user and get no schema checks (links in
+`notes/` are still checked); system files need no frontmatter. Something you notice there (e.g. a
+user note with indented, invalid frontmatter) is a WARN to report for the user — not a blind spot
+or bug in the script.
 
 A Layout path that is missing because nothing has used it yet (e.g. an empty `areas/`) is fine
 when the folder is created on first use — say so instead of proposing a fix.

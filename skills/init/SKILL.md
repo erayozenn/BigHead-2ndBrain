@@ -70,8 +70,8 @@ shortest-path links, `notes/` and `raw/assets` folders, daily notes in `notes/da
 
 ## 6. Git (optional, only on request)
 
-Do not run git on your own. In the close, mention once that the vault can be versioned with git
-(every change reversible; the vault repo stays private). Only if the user asks: check whether
+Do not run git on your own. In the close, ask it as a choice (see step 7). Only if the user says
+yes: check whether
 the target is already inside a git repo (`git -C "<dir>" rev-parse --show-toplevel`) — if so,
 say which repo and ask before going on; otherwise `git init`, `git add -A`, and commit with
 `chore: vault created from your-2ndbrain template`. Never push, never add a remote.
@@ -83,5 +83,8 @@ Report in a few lines:
 - the identity card status (filled / placeholders left);
 - **next step:** open a new Claude Code session *in the vault folder* — CLAUDE.md, hot.md and
   `.claude/settings.json` load only at session start;
-- then the first ingest: `/your-2ndbrain:ingest <path-or-url>`;
-- the optional git line from step 6.
+- then the first ingest: `/your-2ndbrain:ingest <path-or-url>`.
+
+Then ask one choice question (not a line buried in the report): **"Put the vault under git
+now?"** — yes (recommended: every Claude edit becomes reviewable and reversible; the vault's
+rules assume commits; the repo stays local and private) / no, later. On yes, do step 6.

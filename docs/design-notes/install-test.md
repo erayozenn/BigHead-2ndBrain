@@ -32,8 +32,38 @@ setup stayed untouched; all functional checks ran from the installed cache copy,
   `bash` on PATH can be WSL's `bash.exe`; Claude Code runs hooks with Git Bash, so a harness
   must call Git Bash explicitly.
 
+## In-session test (2026-10-31, by hand)
+
+Plugin installed at user scope, `/your-2ndbrain:init` in an empty folder, then a new session in
+the new vault. Prompts asked Claude to really call the tool (otherwise the vault's CLAUDE.md
+makes it refuse before any hook runs).
+
+| # | Action | Expected | Result |
+|---|---|---|---|
+| 1 | `/your-2ndbrain:init` | vault created | created; identity card skipped by the tester |
+| 2 | Write `raw/test.md` | guard denies | denied ("New raw files may only be added under raw/web/") |
+| 3 | Write `raw/web/deneme.md` | permission prompt, then written | prompted (settings `ask` rule), written |
+| 4 | Edit `raw/web/deneme.md` | guard denies | denied |
+| 5 | Write `wiki/concepts/test-page.md` without frontmatter | written, validator reports, Claude fixes | "missing frontmatter" reported; Claude added frontmatter + summary in the same turn; second write silent |
+| 6 | Edit `notes/benim.md` (`author: me`, frontmatter indented by a terminal copy) | guard denies | denied — guard tolerates leading spaces |
+| 7 | `/your-2ndbrain:lint quick` | runs, reports | 4 correct WARNs (indented user note, leftover test raw file, empty identity card, no git); one wrong claim, see below |
+
+Findings, fixed in the same commit:
+- **Lint called a design choice a blind spot.** The script skips `raw/` and `notes/` by design;
+  SKILL.md did not say so, so the model reported "the script misses broken frontmatter" and tried
+  to read the script (outside the vault, blocked). SKILL.md now states the scope and says not to
+  read the script.
+- **Hook messages were noisy.** Claude Code prefixes a hook's feedback with its full command, so the
+  interpreter loop filled the message. The loop moved to `hooks/run.sh`; the command is now
+  `bash "${CLAUDE_PLUGIN_ROOT}/hooks/run.sh" guard|validate`. Same behaviour; 10/10 cases re-run.
+- **Init's git offer was easy to miss** (lint flagged "not a git repository"). Init now closes with
+  an explicit yes/no question.
+- Code blocks copied from the terminal keep their indentation — a user pasting a frontmatter
+  snippet gets invalid frontmatter. Same root cause as the daily-note template issue; docs should
+  prefer files over pasted snippets.
+
 ## Not covered
 
 - macOS and Linux (`python3` branch, path handling).
-- In-session flows: `/plugin` panel, `/your-2ndbrain:init` dialogue, a hook firing inside a
-  session on a freshly installed copy. To be checked by hand before the public release.
+- In-session `/plugin marketplace add` + install panel from GitHub (the CLI path is covered; the
+  developer machine already has a same-named local marketplace).
