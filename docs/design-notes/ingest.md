@@ -81,8 +81,8 @@ or a fresh session (hot.md carries the state).
   instead of guessing the content.
 - **Extract chosen pages into one ≤ 10-page PDF** with pypdf, then one native Read. Cheaper
   than chunking the whole deck.
-- **Course slides contain contestable claims** (model selection on the test set; a cost
-  judgement on Type I vs II errors). With no second source in the vault, the pattern used:
+- **Course slides contain contestable claims** (e.g. a methodology recommendation that
+  textbooks disagree on). With no second source in the vault, the pattern used:
   slide's claim cited, other side stated with "(unsupported in this vault)", whole point
   "(disputed)". The user approved this; the skill should offer it as the default.
 - **Gate outcome for course material:** source page + concept pages that later lectures will
