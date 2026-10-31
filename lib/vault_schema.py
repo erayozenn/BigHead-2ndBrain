@@ -29,6 +29,7 @@ ALLOWED = {
 }
 HOT_MAX_WORDS = 500
 INDEX_MAX_BYTES = 16 * 1024
+CLAUDE_MD_MAX_LINES = 200  # official target per CLAUDE.md file
 
 WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+)(?:[#^][^\]|]*)?(?:\|[^\]]*)?\]\]")
 FENCE_RE = re.compile(r"```.*?```", re.DOTALL)

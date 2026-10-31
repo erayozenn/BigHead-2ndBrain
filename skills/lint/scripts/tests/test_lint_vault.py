@@ -68,6 +68,14 @@ class LintTest(unittest.TestCase):
         self.assertIn("WARN  wiki/concepts/c.md: orphan page", out)
         self.assertIn("WARN  wiki/concepts/c.md: not listed in index.md", out)
         self.assertNotIn("source-page", out)  # CLAUDE.md example links are skipped
+        self.assertNotIn("lines (target", out)
+
+    def test_long_claude_md(self):
+        with open(os.path.join(self.vault, "CLAUDE.md"), "a", encoding="utf-8", newline="\n") as f:
+            f.write("- rule\n" * 200)
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 0, result.stdout)  # WARN, not ERROR
+        self.assertIn("WARN  CLAUDE.md: 212 lines (target under 200", result.stdout)
 
 
 if __name__ == "__main__":

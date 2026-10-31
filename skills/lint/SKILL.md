@@ -7,6 +7,7 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(wc -c *)
+  - Bash(git log *)
   - Bash(python ${CLAUDE_SKILL_DIR}/scripts/*)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*)
   - Bash(py -3 ${CLAUDE_SKILL_DIR}/scripts/*)
@@ -88,6 +89,11 @@ One table per severity, most severe first:
 - `author: me` notes and `raw/` files: **report only** — Claude never edits them; the fix is for
   the user to make.
 - Renames and moves: propose only; the user does them in Obsidian (Obsidian updates links).
+- **Instruction files** (CLAUDE.md, rules.md, `.claude/`) are not judged here. If the script
+  flagged CLAUDE.md length, or `git log -1 -- CLAUDE.md rules.md` shows a change since the last
+  lint line in log.md, add one line suggesting the user run `/doctor prompt-audit` (built-in,
+  Claude Code v2.1.283+; Claude cannot run it). It finds outdated or contradicting instructions
+  and changes nothing until asked; edits to CLAUDE.md still need the user's approval.
 - End with: pages read (KiB used / budget), what was not covered, and the question
   "Which numbers should I fix?" (all / a list / none).
 

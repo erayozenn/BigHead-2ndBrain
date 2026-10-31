@@ -13,6 +13,7 @@ Checks (the vault CLAUDE.md "Lint" list, minus the judgment checks):
   ERROR hot.md over 500 words, index.md over 16 KiB
   WARN  orphan pages (wiki/ pages no other file links to)
   WARN  wiki/ pages missing from index.md
+  WARN  vault CLAUDE.md over 200 lines
   WARN  paths in the vault CLAUDE.md "Layout" table that do not exist (except .cache/)
 
 Exit code 1 if any ERROR, else 0.
@@ -26,7 +27,8 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from vault_schema import (HOT_MAX_WORDS, INDEX_MAX_BYTES, WIKILINK_RE,  # noqa: E402
+from vault_schema import (CLAUDE_MD_MAX_LINES, HOT_MAX_WORDS, INDEX_MAX_BYTES,  # noqa: E402
+                          WIKILINK_RE,
                           build_link_index, duplicate_basenames, needs_schema,
                           page_problems, scalar, split_frontmatter, strip_code, vault_files)
 
@@ -140,6 +142,10 @@ def main() -> None:
         report.add("ERROR", "index.md", f"{size / 1024:.1f} KiB (max {INDEX_MAX_BYTES // 1024})")
 
     claude_md = (vault / "CLAUDE.md").read_text(encoding="utf-8", errors="replace")
+    n_lines = len(claude_md.splitlines())
+    if n_lines > CLAUDE_MD_MAX_LINES:
+        report.add("WARN", "CLAUDE.md", f"{n_lines} lines (target under {CLAUDE_MD_MAX_LINES}; "
+                                        "longer files reduce adherence)")
     for p in layout_paths(claude_md):
         if not (vault / p).exists():
             report.add("WARN", "CLAUDE.md", f"Layout path does not exist: {p}")

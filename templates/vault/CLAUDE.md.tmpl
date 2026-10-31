@@ -1,7 +1,8 @@
-# Vault Schema & Rules (template v0.2)
+# Vault Schema & Rules (template v0.3)
 
 Personal knowledge base (Karpathy "LLM Wiki" pattern), maintained by Claude Code,
-co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it under 500 lines.
+co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it under 200 lines
+(longer files cost context every session and are followed less reliably).
 
 @CRITICAL_FACTS.md
 @hot.md
@@ -51,7 +52,8 @@ need no frontmatter. Structure changes affect new notes only; existing notes are
    Edit's modified-since-read check protects concurrent Obsidian edits: if it fires, re-read and re-apply.
 9. Ambiguity → ask. Multi-file, structural, or new hook/command → short plan, wait for approval.
 10. Prefer built-in tools; justify any new MCP server or dependency.
-11. `claude -p` / Agent SDK draw from a separate usage pool — say so before proposing them.
+11. `claude -p` / Agent SDK runs count against the same subscription usage limits as this chat
+    (as of 2026-10; billing changes — check /usage) — say so before proposing them.
     Never suggest ANTHROPIC_API_KEY or --bare.
 12. Subagents are read-only: they return drafts; the main session is the only writer. Default: none.
 13. This vault repo is never made public.
@@ -121,7 +123,7 @@ Offer to save good answers to wiki/syntheses/.
 ### Lint (report first, fix only after approval)
 Contradictions · freshness violations · past "Goes stale" dates · orphan pages · broken links ·
 duplicate basenames (incl. wiki vs raw) · missing frontmatter/summary · important concepts without pages ·
-hot.md > 500 words · index.md > 16 KiB · paths in this file that don't exist.
+hot.md > 500 words · index.md > 16 KiB · this file > 200 lines · paths in this file that don't exist.
 
 ## log.md
     ## [YYYY-MM-DD] <ingest|query|lint|save|setup|archive|decision> | <title>
