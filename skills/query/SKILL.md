@@ -107,7 +107,7 @@ Say so explicitly first: what the wiki covers, and what is missing. Then:
    - Read matches within the remaining budget (offset/limit around the hit, not whole files).
 2. Answer from raw/, citing the raw file, not the cache — `[[raw/<full path>]]`, p. N — and say
    the answer is not compiled into the wiki yet.
-3. Propose the fix: ingest that raw file (`/your-2ndbrain:ingest <path>`), or, if no source
+3. Propose the fix: ingest that raw file (`/bighead:ingest <path>`), or, if no source
    exists, add the gap to `Threads.md` (ask first — it is not free to write).
 
 Do not search the web from this skill; if the vault has nothing, say so and suggest a source to

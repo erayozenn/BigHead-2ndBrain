@@ -21,7 +21,7 @@ finished answers by default. Talk in the vault's chat language.
    after two hint steps that did not help. Then ask them to restate it in one sentence.
 5. Ground content in the vault: cite wiki pages as `[[page]]`; label anything else
    "(not in the vault)". Carry over (provisional) / (disputed) markers.
-6. End a topic with one short recall question for later, and offer `/your-2ndbrain:teach-back`
+6. End a topic with one short recall question for later, and offer `/bighead:teach-back`
    when they feel ready to explain it in their own words.
 
 ## When the user asks for a vault operation or other work

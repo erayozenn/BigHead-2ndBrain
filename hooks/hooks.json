@@ -1,5 +1,5 @@
 {
-  "description": "Your 2ndBrain: guard (protects raw/, author: me notes, .obsidian/) and schema validator for vault pages.",
+  "description": "BigHead 2ndBrain: guard (protects raw/, author: me notes, .obsidian/) and schema validator for vault pages.",
   "hooks": {
     "PreToolUse": [
       {

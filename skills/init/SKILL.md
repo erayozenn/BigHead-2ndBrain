@@ -74,7 +74,7 @@ Do not run git on your own. In the close, ask it as a choice (see step 7). Only 
 yes: check whether
 the target is already inside a git repo (`git -C "<dir>" rev-parse --show-toplevel`) — if so,
 say which repo and ask before going on; otherwise `git init`, `git add -A`, and commit with
-`chore: vault created from your-2ndbrain template`. Never push, never add a remote.
+`chore: vault created from bighead template`. Never push, never add a remote.
 
 ## 7. Close
 
@@ -83,7 +83,7 @@ Report in a few lines:
 - the identity card status (filled / placeholders left);
 - **next step:** open a new Claude Code session *in the vault folder* — CLAUDE.md, hot.md and
   `.claude/settings.json` load only at session start;
-- then the first ingest: `/your-2ndbrain:ingest <path-or-url>`.
+- then the first ingest: `/bighead:ingest <path-or-url>`.
 
 Then ask one choice question (not a line buried in the report): **"Put the vault under git
 now?"** — yes (recommended: every Claude edit becomes reviewable and reversible; the vault's

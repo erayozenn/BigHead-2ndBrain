@@ -1,6 +1,6 @@
-# Your 2ndBrain
+# BigHead 2ndBrain
 
-![Your 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
+![BigHead 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
 
 > **Status: v0.1 — experimental.** Skills and the vault schema may still change between 0.x
 > versions. Updates never rewrite an existing vault; the first line of your vault's `CLAUDE.md`
@@ -42,16 +42,16 @@ notes/   your own notes (never edited by Claude)
 In your shell:
 
 ```
-claude plugin marketplace add erayozenn/Your-2ndBrain
-claude plugin install your-2ndbrain@your-2ndbrain
-claude plugin list        # your-2ndbrain@your-2ndbrain  Status: ✔ enabled
+claude plugin marketplace add erayozenn/BigHead-2ndBrain
+claude plugin install bighead@bighead
+claude plugin list        # bighead@bighead  Status: ✔ enabled
 ```
 
-Or inside a Claude Code session: `/plugin marketplace add erayozenn/Your-2ndBrain`, then
-`/plugin install your-2ndbrain@your-2ndbrain` — this opens the plugin's panel, where you
+Or inside a Claude Code session: `/plugin marketplace add erayozenn/BigHead-2ndBrain`, then
+`/plugin install bighead@bighead` — this opens the plugin's panel, where you
 confirm the install. Start a new session (or run `/reload-plugins`) afterwards.
 
-Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault) and follow [docs/obsidian-setup.md](docs/obsidian-setup.md).
+Then run `/bighead:init` in an empty folder (or an existing Obsidian vault) and follow [docs/obsidian-setup.md](docs/obsidian-setup.md).
 
 ## Requirements
 
@@ -67,20 +67,20 @@ Then run `/your-2ndbrain:init` in an empty folder (or an existing Obsidian vault
 
 | Skill | What it does |
 |---|---|
-| `/your-2ndbrain:init [target folder]` | Create a vault from the templates — folders, `CLAUDE.md` schema, hot cache, index, log, settings — in an empty folder or an existing Obsidian vault. Dry run first; never overwrites. |
-| `/your-2ndbrain:ingest <path-or-url> [text\|smart\|full]` | Capture one source into `raw/`, read it at the right cost, discuss it with you, write wiki pages, update index/log/hot cache, verify links and quotes. |
-| `/your-2ndbrain:query <question> [quick\|standard\|deep]` | Answer from the wiki — hot cache, index, then the most relevant pages within a read budget — with every claim cited and an explicit note when the wiki is not enough. |
-| `/your-2ndbrain:save [title or what to save]` | Save a good answer or comparison from the session as a synthesis page (or extend one), keeping citations and uncertainty markers. |
-| `/your-2ndbrain:handoff [note for the next session]` | End-of-session handoff: rewrite the hot cache's "Now", keep it within its word limit, flag uncommitted work, propose rules learned from your corrections. |
-| `/your-2ndbrain:lint [quick\|standard\|deep]` | Health-check the wiki: a script pass (schema, broken links, duplicates, orphans, index coverage, sizes, stale pages) plus judgment checks within a read budget (contradictions, undated facts, citation gaps, missing concept pages). Reports first; fixes only what you approve. |
-| `/your-2ndbrain:teach-back <topic or notes/ file>` | Check your understanding: you explain a topic in your own words, Claude compares it with the wiki and returns gaps, errors and vague spots as questions. Writes nothing. |
+| `/bighead:init [target folder]` | Create a vault from the templates — folders, `CLAUDE.md` schema, hot cache, index, log, settings — in an empty folder or an existing Obsidian vault. Dry run first; never overwrites. |
+| `/bighead:ingest <path-or-url> [text\|smart\|full]` | Capture one source into `raw/`, read it at the right cost, discuss it with you, write wiki pages, update index/log/hot cache, verify links and quotes. |
+| `/bighead:query <question> [quick\|standard\|deep]` | Answer from the wiki — hot cache, index, then the most relevant pages within a read budget — with every claim cited and an explicit note when the wiki is not enough. |
+| `/bighead:save [title or what to save]` | Save a good answer or comparison from the session as a synthesis page (or extend one), keeping citations and uncertainty markers. |
+| `/bighead:handoff [note for the next session]` | End-of-session handoff: rewrite the hot cache's "Now", keep it within its word limit, flag uncommitted work, propose rules learned from your corrections. |
+| `/bighead:lint [quick\|standard\|deep]` | Health-check the wiki: a script pass (schema, broken links, duplicates, orphans, index coverage, sizes, stale pages) plus judgment checks within a read budget (contradictions, undated facts, citation gaps, missing concept pages). Reports first; fixes only what you approve. |
+| `/bighead:teach-back <topic or notes/ file>` | Check your understanding: you explain a topic in your own words, Claude compares it with the wiki and returns gaps, errors and vague spots as questions. Writes nothing. |
 
 Claude also picks these skills up on its own when your request matches (e.g. "ingest this paper").
 
 **Study mode.** The plugin also ships a `tutor` [output style](https://code.claude.com/docs/en/output-styles):
 for study questions Claude asks for your guess first, gives hints in steps and the full answer
 only when you ask; vault operations (ingest, lint, …) run as usual. Turn it on with
-`/output-style your-2ndbrain:tutor`, and back with `/output-style default`. It is never on
+`/output-style bighead:tutor`, and back with `/output-style default`. It is never on
 by default. Ingest also offers (once, skippable) to take 2–5 of your questions before reading a
 paper or course source and answers them on the source page.
 

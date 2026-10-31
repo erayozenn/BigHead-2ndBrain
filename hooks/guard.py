@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PreToolUse guard for Your 2ndBrain vaults.
+"""PreToolUse guard for BigHead 2ndBrain vaults.
 
 Reads the hook event JSON on stdin and denies file-tool calls that would
 break the vault's hard rules:
@@ -98,7 +98,7 @@ def deny(reason: str) -> None:
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": f"[your-2ndbrain guard] {reason}",
+            "permissionDecisionReason": f"[bighead guard] {reason}",
         }
     }))
 
@@ -123,10 +123,10 @@ def main() -> int:
         except Exception:
             in_vault = False
         if in_vault:
-            print(f"[your-2ndbrain guard] blocked: guard error ({exc!r}); fix the hook or edit manually.",
+            print(f"[bighead guard] blocked: guard error ({exc!r}); fix the hook or edit manually.",
                   file=sys.stderr)
             return 2
-        print(f"[your-2ndbrain guard] warning: guard error outside a vault ({exc!r})", file=sys.stderr)
+        print(f"[bighead guard] warning: guard error outside a vault ({exc!r})", file=sys.stderr)
         return 1
 
 

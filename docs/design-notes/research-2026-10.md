@@ -66,5 +66,5 @@ Planned already: BM25 + Turkish stemming, `queries.json`, recall/MRR. Add:
 - Query routing: "precision nedir" → Lookup, quick budget, one page read (7.3 KiB), stopped.
   A two-part question → Multi-part, split in two; the existing synthesis read first; each
   sentence cited; general knowledge labelled "(not in the vault)"; the gap logged.
-- `/output-style` lists the plugin style as `your-2ndbrain:tutor` (namespaced by plugin name).
+- `/output-style` lists the plugin style as `bighead:tutor` (namespaced by plugin name).
 - `teach-back` asked for the user's explanation first and wrote nothing.

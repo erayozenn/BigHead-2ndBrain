@@ -9,7 +9,7 @@ setup stayed untouched; all functional checks ran from the installed cache copy,
 |---|---|---|---|
 | 1 | `claude plugin validate .` | pass | pass; warnings: no marketplace description (fixed), root `CLAUDE.md` not loaded (intended: kit dev rules), no icon (optional) |
 | 2 | `claude plugin marketplace add <owner>/<repo>` | clone + register | cloned via HTTPS with the user's git credentials; registered in user settings |
-| 3 | `claude plugin install your-2ndbrain@your-2ndbrain`, `list`, `details` | enabled | enabled, scope user; 6 skills, 2 hooks; ~600 tokens always-on |
+| 3 | `claude plugin install bighead@bighead`, `list`, `details` | enabled | enabled, scope user; 6 skills, 2 hooks; ~600 tokens always-on |
 | 4 | Shipped files | no personal data, no build output | clean; no home paths, no `__pycache__` |
 | 5 | Unit tests from the installed copy | pass | hooks, lib, lint: all pass |
 | 6 | `init_vault.py` dry-run / real / re-run | nothing written / full vault / nothing overwritten | 0 written / 22 files + 10 dirs / 12 files skipped, 10 dirs kept |
@@ -34,19 +34,19 @@ setup stayed untouched; all functional checks ran from the installed cache copy,
 
 ## In-session test (2026-10-31, by hand)
 
-Plugin installed at user scope, `/your-2ndbrain:init` in an empty folder, then a new session in
+Plugin installed at user scope, `/bighead:init` in an empty folder, then a new session in
 the new vault. Prompts asked Claude to really call the tool (otherwise the vault's CLAUDE.md
 makes it refuse before any hook runs).
 
 | # | Action | Expected | Result |
 |---|---|---|---|
-| 1 | `/your-2ndbrain:init` | vault created | created; identity card skipped by the tester |
+| 1 | `/bighead:init` | vault created | created; identity card skipped by the tester |
 | 2 | Write `raw/test.md` | guard denies | denied ("New raw files may only be added under raw/web/") |
 | 3 | Write `raw/web/deneme.md` | permission prompt, then written | prompted (settings `ask` rule), written |
 | 4 | Edit `raw/web/deneme.md` | guard denies | denied |
 | 5 | Write `wiki/concepts/test-page.md` without frontmatter | written, validator reports, Claude fixes | "missing frontmatter" reported; Claude added frontmatter + summary in the same turn; second write silent |
 | 6 | Edit `notes/benim.md` (`author: me`, frontmatter indented by a terminal copy) | guard denies | denied — guard tolerates leading spaces |
-| 7 | `/your-2ndbrain:lint quick` | runs, reports | 4 correct WARNs (indented user note, leftover test raw file, empty identity card, no git); one wrong claim, see below |
+| 7 | `/bighead:lint quick` | runs, reports | 4 correct WARNs (indented user note, leftover test raw file, empty identity card, no git); one wrong claim, see below |
 
 Findings, fixed in the same commit:
 - **Lint called a design choice a blind spot.** The script skips `raw/` and `notes/` by design;

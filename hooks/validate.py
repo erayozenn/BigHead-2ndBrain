@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PostToolUse validator for Your 2ndBrain vaults.
+"""PostToolUse validator for BigHead 2ndBrain vaults.
 
 After a Write or Edit of a vault page, checks that page against the schema
 (lib/vault_schema.py: frontmatter keys and values, dates, summary callout,
@@ -42,13 +42,13 @@ def main() -> int:
         if problems:
             print(json.dumps({
                 "decision": "block",
-                "reason": f"[your-2ndbrain validator] {rel} breaks the vault schema "
+                "reason": f"[bighead validator] {rel} breaks the vault schema "
                           "(see the vault's CLAUDE.md, Frontmatter). Fix it now:\n- "
                           + "\n- ".join(problems),
             }))
         return 0
     except Exception as exc:
-        print(f"[your-2ndbrain validator] warning: validator error ({exc!r}); page not checked",
+        print(f"[bighead validator] warning: validator error ({exc!r}); page not checked",
               file=sys.stderr)
         return 1
 

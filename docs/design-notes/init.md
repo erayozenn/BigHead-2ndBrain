@@ -20,7 +20,7 @@ card is filled from one question round; git is never run unless the user asks (n
 
 ## End-to-end skill test
 
-`/your-2ndbrain:init <scratchpad>/vault-test`: language question → dry run → approval →
+`/bighead:init <scratchpad>/vault-test`: language question → dry run → approval →
 create → identity card (fictional data) → Obsidian steps → close. No git run. Works.
 
 ## Findings

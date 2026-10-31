@@ -1,6 +1,6 @@
-# Your 2ndBrain
+# BigHead 2ndBrain
 
-![Your 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
+![BigHead 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
 
 > **Durum: v0.1 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
 > değişebilir. Güncellemeler mevcut bir vault'u asla yeniden yazmaz; vault'unun `CLAUDE.md`
@@ -42,16 +42,16 @@ notes/   senin notların (Claude asla düzenlemez)
 Terminalde:
 
 ```
-claude plugin marketplace add erayozenn/Your-2ndBrain
-claude plugin install your-2ndbrain@your-2ndbrain
-claude plugin list        # your-2ndbrain@your-2ndbrain  Status: ✔ enabled
+claude plugin marketplace add erayozenn/BigHead-2ndBrain
+claude plugin install bighead@bighead
+claude plugin list        # bighead@bighead  Status: ✔ enabled
 ```
 
-Ya da bir Claude Code oturumunda: `/plugin marketplace add erayozenn/Your-2ndBrain`, ardından
-`/plugin install your-2ndbrain@your-2ndbrain` — bu, plugin'in panelini açar; kurulumu orada
+Ya da bir Claude Code oturumunda: `/plugin marketplace add erayozenn/BigHead-2ndBrain`, ardından
+`/plugin install bighead@bighead` — bu, plugin'in panelini açar; kurulumu orada
 onaylarsın. Sonra yeni bir oturum başlat (veya `/reload-plugins` çalıştır).
 
-Ardından boş bir klasörde (veya mevcut bir Obsidian vault'unda) `/your-2ndbrain:init` çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
+Ardından boş bir klasörde (veya mevcut bir Obsidian vault'unda) `/bighead:init` çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
 adımlarını izle.
 
 ## Gereksinimler
@@ -68,20 +68,20 @@ adımlarını izle.
 
 | Skill | Ne yapar |
 |---|---|
-| `/your-2ndbrain:init [hedef klasör]` | Şablonlardan bir vault kurar — klasörler, `CLAUDE.md` şeması, hot cache, index, log, ayarlar — boş bir klasörde veya mevcut bir Obsidian vault'unda. Önce deneme çalıştırması yapar; hiçbir dosyanın üzerine yazmaz. |
-| `/your-2ndbrain:ingest <yol-veya-url> [text\|smart\|full]` | Bir kaynağı `raw/` içine alır, uygun maliyetle okur, seninle tartışır, wiki sayfalarını yazar, index/log/hot cache'i günceller, link ve alıntıları doğrular. |
-| `/your-2ndbrain:query <soru> [quick\|standard\|deep]` | Wiki'den cevap verir — hot cache, index, sonra okuma bütçesi içinde en ilgili sayfalar — her iddiayı kaynaklar, wiki yetmediğinde bunu açıkça söyler. |
-| `/your-2ndbrain:save [başlık veya kaydedilecek şey]` | Oturumdaki iyi bir cevabı veya karşılaştırmayı sentez sayfası olarak kaydeder (veya mevcut birini genişletir); kaynakları ve belirsizlik işaretlerini korur. |
-| `/your-2ndbrain:handoff [sonraki oturum için not]` | Oturum sonu devri: hot cache'in "Now" bölümünü yeniden yazar, kelime sınırında tutar, commit edilmemiş işi bildirir, düzeltmelerinden öğrenilen kuralları önerir. |
-| `/your-2ndbrain:lint [quick\|standard\|deep]` | Wiki'nin sağlık kontrolü: script taraması (şema, kırık linkler, kopyalar, sahipsiz sayfalar, index kapsamı, boyutlar, eskimiş sayfalar) ve okuma bütçesi içinde yargı kontrolleri (çelişkiler, tarihsiz bilgiler, kaynak eksikleri, sayfası olmayan kavramlar). Önce rapor verir; yalnızca onayladıklarını düzeltir. |
-| `/your-2ndbrain:teach-back <konu veya notes/ dosyası>` | Anlayışını sına: bir konuyu kendi cümlelerinle açıklarsın, Claude bunu wiki ile karşılaştırır ve eksikleri, hataları, belirsiz noktaları soru olarak döner. Hiçbir şey yazmaz. |
+| `/bighead:init [hedef klasör]` | Şablonlardan bir vault kurar — klasörler, `CLAUDE.md` şeması, hot cache, index, log, ayarlar — boş bir klasörde veya mevcut bir Obsidian vault'unda. Önce deneme çalıştırması yapar; hiçbir dosyanın üzerine yazmaz. |
+| `/bighead:ingest <yol-veya-url> [text\|smart\|full]` | Bir kaynağı `raw/` içine alır, uygun maliyetle okur, seninle tartışır, wiki sayfalarını yazar, index/log/hot cache'i günceller, link ve alıntıları doğrular. |
+| `/bighead:query <soru> [quick\|standard\|deep]` | Wiki'den cevap verir — hot cache, index, sonra okuma bütçesi içinde en ilgili sayfalar — her iddiayı kaynaklar, wiki yetmediğinde bunu açıkça söyler. |
+| `/bighead:save [başlık veya kaydedilecek şey]` | Oturumdaki iyi bir cevabı veya karşılaştırmayı sentez sayfası olarak kaydeder (veya mevcut birini genişletir); kaynakları ve belirsizlik işaretlerini korur. |
+| `/bighead:handoff [sonraki oturum için not]` | Oturum sonu devri: hot cache'in "Now" bölümünü yeniden yazar, kelime sınırında tutar, commit edilmemiş işi bildirir, düzeltmelerinden öğrenilen kuralları önerir. |
+| `/bighead:lint [quick\|standard\|deep]` | Wiki'nin sağlık kontrolü: script taraması (şema, kırık linkler, kopyalar, sahipsiz sayfalar, index kapsamı, boyutlar, eskimiş sayfalar) ve okuma bütçesi içinde yargı kontrolleri (çelişkiler, tarihsiz bilgiler, kaynak eksikleri, sayfası olmayan kavramlar). Önce rapor verir; yalnızca onayladıklarını düzeltir. |
+| `/bighead:teach-back <konu veya notes/ dosyası>` | Anlayışını sına: bir konuyu kendi cümlelerinle açıklarsın, Claude bunu wiki ile karşılaştırır ve eksikleri, hataları, belirsiz noktaları soru olarak döner. Hiçbir şey yazmaz. |
 
 İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").
 
 **Çalışma modu.** Plugin ayrıca bir `tutor` [output style](https://code.claude.com/docs/en/output-styles)
 içerir: çalışma sorularında Claude önce senin tahminini ister, ipuçlarını kademeli verir, tam
 cevabı yalnızca sen istediğinde gösterir; vault işlemleri (ingest, lint, …) her zamanki gibi
-çalışır. `/output-style your-2ndbrain:tutor` ile açılır, `/output-style default` ile kapanır.
+çalışır. `/output-style bighead:tutor` ile açılır, `/output-style default` ile kapanır.
 Varsayılan olarak asla açık değildir. Ingest de makale veya ders kaynaklarında, okumadan önce
 2–5 sorunu almayı bir kez (atlanabilir) teklif eder ve bunları kaynak sayfasında cevaplar.
 

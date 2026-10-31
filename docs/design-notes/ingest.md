@@ -113,7 +113,7 @@ Implemented in `skills/ingest/` (SKILL.md + `scripts/pdf_pages.py` + `scripts/ve
 
 ## End-to-end test 1: skill on a course slide PDF (2026-10-29)
 
-`/your-2ndbrain:ingest file:///.../deck.pdf` (smart mode). Worked end to end: copy-into-raw
+`/bighead:ingest file:///.../deck.pdf` (smart mode). Worked end to end: copy-into-raw
 approval, text extraction, candidates, one 7-page native extract, discussion, gate, write,
 verify. Cost ~20k tokens (text ~4k, native ~11.5k, 3 existing pages ~5k).
 
@@ -144,7 +144,7 @@ verify. Cost ~20k tokens (text ~4k, native ~11.5k, 3 existing pages ~5k).
 
 ## End-to-end test 2: skill on a web article (2026-10-29)
 
-`/your-2ndbrain:ingest <engineering blog post URL>`. Worked
+`/bighead:ingest <engineering blog post URL>`. Worked
 end to end: scratchpad download, conversion, raw/web/ approval, discussion, gate, write, verify
 (0 errors after removing one paraphrase from quote marks). Cost ~25k tokens (article ~4k read,
 ~4k written back into raw/ via Write, 3 existing pages ~5k, new pages ~8k).
@@ -171,7 +171,7 @@ end to end: scratchpad download, conversion, raw/web/ approval, discussion, gate
 
 ## End-to-end test 3: arXiv paper in text mode (2026-10-29)
 
-`/your-2ndbrain:ingest https://arxiv.org/pdf/<id> text` (an arXiv paper, 18 pages).
+`/bighead:ingest https://arxiv.org/pdf/<id> text` (an arXiv paper, 18 pages).
 Worked end to end: download, `%PDF-` check, binary copy into raw/web/ with explicit approval,
 `text` extraction, discussion, gate, one 2-page native extract (p. 5, 18) for table numbers, write,
 verify. Cost ~40k tokens (text ~28k incl. references, native 2 pages ~3.5k, 1 existing page ~2.5k,

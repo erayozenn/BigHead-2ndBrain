@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
-  <title id="title">Your 2ndBrain</title>
+  <title id="title">BigHead 2ndBrain</title>
   <desc id="desc">A second brain for Claude Code and Obsidian: your sources in, a linked and cited wiki out.</desc>
   <style>
     svg { --bg:#FBFAF7; --line:#E4E1DA; --ink:#1F2328; --muted:#656D76; --raw:#B45309; --wiki:#0F766E; --syn:#7C3AED; --edge:#CFCBC2; }
@@ -20,7 +20,7 @@
   <rect class="bg" x="0.5" y="0.5" width="1199" height="299" rx="16"/>
 
   <text class="sans acc" x="64" y="84" font-size="13" font-weight="700" letter-spacing="2.5">CLAUDE CODE + OBSIDIAN</text>
-  <text class="sans ink" x="62" y="140" font-size="50" font-weight="700">Your 2ndBrain</text>
+  <text class="sans ink" x="62" y="140" font-size="50" font-weight="700">BigHead 2ndBrain</text>
   <text class="sans ink" x="64" y="182" font-size="20">Your sources in. A linked, cited wiki out.</text>
   <text class="sans muted" x="64" y="210" font-size="15">Built on Andrej Karpathy's LLM Wiki pattern.</text>
 
