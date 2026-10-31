@@ -112,9 +112,14 @@ If no Python 3 is found, both hooks print a warning and stay inactive.
 
 ## Credits
 
-- Andrej Karpathy — the "LLM Wiki" / LLM knowledge base pattern this project is built on.
-- Ideas inspired by other open projects in the Claude Code + Obsidian space (TODO before v0.1:
-  list each project with a link and verify licenses).
+- Andrej Karpathy — the [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+  idea: raw sources, an LLM-maintained wiki and a schema file; ingest, query and lint.
+- [claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) by AgriciDaniel (MIT) —
+  ideas for a session hot cache read before the index, read-only helpers that hand back drafts,
+  and keeping weak or conflicting evidence visible.
+
+Ideas only: no code or text was copied from either; the rules and scripts here are written from
+scratch.
 
 ## License
 

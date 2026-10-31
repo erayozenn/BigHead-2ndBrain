@@ -113,9 +113,14 @@ Python 3 bulunamazsa iki hook da bir uyarı yazar ve devre dışı kalır.
 
 ## Teşekkür
 
-- Andrej Karpathy — projenin dayandığı "LLM Wiki" deseni.
-- Claude Code + Obsidian alanındaki diğer açık projelerden ilham alınan fikirler (v0.1 öncesi
-  YAPILACAK: her projeyi linkiyle listele, lisanslarını doğrula).
+- Andrej Karpathy — [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+  fikri: ham kaynaklar, LLM'in sürdürdüğü bir wiki ve bir şema dosyası; ingest, query ve lint.
+- AgriciDaniel'in [claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) projesi
+  (MIT) — index'ten önce okunan oturum hot cache'i, taslak döndüren salt-okur yardımcılar ve zayıf
+  ya da çelişen kanıtı görünür tutma fikirleri.
+
+Yalnızca fikirler: ikisinden de kod veya metin kopyalanmadı; buradaki kurallar ve script'ler
+sıfırdan yazıldı.
 
 ## Lisans
 
