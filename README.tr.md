@@ -75,6 +75,9 @@ adımlarını izle.
 | `/bighead:handoff [sonraki oturum için not]` | Oturum sonu devri: hot cache'in "Now" bölümünü yeniden yazar, kelime sınırında tutar, commit edilmemiş işi bildirir, düzeltmelerinden öğrenilen kuralları önerir. |
 | `/bighead:lint [quick\|standard\|deep]` | Wiki'nin sağlık kontrolü: script taraması (şema, kırık linkler, kopyalar, sahipsiz sayfalar, index kapsamı, boyutlar, eskimiş sayfalar) ve okuma bütçesi içinde yargı kontrolleri (çelişkiler, tarihsiz bilgiler, kaynak eksikleri, sayfası olmayan kavramlar). Önce rapor verir; yalnızca onayladıklarını düzeltir. |
 | `/bighead:teach-back <konu veya notes/ dosyası>` | Anlayışını sına: bir konuyu kendi cümlelerinle açıklarsın, Claude bunu wiki ile karşılaştırır ve eksikleri, hataları, belirsiz noktaları soru olarak döner. Hiçbir şey yazmaz. |
+| `/bighead:review make <sayfa> \| quiz [deste]` | Bilgi kartları: bir wiki sayfasından hatırlama kartları taslağı çıkarır, onayladıklarını `cards/` içine ekler (Obsidian [Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition) formatı) ya da sohbette, vadesi gelenlerden başlayarak seni sınar. Mevcut kartlara ve zamanlamalarına asla dokunmaz. |
+| `/bighead:today [odak]` | Güne başlangıç: hot cache, açık thread'ler, son log, bugünkü daily note ve vadesi gelen kartlar → kısa bir plan ve bir hatırlama sorusu. Hiçbir şey yazmaz. |
+| `/bighead:weekly [YYYY-Www]` | Haftalık değerlendirme: eklenen, değişen ve karar verilen şeyler, eksikler, thread'ler, kartlar, gelecek hafta için üç öneri; onaylarsan `archive/` içine kaydedilir. |
 
 İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").
 

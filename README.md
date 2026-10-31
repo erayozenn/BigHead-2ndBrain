@@ -74,6 +74,9 @@ Then run `/bighead:init` in an empty folder (or an existing Obsidian vault) and 
 | `/bighead:handoff [note for the next session]` | End-of-session handoff: rewrite the hot cache's "Now", keep it within its word limit, flag uncommitted work, propose rules learned from your corrections. |
 | `/bighead:lint [quick\|standard\|deep]` | Health-check the wiki: a script pass (schema, broken links, duplicates, orphans, index coverage, sizes, stale pages) plus judgment checks within a read budget (contradictions, undated facts, citation gaps, missing concept pages). Reports first; fixes only what you approve. |
 | `/bighead:teach-back <topic or notes/ file>` | Check your understanding: you explain a topic in your own words, Claude compares it with the wiki and returns gaps, errors and vague spots as questions. Writes nothing. |
+| `/bighead:review make <page> \| quiz [deck]` | Flashcards: draft recall cards from a wiki page and append the ones you approve to `cards/` (Obsidian [Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition) format), or quiz you in the chat, due cards first. Never edits existing cards or their schedule. |
+| `/bighead:today [focus]` | Start-of-day brief: hot cache, open threads, recent log, today's daily note and due cards → a short plan and one recall question. Writes nothing. |
+| `/bighead:weekly [YYYY-Www]` | Weekly review: what was added, changed and decided, gaps, threads, cards, three suggestions for next week; saved to `archive/` if you approve. |
 
 Claude also picks these skills up on its own when your request matches (e.g. "ingest this paper").
 

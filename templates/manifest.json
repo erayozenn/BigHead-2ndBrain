@@ -15,7 +15,8 @@
     "notes/daily",
     "projects",
     "areas",
-    "archive"
+    "archive",
+    "cards"
   ],
   "files": {
     "vault/CLAUDE.md.tmpl": "CLAUDE.md",

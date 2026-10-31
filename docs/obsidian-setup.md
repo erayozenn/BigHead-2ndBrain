@@ -21,5 +21,10 @@ Do these once, inside Obsidian, after the vault files exist. Claude never touche
      ```
 4. **Graph view** → Filters → Search files: `path:wiki`
 5. **Obsidian Web Clipper** (optional): set the save folder to `raw/web`.
+6. **Spaced Repetition** community plugin (optional, for `/bighead:review`): Settings → Community
+   plugins → Browse → "Spaced Repetition" (by Stephen Mwangi) → install, enable. Keep the default
+   separators (`::`, `:::`, `?`, `??`) and the default flashcard tag `#flashcards`. Review with
+   the command "Review flashcards from all notes"; the plugin writes `<!--SR:…-->` comments under
+   reviewed cards — leave them as they are.
 
 Renaming or moving notes: always do it inside Obsidian, which updates links. Claude only proposes it.
