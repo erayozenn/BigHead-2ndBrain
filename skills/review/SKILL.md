@@ -38,6 +38,7 @@ Use the first interpreter that works (`python3`, `python`, `py -3`).
     python ${CLAUDE_SKILL_DIR}/scripts/cards.py stats --vault . [--deck <deck>]
 
 JSON: cards, new (never reviewed), due (scheduled date ≤ today) per file, and the due cards.
+`--deck` names a tag, not a file: `ml`, `flashcards/ml` and `#flashcards/ml` are the same deck.
 
 ## 2. make <page>
 

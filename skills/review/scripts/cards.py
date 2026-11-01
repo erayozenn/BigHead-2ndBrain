@@ -6,6 +6,8 @@ Usage:
       JSON: card counts per cards-*.md file, new (never reviewed), due (scheduled date <= today),
       and the due cards' questions with file and line. A reversed card counts once per direction
       in the totals and appears once in due_cards. Invalid scheduled dates go to warnings.
+      A vault folder that does not exist is an error. --deck names a tag, not a file: `ml`,
+      `flashcards/ml` and `#flashcards/ml` are the same deck; case does not matter.
   cards.py prefix --file <cards file> [--bytes N | --lines N]
       JSON: line and byte counts, and the SHA-256 of the first N bytes or lines, terminators
       included (default: the whole file). Run before appending, then again with
@@ -15,6 +17,10 @@ Card syntax (plugin defaults): single-line `Q::A` and `Q:::A` (reversed, two car
 multi-line: question lines, a line `?` (or `??`), answer lines, ended by a blank line.
 Scheduling is the plugin's HTML comment `<!--SR:!YYYY-MM-DD,interval,ease-->` after a card
 (one `!date,..` group per direction). This script never writes anything.
+
+Counts follow the plugin's parser: fenced code holds no cards and blank lines inside it do not end
+a card; a separator inside inline code is ignored; a line with a separator ends an open multi-line
+card, which is dropped; `?` with no question above it is no card; empty sides of `Q::A` stay cards.
 """
 from __future__ import annotations
 
@@ -29,6 +35,42 @@ from pathlib import Path
 SR_RE = re.compile(r"<!--SR:(.*?)-->")
 SR_DATE_RE = re.compile(r"!(\d{4}-\d{2}-\d{2}),\d+,\d+")
 DECK_RE = re.compile(r"(?:^|\s)#flashcards(?:/([\w/-]+))?")
+FENCE_RE = re.compile(r"^(`{3,}|~{3,})")
+
+
+def fenced_lines(lines: list[str], start: int) -> list[bool]:
+    """Which lines belong to a code fence; an unclosed fence runs to the end of the file."""
+    fenced = [False] * len(lines)
+    i = start
+    while i < len(lines):
+        m = FENCE_RE.match(lines[i])
+        if m:
+            fenced[i] = True
+            i += 1
+            while i < len(lines) and not lines[i].startswith(m.group(1)):
+                fenced[i] = True
+                i += 1
+            if i < len(lines):
+                fenced[i] = True
+        i += 1
+    return fenced
+
+
+def has_marker(text: str, marker: str) -> bool:
+    """The first marker on the line counts unless it sits inside inline code."""
+    at = text.find(marker)
+    if at == -1:
+        return False
+    return not (text[:at].count("`") % 2 and text[at + len(marker):].count("`") % 2)
+
+
+def inline_separator(stripped: str) -> str | None:
+    if stripped.startswith(("<!--", ">")):
+        return None
+    for marker in (":::", "::"):
+        if has_marker(stripped, marker):
+            return marker
+    return None
 
 
 def parse_cards(text: str) -> list[dict]:
@@ -40,10 +82,21 @@ def parse_cards(text: str) -> list[dict]:
             if lines[i].strip() == "---":
                 body_start = i + 1
                 break
+    fenced = fenced_lines(lines, body_start)
+
+    def is_question_line(n: int) -> bool:
+        if fenced[n]:
+            return True
+        text = lines[n].strip()
+        return bool(text) and not (DECK_RE.search(text) or SR_RE.search(text) or inline_separator(text))
+
     cards: list[dict] = []
     deck = ""
     i = body_start
     while i < len(lines):
+        if fenced[i]:
+            i += 1
+            continue
         line = lines[i]
         stripped = line.strip()
         m = DECK_RE.search(line)
@@ -52,18 +105,29 @@ def parse_cards(text: str) -> list[dict]:
             i += 1
             continue
         card = None
-        if "::" in stripped and not stripped.startswith(("<!--", ">")):
-            q = stripped.split(":::" if ":::" in stripped else "::", 1)[0]
+        separator = inline_separator(stripped)
+        if separator:
+            q = stripped.split(separator, 1)[0]
             card = {"line": i + 1, "question": SR_RE.sub("", q).strip(), "deck": deck,
-                    "sides": 2 if ":::" in stripped else 1, "end": i}
-        elif stripped in ("?", "??") and i > body_start:
+                    "sides": 2 if separator == ":::" else 1, "end": i}
+        elif stripped in ("?", "??") and i > body_start and is_question_line(i - 1):
             start = i - 1
-            while (start > body_start and lines[start - 1].strip()
-                   and not DECK_RE.search(lines[start - 1]) and not SR_RE.search(lines[start - 1])):
+            while start > body_start and is_question_line(start - 1):
                 start -= 1
-            end = i + 1
-            while end + 1 < len(lines) and lines[end + 1].strip() and not SR_RE.fullmatch(lines[end + 1].strip()):
+            end = i
+            replaced_at = None
+            while end + 1 < len(lines):
+                following = lines[end + 1].strip()
+                if not fenced[end + 1]:
+                    if not following or SR_RE.fullmatch(following):
+                        break
+                    if inline_separator(following):
+                        replaced_at = end + 1
+                        break
                 end += 1
+            if replaced_at is not None:
+                i = replaced_at
+                continue
             q = " ".join(l.strip() for l in lines[start:i])
             card = {"line": start + 1, "question": q, "deck": deck,
                     "sides": 2 if stripped == "??" else 1, "end": end}
@@ -82,15 +146,25 @@ def parse_cards(text: str) -> list[dict]:
     return cards
 
 
+def deck_key(name: str) -> str:
+    """A deck name without `#flashcards/`, lowercased; empty means every deck."""
+    key = name.strip().lstrip("#").strip("/").lower()
+    if key == "flashcards":
+        return ""
+    return key.removeprefix("flashcards/")
+
+
 def stats(vault: Path, today: dt.date, deck: str | None) -> dict:
     out = {"today": today.isoformat(), "files": [], "cards": 0, "new": 0, "due": 0, "due_cards": [],
            "warnings": []}
+    deck = deck_key(deck) if deck else ""
     root = vault / "cards"
     for path in sorted(root.rglob("cards-*.md")) if root.is_dir() else []:
         rel = path.relative_to(vault).as_posix()
         cards = parse_cards(path.read_text(encoding="utf-8", errors="replace"))
         if deck:
-            cards = [c for c in cards if c["deck"] == deck or c["deck"].startswith(deck + "/")]
+            cards = [c for c in cards
+                     if c["deck"].lower() == deck or c["deck"].lower().startswith(deck + "/")]
         n_cards = n_new = n_due = 0
         for c in cards:
             n_cards += c["sides"]
@@ -152,9 +226,15 @@ def main() -> None:
     size.add_argument("--bytes", type=count)
     args = parser.parse_args()
     if args.cmd == "stats":
-        result = stats(Path(args.vault).resolve(), dt.date.fromisoformat(args.today), args.deck)
+        vault = Path(args.vault).resolve()
+        if not vault.is_dir():
+            parser.error(f"vault folder not found: {args.vault}")
+        result = stats(vault, dt.date.fromisoformat(args.today), args.deck)
     else:
-        result = prefix(Path(args.file), args.lines, args.bytes)
+        try:
+            result = prefix(Path(args.file), args.lines, args.bytes)
+        except OSError as exc:
+            parser.error(f"cannot read {args.file}: {exc.strerror}")
     print(json.dumps(result, ensure_ascii=False, indent=1))
 
 

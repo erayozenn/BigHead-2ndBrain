@@ -152,6 +152,65 @@ class CardsTest(unittest.TestCase):
                                     capture_output=True, text=True, timeout=60)
             self.assertNotEqual(result.returncode, 0)
 
+    # Decisions on the ambiguous cases of that test, 2026-11-01: counts follow the plugin's parser.
+    def test_code_fences_hold_no_cards(self):
+        self.write_cards("Real::1\n\n```\nfenced::2\n?\n```\n\n~~~\nalso::3\n~~~\n")
+        self.assertEqual(self.counts(), (1, 1, 0))
+
+    def test_unclosed_fence_runs_to_end_of_file(self):
+        self.write_cards("Real::1\n\n```\nfenced::2\n\nmore::3\n")
+        self.assertEqual(self.counts(), (1, 1, 0))
+
+    def test_blank_line_in_a_fenced_answer_keeps_the_card_open(self):
+        self.write_cards("Q\n?\n```\nline\n\nmore\n```\nend\n<!--SR:!2026-10-01,2,230-->\n")
+        self.assertEqual(self.counts(), (1, 0, 1))
+
+    def test_marker_in_inline_code_is_no_card(self):
+        self.write_cards("Use `std::vector` here\n\nThe `a` token::answer\n")
+        self.assertEqual(self.counts(), (1, 1, 0))
+
+    def test_inline_marker_replaces_an_open_multiline_card(self):
+        self.write_cards("Line::one\n?\nanswer\n")   # question line is itself a card
+        self.assertEqual(self.counts(), (1, 1, 0))
+        self.write_cards("Question\n?\nanswer::x\n")  # the plugin drops the multi-line card
+        out = run("stats", "--vault", self.vault, "--today", "2026-10-31")
+        self.assertEqual(out["cards"], 1)
+
+    def test_separator_without_a_question_is_no_card(self):
+        self.write_cards("\n?\nanswer\n")
+        self.assertEqual(self.counts(), (0, 0, 0))
+
+    def test_empty_sides_stay_cards_like_the_plugin(self):
+        self.write_cards("::A\n\nQ::\n")
+        self.assertEqual(self.counts(), (2, 2, 0))
+
+    def test_deck_forms_all_match(self):
+        self.write_cards("#flashcards/ml\nQ::A\n")
+        for deck in ("ml", "ML", "flashcards/ml", "#flashcards/ml", "#Flashcards/ML"):
+            out = run("stats", "--vault", self.vault, "--deck", deck)
+            self.assertEqual(out["cards"], 1, deck)
+        self.assertEqual(run("stats", "--vault", self.vault, "--deck", "flashcards")["cards"], 1)
+        self.assertEqual(run("stats", "--vault", self.vault, "--deck", "m")["cards"], 0)
+
+    def test_deck_comes_from_the_tag_not_the_file_name(self):
+        self.write_cards("#flashcards/ml\nQ::A\n", name="cards-other.md")
+        os.remove(self.file)
+        self.assertEqual(run("stats", "--vault", self.vault, "--deck", "other")["cards"], 0)
+
+    def test_missing_vault_is_an_error(self):
+        result = subprocess.run([sys.executable, CARDS, "stats", "--vault", os.path.join(self.vault, "none")],
+                                capture_output=True, text=True, timeout=60)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+
+    def test_unreadable_file_gives_an_error_without_traceback(self):
+        for target in (self.vault, os.path.join(self.vault, "none.md")):
+            result = subprocess.run([sys.executable, CARDS, "prefix", "--file", target],
+                                    capture_output=True, text=True, timeout=60)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn("Traceback", result.stderr)
+            self.assertEqual(result.stdout, "")
+
 
 if __name__ == "__main__":
     unittest.main()
