@@ -171,6 +171,21 @@ class GuardTest(unittest.TestCase):
         self.assertDenied(run_guard(file_event(self.v("wiki", ".obsidian", "a.json"), tool="Write")))
         self.assertNoDecision(run_guard(file_event(self.v("wiki", ".obsidian-notes.md"), tool="Write")))
 
+    # Blind test of fda549c, 2026-11-01.
+    def test_nul_in_path_fails_closed_in_vault(self):
+        event = file_event(self.v("notes", "mine.md") + "\0")
+        self.assertEqual(run_guard(event, cwd=self.vault).returncode, 2)
+
+    def test_author_me_block_list_denied(self):
+        write(self.v("notes", "block.md"), "---\nauthor:\n  - me\n---\n")
+        self.assertDenied(run_guard(file_event(self.v("notes", "block.md"))))
+        write(self.v("wiki", "both.md"), "---\nauthor:\n  - me\n  - claude\n---\n")
+        self.assertNoDecision(run_guard(file_event(self.v("wiki", "both.md"))))
+
+    def test_author_me_with_uppercase_extension_denied(self):
+        write(self.v("notes", "upper.MD"), "---\nauthor: me\n---\n")
+        self.assertDenied(run_guard(file_event(self.v("notes", "upper.MD"))))
+
     @unittest.skipUnless(os.name == "nt", "MSYS paths exist on Windows only")
     def test_msys_path_is_protected(self):
         posix = self.v("raw", "paper.md").replace("\\", "/")

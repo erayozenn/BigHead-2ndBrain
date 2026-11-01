@@ -6,6 +6,7 @@ change both together. Standard library only; Python 3.10+.
 from __future__ import annotations
 
 import datetime as dt
+import os
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -33,13 +34,19 @@ CLAUDE_MD_MAX_LINES = 200  # official target per CLAUDE.md file
 
 # `\|` is how Obsidian writes a link alias inside a table cell.
 WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+?)(?:[#^][^\]|]*)?(?:\\?\|[^\]]*)?\]\]")
-FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+FENCE_RE = re.compile(r"```.*?```|~~~.*?~~~", re.DOTALL)
+MSYS_DRIVE_RE = re.compile(r"^/([A-Za-z])(?=/|$)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SUMMARY_HEAD = "> [!summary]- For future agent"
 SUMMARY_LINE_RE = re.compile(r"^>\s*What:.*Why kept:.*Goes stale:\s*(\S.*)$", re.MULTILINE)
 STALE_MONTH_RE = re.compile(r"^(\d{4})-(\d{2})\b")  # "Goes stale: 2027-03", not "when ... 2024-12"
 STALE_VALUE_RE = re.compile(r"^(never\b|when\s+\S|\d{4}-(0[1-9]|1[0-2])\b)")  # never | when <X> | <YYYY-MM>
+
+
+def from_msys(path: str) -> str:
+    """On Windows, /c/Users/x (Git Bash form) means C:/Users/x."""
+    return MSYS_DRIVE_RE.sub(r"\1:", path) if os.name == "nt" else path
 
 
 def read_page(path: Path) -> tuple[str, list[str]]:
@@ -96,7 +103,7 @@ def strip_code(text: str) -> str:
 def needs_schema(rel: str) -> bool:
     """True for pages the schema applies to: .md outside user dirs, not system files."""
     parts = rel.split("/")
-    return (rel.endswith(".md") and parts[0] not in USER_DIRS
+    return (rel.lower().endswith(".md") and parts[0] not in USER_DIRS
             and parts[-1] not in SYSTEM_FILES)
 
 
@@ -197,10 +204,13 @@ def resolve_link(target: str, by_name: dict, rel_paths: set) -> int:
 
 
 def duplicate_basenames(vault: Path, files: list[Path]) -> list[tuple[str, list[str]]]:
-    """Basenames shared by two .md files outside raw/, or by a wiki page and a raw file."""
+    """Basenames shared by two .md files outside raw/, or by a wiki page and a raw file.
+
+    CLAUDE.md is exempt: nested ones are normal, and nothing links to them by name.
+    """
     stems: dict[str, list[str]] = defaultdict(list)
     for f in files:
-        if f.suffix.lower() == ".md":
+        if f.suffix.lower() == ".md" and f.name != "CLAUDE.md":
             stems[f.stem.lower()].append(f.relative_to(vault).as_posix())
     dups = []
     for stem, paths in sorted(stems.items()):

@@ -35,6 +35,8 @@ VAULT_MARKER = "# Vault Schema & Rules"
 PATH_KEYS = ("file_path", "notebook_path")
 UTF16_BOMS = (b"\xff\xfe", b"\xfe\xff")
 AUTHOR_ME = re.compile(r"""^author\s*:\s*\[?\s*["']?me["']?\s*\]?\s*(#.*)?$""", re.IGNORECASE)
+AUTHOR_KEY = re.compile(r"^author\s*:\s*(#.*)?$", re.IGNORECASE)
+ITEM_ME = re.compile(r"""^-\s*["']?me["']?\s*(#.*)?$""", re.IGNORECASE)
 MSYS_DRIVE = re.compile(r"^/([A-Za-z])(?=/|$)")
 
 
@@ -79,11 +81,19 @@ def has_author_me(path: str) -> bool:
         lines.pop(0)
     if not lines or lines[0].strip() != "---":
         return False
-    for line in lines[1:]:
+    for i, line in enumerate(lines[1:], 1):
         if line.strip() == "---":
             return False
         if AUTHOR_ME.match(line.strip()):
             return True
+        if AUTHOR_KEY.match(line.strip()):  # block list with `me` as its only item
+            items = []
+            for following in lines[i + 1:]:
+                if not following.strip().startswith("-") or following.strip() == "---":
+                    break
+                items.append(following.strip())
+            if len(items) == 1 and ITEM_ME.match(items[0]):
+                return True
     return False
 
 
@@ -104,7 +114,7 @@ def check(path: str) -> str | None:
                 return "raw/ files are immutable sources; existing files may never be modified."
             if len(parts) < 3 or parts[1] != "web":
                 return "New raw files may only be added under raw/web/."
-    if exists and target.endswith(".md") and has_author_me(target):
+    if exists and target.lower().endswith(".md") and has_author_me(target):
         return "This note has `author: me`; Claude never edits the user's notes. Report the problem instead."
     return None
 
@@ -141,6 +151,8 @@ def main() -> int:
         for path in paths:
             if not isinstance(path, str):
                 raise TypeError(f"path is not a string: {path!r}")
+            if "\0" in path:
+                raise ValueError("path holds a NUL character")
             path = from_msys(path)
             if not os.path.isabs(path) and event.get("cwd"):
                 path = os.path.join(event["cwd"], path)

@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from vault_schema import find_vault, needs_schema, page_problems, read_page  # noqa: E402
+from vault_schema import find_vault, from_msys, needs_schema, page_problems, read_page  # noqa: E402
 
 
 def main() -> int:
@@ -29,6 +29,7 @@ def main() -> int:
         path = (event.get("tool_input") or {}).get("file_path")
         if not path:
             return 0
+        path = from_msys(path)
         if not os.path.isabs(path) and event.get("cwd"):
             path = os.path.join(event["cwd"], path)
         page = Path(path).resolve()

@@ -127,6 +127,16 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout.strip(), "")
 
+    @unittest.skipUnless(os.name == "nt", "MSYS paths exist on Windows only")
+    def test_msys_path_is_checked(self):
+        write(self.v("wiki", "msys.md"), "no frontmatter\n")
+        posix = os.path.realpath(self.v("wiki", "msys.md")).replace("\\", "/")
+        self.assertIn("block", run_validate(f"/{posix[0].lower()}{posix[2:]}").stdout)
+
+    def test_uppercase_extension_is_checked(self):
+        write(self.v("wiki", "UP.MD"), "no frontmatter\n")
+        self.assertIn("block", run_validate(self.v("wiki", "UP.MD")).stdout)
+
     def test_impossible_stale_month_blocks(self):
         write(self.v("wiki", "month.md"), GOOD.replace("Goes stale: never", "Goes stale: 2099-13"))
         self.assertIn("Goes stale must be", run_validate(self.v("wiki", "month.md")).stdout)

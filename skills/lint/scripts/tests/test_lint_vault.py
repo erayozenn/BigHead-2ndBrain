@@ -151,6 +151,16 @@ class LintTest(unittest.TestCase):
         write(self.vault, "projects/demo/demo.md", hub)
         self.assertIn("empty '## Next step' section", run_lint(self.vault).stdout)
 
+    def test_blind_test_link_findings(self):
+        write(self.vault, "wiki/concepts/a.md", page("See [[b]] and [[raw/paper.md]].\n\n~~~\n[[tilde-link]]\n~~~"))
+        write(self.vault, "wiki/concepts/b.md",
+              page("See [[a]].").replace("sources: []", 'sources: ["[[raw/nope.pdf]]"]'))
+        write(self.vault, "projects/demo/CLAUDE.md", "# Project rules\n")
+        out = run_lint(self.vault).stdout
+        self.assertNotIn("tilde-link", out)
+        self.assertIn("ERROR wiki/concepts/b.md: broken link [[raw/nope.pdf]]", out)
+        self.assertNotIn("duplicate basename 'claude'", out)
+
     def test_system_file_name_outside_root(self):
         write(self.vault, "wiki/concepts/rules.md", "no frontmatter\n")
         write(self.vault, "projects/demo/log.md", "no frontmatter\n")

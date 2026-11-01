@@ -7,9 +7,11 @@ Usage:
 Checks (the vault CLAUDE.md "Lint" list, minus the judgment checks):
   ERROR schema problems on every schema page (lib/vault_schema.py: frontmatter keys and
         values, dates, summary callout, past "Goes stale" month, BOM/CRLF)
-  ERROR broken or ambiguous wikilinks (all .md outside raw/ except CLAUDE.md, whose links
-        are examples; user notes are flagged "report only" — Claude never edits them)
-  ERROR duplicate basenames outside raw/ (and wiki vs raw)
+  ERROR broken or ambiguous wikilinks in page bodies and one-line frontmatter `sources` (all
+        .md outside raw/ except CLAUDE.md, whose links are examples; user notes are flagged
+        "report only" — Claude never edits them)
+  ERROR duplicate basenames outside raw/ (and wiki vs raw); nested CLAUDE.md files are exempt
+  ERROR a system file name on a page outside the vault root (schema checks would skip it)
   ERROR hot.md over 500 words, index.md over 16 KiB
   WARN  orphan pages (wiki/ pages no other file links to)
   WARN  wiki/ pages missing from index.md
@@ -147,8 +149,9 @@ def main() -> None:
                 report.add("ERROR", rel, problem)
         if rel == "CLAUDE.md":
             continue  # schema file: its links are examples
-        _, body = split_frontmatter(text.lstrip("﻿").replace("\r\n", "\n"))
-        for m in WIKILINK_RE.finditer(strip_code(body)):
+        fm, body = split_frontmatter(text.lstrip("﻿").replace("\r\n", "\n"))
+        linked = strip_code(body) + "\n" + (fm or {}).get("sources", "")
+        for m in WIKILINK_RE.finditer(linked):
             hits = link_targets(m.group(1), by_name, vault)
             suffix = " (user note: report only)" if user else ""
             if not hits:
