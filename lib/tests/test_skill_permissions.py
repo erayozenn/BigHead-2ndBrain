@@ -16,6 +16,13 @@ class SkillPermissionsTest(unittest.TestCase):
             frontmatter = skill.read_text(encoding="utf-8").split("\n---", 1)[0]
             self.assertIsNone(WRITING_COMMANDS.search(frontmatter), skill.parent.name)
 
+    def test_no_wildcard_before_a_git_subcommand(self):
+        # `git -C * status *` also matches `git -C . -c core.fsmonitor=<cmd> status`.
+        for skill in sorted(SKILLS.glob("*/SKILL.md")):
+            frontmatter = skill.read_text(encoding="utf-8").split("\n---", 1)[0]
+            self.assertIsNone(re.search(r"^\s*-\s*Bash\(git\s+[-*]", frontmatter, re.MULTILINE),
+                              skill.parent.name)
+
 
 if __name__ == "__main__":
     unittest.main()

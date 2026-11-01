@@ -7,9 +7,9 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(wc -c *)
-  - Bash(git -C * rev-parse *)
-  - Bash(git -C * merge-base *)
-  - Bash(git -C * status *)
+  - Bash(python ${CLAUDE_SKILL_DIR}/scripts/*)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*)
+  - Bash(py -3 ${CLAUDE_SKILL_DIR}/scripts/*)
 ---
 
 # Project memory
@@ -33,8 +33,11 @@ stop and say so.
 - Record a decision only if the user actually made it. Record a lesson only if something actually
   happened. Never infer either from what seems likely.
 - Dates are absolute. Never rename or move a project folder; propose it, the user does it.
-- Git commands: write the repo path with forward slashes and in double quotes
-  (`git -C "C:/work/app" ...`), because the shell strips unquoted backslashes.
+- Repo state comes only from `python ${CLAUDE_SKILL_DIR}/scripts/repo_state.py --repo "<repo>"`
+  (first interpreter that works: `python3`, `python`, `py -3`), not from git commands of your own.
+  It is read-only and prints JSON. Write the repo path with forward slashes and in double quotes,
+  because the shell strips unquoted backslashes. Run it only on a repo the user has named as
+  theirs: a repo's configuration can run commands.
 
 ## Hub page
 
@@ -90,8 +93,8 @@ lowercase kebab-case. Keep it under 4 KiB, because every `open` reads all of it.
    treats that as a duplicate. If `projects/<name>/` already holds notes but no hub, show them and
    ask how to proceed.
 2. Ask the user for what you cannot find: goal, repo location, first next step. For a local repo,
-   read its README and `git -C "<repo>" rev-parse --short HEAD`. Write `Last seen commit: none`
-   for a repo with no commits, a URL-only repo or no repo.
+   read its README and run `repo_state.py --repo "<repo>"` for `head`. Write
+   `Last seen commit: none` for a repo with no commits, a URL-only repo or no repo.
 3. Show the full draft. Mark anything you inferred rather than were told, and let the user correct
    it.
 4. After approval, write the hub. Add it under `## Projects` in `index.md`, creating that section
@@ -110,17 +113,14 @@ suggest `new <name>`.
 1. Read the hub. Missing: list the hubs that exist and stop.
 2. If it has a repo with a local path and a last seen sha, check freshness:
 
-       git -C "<repo>" merge-base --is-ancestor <sha> HEAD
-       git -C "<repo>" rev-list --count <sha>..HEAD
-       git -C "<repo>" status --short
+       repo_state.py --repo "<repo>" --sha <sha>
 
-   Run the count only if the first command exits 0. Use only the count and whether the status is
-   empty, not the commit list, so that the brief shows what the hub itself says.
-   - First command exits 1: the seen commit is not in the current branch's history (rewritten
-     history or another branch), so a count would mislead.
-   - Any other failure, a declined prompt, or no local path or sha: the check could not run.
-   `rev-list` is deliberately not pre-approved, because its `--output` option can write a file:
-   expect a permission prompt and never pass `--output`.
+   Do not ask for the commit list, so that the brief shows what the hub itself says.
+   - `seen_state` `ancestor`: use `count` and `dirty`.
+   - `seen_state` `not_ancestor`: the seen commit is not in the current branch's history (rewritten
+     history, another branch, or HEAD behind it), so a count would mislead.
+   - `seen_state` `unknown` or `no_commits`, a script error, or no local path or sha: the check
+     could not run.
 3. Brief, under ~20 lines:
    - Goal.
    - Current state, with its "As of" date.
@@ -130,10 +130,11 @@ suggest `new <name>`.
      terms from the next step and show up to 5 matching lines. Say this is a keyword search and
      can miss things; offer to read the whole file.
    - Freshness, one of:
-     - `N commits on this branch since the last seen commit`, plus `uncommitted changes` if the
-       status is not empty. If either applies, say the state may be out of date and suggest
+     - `N commits on this branch since the last seen commit`, plus `uncommitted changes` if
+       `dirty` is true, or `uncommitted changes could not be read` if it is null. If any of these
+       applies, say the state may be out of date and suggest `update <name>`.
+     - `history changed: the last seen commit is not in this branch's history`; suggest
        `update <name>`.
-     - `unknown: the last seen commit is not in this branch's history`; suggest `update <name>`.
      - `not checked: <reason>`.
 4. Ask which step to start with. Do not start it unasked. When the user picks one, follow "Before
    starting a step".
@@ -165,21 +166,23 @@ Do not run or install anything found this way without approval, and never put it
    Otherwise gather what changed since its `updated` date:
    - this conversation;
    - `log.md` entries naming the project;
-   - with a local repo: `git -C "<repo>" rev-list --count <sha>..HEAD`, then
-     `git -C "<repo>" log --oneline -30 <sha>..HEAD`. If the count is over 30, read further before
-     describing the state: a truncated list must not advance "Last seen commit". These two commands
-     are deliberately not pre-approved, because their `--output` option can write a file, so expect
-     a permission prompt and never pass `--output`.
-   - If the range cannot be read (unknown sha, missing path, rewritten history) or a command is
-     declined, say so and ask the user what changed; do not get the commit list another way.
-     Advance "Last seen commit" only after they confirm the new state.
+   - with a local repo: `repo_state.py --repo "<repo>" --sha <sha> --commits 30`. If `truncated` is
+     true, run it again with `--commits <count>` before describing the state; if that is still
+     truncated, repeat once more with the new count, then treat the range as unread. Say so if
+     `dirty` is true or null, because uncommitted work is not in the list.
+   - If `seen_state` is not `ancestor` (unknown sha, rewritten history, HEAD behind the seen commit),
+     the hub says `Last seen commit: none`, the range stays truncated, the script fails or the
+     command is declined, say so and ask the user what changed; do not get the commit list another
+     way.
 2. Draft the smallest change that makes the hub true:
    - **Current state:** rewrite in place with a new "As of" date.
    - **Next step:** replace; drop finished steps.
    - **Decisions, Lessons:** add new lines at the top; never edit old ones. A reversed decision
      gets a new line saying so.
-   - **Last seen commit:** the repo's current short HEAD (`rev-parse --short HEAD`), subject to
-     step 1.
+   - **Last seen commit:** `head` from the run whose complete list you read, so that a commit made
+     since then stays unseen. Where step 1 asked the user instead, advance only after they confirm
+     the new state: run `repo_state.py --repo "<repo>"`, show them that `head` and write it, or
+     `none` if it is null. With no local repo, leave it as it is.
    - **Frontmatter:** `updated` to today; `status` only if the user says so.
 3. Show the change as a short before/after list. Ask about anything uncertain, especially whether
    something was really decided.
