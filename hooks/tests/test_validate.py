@@ -127,6 +127,12 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout.strip(), "")
 
+    def test_impossible_stale_month_blocks(self):
+        write(self.v("wiki", "month.md"), GOOD.replace("Goes stale: never", "Goes stale: 2099-13"))
+        self.assertIn("Goes stale must be", run_validate(self.v("wiki", "month.md")).stdout)
+        write(self.v("wiki", "month.md"), GOOD.replace("Goes stale: never", "Goes stale: 2099-12"))
+        self.assertSilent(run_validate(self.v("wiki", "month.md")))
+
 
 if __name__ == "__main__":
     unittest.main()

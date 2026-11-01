@@ -39,7 +39,7 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SUMMARY_HEAD = "> [!summary]- For future agent"
 SUMMARY_LINE_RE = re.compile(r"^>\s*What:.*Why kept:.*Goes stale:\s*(\S.*)$", re.MULTILINE)
 STALE_MONTH_RE = re.compile(r"^(\d{4})-(\d{2})\b")  # "Goes stale: 2027-03", not "when ... 2024-12"
-STALE_VALUE_RE = re.compile(r"^(never\b|when\s+\S|\d{4}-\d{2}\b)")  # never | when <X> | <YYYY-MM>
+STALE_VALUE_RE = re.compile(r"^(never\b|when\s+\S|\d{4}-(0[1-9]|1[0-2])\b)")  # never | when <X> | <YYYY-MM>
 
 
 def read_page(path: Path) -> tuple[str, list[str]]:
