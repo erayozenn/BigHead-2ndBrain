@@ -10,10 +10,12 @@ break the vault's hard rules:
 
 Paths outside a vault get no decision (normal permission flow).
 A vault is a folder holding raw/ and a CLAUDE.md that starts with VAULT_MARKER.
+Every enclosing vault is checked, so a vault-shaped folder unpacked inside raw/
+or .obsidian/ does not lift the protection of the outer vault.
 
 Failure mode: if the guard itself breaks while the target is inside a vault
-(or cannot be determined and the cwd is a vault), it blocks with exit 2.
-Outside a vault it never blocks.
+(or cannot be determined and the event's cwd or the process cwd is a vault),
+it blocks with exit 2. Outside a vault it never blocks.
 
 Standard library only; Python 3.10+.
 """
@@ -27,8 +29,8 @@ import sys
 
 VAULT_MARKER = "# Vault Schema & Rules"
 PATH_KEYS = ("file_path", "notebook_path")
-FRONTMATTER_READ_BYTES = 64 * 1024
-AUTHOR_ME = re.compile(r"""^author:\s*["']?me["']?\s*(#.*)?$""")
+UTF16_BOMS = (b"\xff\xfe", b"\xfe\xff")
+AUTHOR_ME = re.compile(r"""^author\s*:\s*["']?me["']?\s*(#.*)?$""")
 
 
 def norm(path: str) -> str:
@@ -45,21 +47,24 @@ def is_vault(folder: str) -> bool:
         return False
 
 
-def find_vault(path: str) -> str | None:
+def find_vaults(path: str) -> list[str]:
+    """Every vault enclosing path, nearest first."""
+    vaults = []
     folder = path if os.path.isdir(path) else os.path.dirname(path)
     while True:
         if is_vault(folder):
-            return folder
+            vaults.append(folder)
         parent = os.path.dirname(folder)
         if parent == folder:
-            return None
+            return vaults
         folder = parent
 
 
 def has_author_me(path: str) -> bool:
-    with open(path, encoding="utf-8-sig", errors="replace") as f:
-        head = f.read(FRONTMATTER_READ_BYTES)
-    lines = head.splitlines()
+    with open(path, "rb") as f:
+        data = f.read()
+    encoding = "utf-16" if data[:2] in UTF16_BOMS else "utf-8-sig"
+    lines = data.decode(encoding, errors="replace").splitlines()
     if not lines or lines[0].strip() != "---":
         return False
     for line in lines[1:]:
@@ -73,21 +78,20 @@ def has_author_me(path: str) -> bool:
 def check(path: str) -> str | None:
     """Return a deny reason, or None for no decision."""
     target = norm(path)
-    vault = find_vault(target)
-    if vault is None:
+    vaults = find_vaults(target)
+    if not vaults:
         return None
-    parts = os.path.relpath(target, vault).split(os.sep)
-    top = parts[0]
     exists = os.path.exists(target)
-
-    if top == ".obsidian":
-        return ".obsidian/ is Obsidian's config; the vault rules forbid touching it."
-    if top == "raw":
-        if exists:
-            return "raw/ files are immutable sources; existing files may never be modified."
-        if len(parts) < 3 or parts[1] != "web":
-            return "New raw files may only be added under raw/web/."
-        return None
+    for vault in vaults:
+        parts = os.path.relpath(target, vault).split(os.sep)
+        top = parts[0]
+        if top == ".obsidian":
+            return ".obsidian/ is Obsidian's config; the vault rules forbid touching it."
+        if top == "raw":
+            if exists:
+                return "raw/ files are immutable sources; existing files may never be modified."
+            if len(parts) < 3 or parts[1] != "web":
+                return "New raw files may only be added under raw/web/."
     if exists and target.endswith(".md") and has_author_me(target):
         return "This note has `author: me`; Claude never edits the user's notes. Report the problem instead."
     return None
@@ -103,26 +107,36 @@ def deny(reason: str) -> None:
     }))
 
 
+def in_any_vault(candidates: list) -> bool:
+    for candidate in candidates:
+        try:
+            if isinstance(candidate, str) and candidate and find_vaults(norm(candidate)):
+                return True
+        except Exception:
+            continue
+    return False
+
+
 def main() -> int:
-    path = None
+    event = None
+    paths = []
     try:
         event = json.load(sys.stdin)
         tool_input = event.get("tool_input") or {}
-        path = next((tool_input[k] for k in PATH_KEYS if tool_input.get(k)), None)
-        if path is None:
-            return 0
-        if not os.path.isabs(path) and event.get("cwd"):
-            path = os.path.join(event["cwd"], path)
-        reason = check(path)
-        if reason:
-            deny(reason)
+        paths = [tool_input[k] for k in PATH_KEYS if tool_input.get(k)]
+        for path in paths:
+            if not isinstance(path, str):
+                raise TypeError(f"path is not a string: {path!r}")
+            if not os.path.isabs(path) and event.get("cwd"):
+                path = os.path.join(event["cwd"], path)
+            reason = check(path)
+            if reason:
+                deny(reason)
+                return 0
         return 0
     except Exception as exc:  # fail closed inside a vault only
-        try:
-            in_vault = find_vault(norm(path or os.getcwd())) is not None
-        except Exception:
-            in_vault = False
-        if in_vault:
+        event_cwd = event.get("cwd") if isinstance(event, dict) else None
+        if in_any_vault([*paths, event_cwd, os.getcwd()]):
             print(f"[bighead guard] blocked: guard error ({exc!r}); fix the hook or edit manually.",
                   file=sys.stderr)
             return 2

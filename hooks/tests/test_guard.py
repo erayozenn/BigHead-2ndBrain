@@ -98,6 +98,53 @@ class GuardTest(unittest.TestCase):
         self.assertEqual(run_guard("not json", cwd=self.vault).returncode, 2)
         self.assertEqual(run_guard("not json", cwd=self.other).returncode, 1)
 
+    # Regressions from the 2026-11-01 black-box test of hooks and cards.
+    def test_bad_path_type_fails_closed_in_vault(self):
+        for value in (7, [self.v("raw", "paper.md")]):
+            event = file_event(value)
+            event["cwd"] = self.vault
+            self.assertEqual(run_guard(event, cwd=self.vault).returncode, 2)
+            self.assertEqual(run_guard(event, cwd=self.other).returncode, 2)  # event cwd counts
+        self.assertEqual(run_guard(file_event(7), cwd=self.other).returncode, 1)
+
+    def test_vault_shaped_folder_inside_raw_stays_protected(self):
+        inner = self.v("raw", "unpacked")
+        write(os.path.join(inner, "CLAUDE.md"), "# Vault Schema & Rules\n")
+        write(os.path.join(inner, "raw", "x.md"), "x\n")
+        write(os.path.join(inner, "wiki", "page.md"), "x\n")
+        self.assertDenied(run_guard(file_event(os.path.join(inner, "wiki", "page.md"))))
+        self.assertDenied(run_guard(file_event(os.path.join(inner, "wiki", "new.md"), tool="Write")))
+        self.assertDenied(run_guard(file_event(os.path.join(inner, "raw", "web", "new.md"), tool="Write")))
+
+    def test_vault_shaped_folder_inside_obsidian_stays_protected(self):
+        inner = self.v(".obsidian", "plugins", "v")
+        write(os.path.join(inner, "CLAUDE.md"), "# Vault Schema & Rules\n")
+        os.makedirs(os.path.join(inner, "raw"))
+        write(os.path.join(inner, "data.json"), "{}\n")
+        self.assertDenied(run_guard(file_event(os.path.join(inner, "data.json"))))
+
+    def test_author_me_with_space_before_colon(self):
+        write(self.v("notes", "spaced.md"), "---\nauthor : me\n---\nbody\n")
+        self.assertDenied(run_guard(file_event(self.v("notes", "spaced.md"))))
+
+    def test_author_me_in_utf16_file(self):
+        path = self.v("notes", "utf16.md")
+        with open(path, "wb") as f:
+            f.write("---\nauthor: me\n---\nbody\n".encode("utf-16"))
+        self.assertDenied(run_guard(file_event(path)))
+
+    def test_author_me_after_long_frontmatter(self):
+        long_lines = "".join(f"key{i}: value\n" for i in range(12000))  # over 64 KiB
+        write(self.v("notes", "long.md"), f"---\n{long_lines}author: me\n---\nbody\n")
+        self.assertDenied(run_guard(file_event(self.v("notes", "long.md"))))
+        write(self.v("notes", "wide.md"), f"---\nkey: {'x' * 70000}\nauthor: me\n---\nbody\n")
+        self.assertDenied(run_guard(file_event(self.v("notes", "wide.md"))))
+
+    def test_every_path_key_is_checked(self):
+        event = file_event(self.v("wiki", "page.md"), tool="NotebookEdit")
+        event["tool_input"]["notebook_path"] = self.v("raw", "paper.md")
+        self.assertDenied(run_guard(event))
+
 
 if __name__ == "__main__":
     unittest.main()
