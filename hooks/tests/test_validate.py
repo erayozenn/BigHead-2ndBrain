@@ -82,6 +82,31 @@ class ValidateTest(unittest.TestCase):
             self.assertEqual(json.loads(result.stdout)["decision"], "block")
             self.assertIn(reason, json.loads(result.stdout)["reason"])
 
+    # Regressions from the 2026-11-01 black-box test of hooks and cards.
+    def test_summary_callout_shape_blocked(self):
+        path = self.v("wiki", "concepts", "shape.md")
+        cases = {
+            "blank line": GOOD.replace("---\n> [!summary]", "---\n\n> [!summary]"),
+            "wrong title": GOOD.replace("For future agent", "Summary"),
+            "no fold marker": GOOD.replace("[!summary]-", "[!summary]"),
+            "bad stale value": GOOD.replace("Goes stale: never.", "Goes stale: soon."),
+        }
+        for name, text in cases.items():
+            with self.subTest(name):
+                write(path, text)
+                self.assertEqual(json.loads(run_validate(path).stdout)["decision"], "block")
+
+    def test_valid_stale_values_silent(self):
+        path = self.v("wiki", "concepts", "stale.md")
+        for value in ("never.", "when the kit changes.", "2099-01.", "2099-01"):
+            with self.subTest(value):
+                write(path, GOOD.replace("never.", value))
+                self.assertSilent(run_validate(path))
+
+    def test_author_me_with_space_before_colon_silent(self):
+        write(self.v("projects", "spaced.md"), "---\nauthor : me\n---\n# Mine\n")
+        self.assertSilent(run_validate(self.v("projects", "spaced.md")))
+
     def test_skipped_paths(self):
         for rel in (("raw", "web", "a.md"), ("notes", "n.md"), ("hot.md",), ("wiki", "a.txt")):
             write(self.v(*rel), "no frontmatter\n")

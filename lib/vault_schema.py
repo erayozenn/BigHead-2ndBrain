@@ -36,9 +36,10 @@ WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+?)(?:[#^][^\]|]*)?(?:\\?\|[^\]]*)?\]\
 FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-SUMMARY_HEAD = "> [!summary]"
+SUMMARY_HEAD = "> [!summary]- For future agent"
 SUMMARY_LINE_RE = re.compile(r"^>\s*What:.*Why kept:.*Goes stale:\s*(\S.*)$", re.MULTILINE)
 STALE_MONTH_RE = re.compile(r"^(\d{4})-(\d{2})\b")  # "Goes stale: 2027-03", not "when ... 2024-12"
+STALE_VALUE_RE = re.compile(r"^(never\b|when\s+\S|\d{4}-\d{2}\b)")  # never | when <X> | <YYYY-MM>
 
 
 def read_page(path: Path) -> tuple[str, list[str]]:
@@ -76,7 +77,7 @@ def split_frontmatter(text: str) -> tuple[dict[str, str] | None, str]:
         return None, text
     fm: dict[str, str] = {}
     for line in text[4:end].splitlines():
-        m = re.match(r"^([A-Za-z_][\w-]*):\s*(.*)$", line)
+        m = re.match(r"^([A-Za-z_][\w-]*)\s*:\s*(.*)$", line)
         if m:
             fm[m.group(1)] = m.group(2).strip()
     body = text[end + 4:].split("\n", 1)[1] if "\n" in text[end + 4:] else ""
@@ -152,10 +153,13 @@ def page_problems(raw_text: str, rel: str, today: dt.date | None = None) -> list
     if len(dates) == 2 and dates["updated"] < dates["created"]:
         problems.append(f"updated {dates['updated']} is before created {dates['created']}")
 
-    if not body.lstrip("\n").startswith(SUMMARY_HEAD):
-        problems.append("summary callout (> [!summary]- For future agent) must follow the frontmatter directly")
-    elif not SUMMARY_LINE_RE.search(body):
+    summary = SUMMARY_LINE_RE.search(body)
+    if body.split("\n", 1)[0].rstrip() != SUMMARY_HEAD:
+        problems.append(f"summary callout ({SUMMARY_HEAD}) must follow the frontmatter directly")
+    elif not summary:
         problems.append("summary callout needs 'What: ... Why kept: ... Goes stale: ...'")
+    elif not STALE_VALUE_RE.match(summary.group(1)):
+        problems.append(f"Goes stale must be never, when <X> or YYYY-MM, not {summary.group(1)!r}")
     else:
         stale = stale_month(body)
         if stale and stale < (today.year, today.month):
