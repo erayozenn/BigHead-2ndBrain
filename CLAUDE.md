@@ -37,8 +37,10 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 8. The kit must work on a Claude Pro/Max subscription with no API key. Anything that needs
    `claude -p`, the Agent SDK or an API key is optional and documented as such.
 9. Before each git operation, state which repo you are in (kit vs vault).
+10. Raise `version` in `plugin.json` before any push meant to reach users. Installed copies stay on
+    their cached version until that string changes, however many commits are pushed.
 
-## Roadmap (current: public v0.1.0; Phase 2d batch 2 — playbooks)
+## Roadmap (current: public v0.2.0; Phase 2d batch 2 — playbooks)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public (done) ·
