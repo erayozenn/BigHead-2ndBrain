@@ -165,8 +165,10 @@ Do not run or install anything found this way without approval, and never put it
    - this conversation;
    - `log.md` entries naming the project;
    - with a local repo: `git -C "<repo>" rev-list --count <sha>..HEAD`, then
-     `git -C "<repo>" log --oneline -30 <sha>..HEAD`. If the count is over 30, read further before
-     describing the state: a truncated list must not advance "Last seen commit".
+     `git -C "<repo>" log --oneline -30 <sha>..HEAD`. This command is not pre-approved, because
+     `git log` options can write files, so it may ask for permission; if it is denied, treat the
+     range as unreadable (next item). If the count is over 30, read further before describing the
+     state: a truncated list must not advance "Last seen commit".
    - If the range cannot be read (unknown sha, missing path, rewritten history), say so and ask the
      user what changed. Advance "Last seen commit" only after they confirm the new state.
 2. Draft the smallest change that makes the hub true:
