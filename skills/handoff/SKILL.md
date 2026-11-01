@@ -74,7 +74,14 @@ or rules.md. Write only the ones the user approves.
 ## 6. Month change
 
 If `log.md` contains entries from a previous month, offer the archive step from CLAUDE.md:
-copy those entries to `archive/YYYY-MM/log.md`, then remove them from log.md. Ask first.
+copy those entries to `archive/YYYY-MM/log-YYYY-MM.md`, then remove them from log.md. Ask first.
+- The name carries the month because basenames are unique vault-wide; a plain `log.md` in
+  `archive/` would collide with the root `log.md`.
+- The archive file is a vault page: frontmatter (`type: note`, `status: archived`,
+  `tags: [log, archive]`, `sensitivity: private`) and the summary callout, then the entries
+  unchanged. Before removing anything from log.md, check that every moved line is in the archive
+  (e.g. diff the `## [YYYY-MM` lines of both files).
+- Add `Earlier months: [[log-YYYY-MM]]` under the log.md header and an `archive` log line.
 
 ## 7. Close
 

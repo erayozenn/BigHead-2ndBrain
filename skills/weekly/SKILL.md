@@ -31,7 +31,7 @@ and one `log.md` line. Never edits notes, Threads.md or wiki pages from this ski
 
 ## 1. Gather
 
-- `log.md` entries dated in the week (and `archive/YYYY-MM/log.md` if the month changed and the
+- `log.md` entries dated in the week (and `archive/YYYY-MM/log-YYYY-MM.md` if the month changed and the
   entries were archived). Group by operation: ingest, save, query (gaps), lint, decision, setup.
 - Vault git: `git log --since=<Monday> --until=<Sunday+1> --name-status --format="%h %ad %s"
   --date=short -- wiki/ cards/` → pages created and changed.

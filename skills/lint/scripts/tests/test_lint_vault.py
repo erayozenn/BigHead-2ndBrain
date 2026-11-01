@@ -77,6 +77,16 @@ class LintTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)  # WARN, not ERROR
         self.assertIn("WARN  CLAUDE.md: 212 lines (target under 200", result.stdout)
 
+    def test_archived_log_name(self):
+        archived = page("## [2026-10-29] setup | x").replace("type: concept", "type: note")
+        write(self.vault, "log.md", "# Log\n")
+        write(self.vault, "archive/2026-10/log-2026-10.md", archived)
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 0, result.stdout)  # the template's archive name is unique
+        write(self.vault, "archive/2026-11/log.md", archived)
+        result = run_lint(self.vault)
+        self.assertIn("duplicate basename 'log'", result.stdout)  # a plain log.md collides
+
 
 if __name__ == "__main__":
     unittest.main()
