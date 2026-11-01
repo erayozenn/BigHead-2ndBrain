@@ -71,6 +71,17 @@ class ValidateTest(unittest.TestCase):
         self.assertIn("missing keys: status", out["reason"])
         self.assertIn("summary callout", out["reason"])
 
+    def test_crlf_and_bad_encoding_blocked(self):
+        path = self.v("wiki", "concepts", "enc.md")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        for data, reason in ((GOOD.replace("\n", "\r\n").encode(), "CRLF"),
+                             ((GOOD + "İğüş\n").encode("cp1254"), "not valid UTF-8")):
+            with open(path, "wb") as f:
+                f.write(data)
+            result = run_validate(path)
+            self.assertEqual(json.loads(result.stdout)["decision"], "block")
+            self.assertIn(reason, json.loads(result.stdout)["reason"])
+
     def test_skipped_paths(self):
         for rel in (("raw", "web", "a.md"), ("notes", "n.md"), ("hot.md",), ("wiki", "a.txt")):
             write(self.v(*rel), "no frontmatter\n")

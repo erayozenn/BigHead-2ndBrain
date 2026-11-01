@@ -45,20 +45,21 @@ Keep "Recent changes" (≈ 5 newest) and "Key facts" consistent with what happen
 fact only if the session settled something lasting; correct any key fact the session proved
 wrong.
 
-## 3. Size
+## 3. Project hubs
+
+If this session worked on a project that has a hub (`projects/<name>/<name>.md`), follow the
+`update <name>` steps in `${CLAUDE_SKILL_DIR}/../project/SKILL.md`: draft the change, show it, and
+apply it only after approval. Leave its commit to step 5. Skip projects the session did not touch.
+Do not create a new hub here; mention `/bighead:project new <name>` if a project without one came
+up repeatedly.
+
+## 4. Size
 
 hot.md ≤ 500 words (count with `wc -w hot.md`). Over the limit, in order:
 1. Drop the oldest "Recent changes" lines (they live in log.md).
 2. Shorten "Now" (pointers instead of explanations).
 3. Move long-lived items from "Now" or "Active threads" to `Threads.md` — ask first, then add
    them as `- [ ] <topic> — <context> (opened YYYY-MM-DD)`.
-
-## 4. Project hubs
-
-If this session worked on a project that has a hub (`projects/<name>/<name>.md`), follow the
-`update <name>` steps in `${CLAUDE_SKILL_DIR}/../project/SKILL.md`: draft the change, show it, and
-apply it only after approval. Skip projects the session did not touch. Do not create a new hub
-here; mention `/bighead:project new <name>` if a project without one came up repeatedly.
 
 ## 5. Uncommitted and unpushed work
 

@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from vault_schema import find_vault, needs_schema, page_problems  # noqa: E402
+from vault_schema import find_vault, needs_schema, page_problems, read_page  # noqa: E402
 
 
 def main() -> int:
@@ -38,7 +38,8 @@ def main() -> int:
         rel = page.relative_to(vault).as_posix()
         if not needs_schema(rel):
             return 0
-        problems = page_problems(page.read_text(encoding="utf-8", errors="replace"), rel)
+        text, encoding_problems = read_page(page)
+        problems = encoding_problems + page_problems(text, rel)
         if problems:
             print(json.dumps({
                 "decision": "block",

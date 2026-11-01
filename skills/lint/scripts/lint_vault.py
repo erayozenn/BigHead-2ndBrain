@@ -32,7 +32,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
 from vault_schema import (CLAUDE_MD_MAX_LINES, HOT_MAX_WORDS, INDEX_MAX_BYTES,  # noqa: E402
                           WIKILINK_RE,
                           build_link_index, duplicate_basenames, needs_schema,
-                          page_problems, scalar, split_frontmatter, strip_code, vault_files)
+                          page_problems, read_page, scalar, split_frontmatter, strip_code,
+                          vault_files)
 
 LAYOUT_CELL_RE = re.compile(r"^\|\s*([^|]+?)\s*\|")
 HUB_SECTIONS = ("Current state", "Next step", "Decisions", "Lessons")
@@ -96,13 +97,17 @@ def check_project_hubs(report: Report, vault: Path, pages: list[Path], indexed: 
         if not hub.is_file():
             report.add("WARN", f"projects/{name}/", f"no hub page {name}.md")
             continue
-        text = hub.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+        text = read_page(hub)[0].replace("\r\n", "\n")
         fm, _ = split_frontmatter(text.lstrip("﻿"))
         if fm is None or scalar(fm.get("type", "")) != "project":
             report.add("WARN", rel, "hub page is not type: project")
+        prose = strip_code(text)
         for section in HUB_SECTIONS:
-            if not re.search(rf"^## {section}\s*$", text, re.MULTILINE):
+            if not re.search(rf"^## {section}[ \t]*$", prose, re.MULTILINE):
                 report.add("WARN", rel, f"hub page has no '## {section}' section")
+        next_step = re.search(r"^## Next step[ \t]*\n(.*?)(?=^## |\Z)", prose, re.MULTILINE | re.DOTALL)
+        if next_step and not next_step.group(1).strip():
+            report.add("WARN", rel, "hub page has an empty '## Next step' section")
         size = hub.stat().st_size
         if size > HUB_MAX_BYTES:
             report.add("WARN", rel, f"hub page is {size / 1024:.1f} KiB (max "
@@ -131,10 +136,10 @@ def main() -> None:
 
     for page in pages:
         rel = page.relative_to(vault).as_posix()
-        text = page.read_text(encoding="utf-8", errors="replace")
+        text, encoding_problems = read_page(page)
         user = is_user_note(rel, text)
         if needs_schema(rel):
-            for problem in page_problems(text, rel):
+            for problem in encoding_problems + page_problems(text, rel):
                 report.add("ERROR", rel, problem)
         if rel == "CLAUDE.md":
             continue  # schema file: its links are examples
@@ -155,7 +160,8 @@ def main() -> None:
 
     index = vault / "index.md"
     index_text = index.read_text(encoding="utf-8", errors="replace") if index.exists() else ""
-    indexed = {m.group(1).strip().lower().rsplit("/", 1)[-1] for m in WIKILINK_RE.finditer(index_text)}
+    indexed = {m.group(1).strip().lower().rsplit("/", 1)[-1]
+               for m in WIKILINK_RE.finditer(strip_code(index_text))}
     for page in pages:
         rel = page.relative_to(vault).as_posix()
         if not rel.startswith("wiki/") or not needs_schema(rel):

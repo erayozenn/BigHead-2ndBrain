@@ -113,6 +113,44 @@ class LintTest(unittest.TestCase):
         self.assertIn("WARN  projects/big/big.md: hub page is", out)
         self.assertIn("WARN  projects/wrong/wrong.md: hub page is not type: project", out)
 
+    # Regressions from the 2026-11-01 black-box test.
+    def write_bytes(self, rel, data):
+        path = os.path.join(self.vault, *rel.split("/"))
+        with open(path, "wb") as f:
+            f.write(data)
+
+    def test_crlf_is_an_error(self):
+        self.write_bytes("wiki/concepts/b.md", page("See [[a]].").replace("\n", "\r\n").encode())
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("ERROR wiki/concepts/b.md: CRLF line endings", result.stdout)
+
+    def test_non_utf8_is_an_error(self):
+        self.write_bytes("wiki/concepts/b.md", page("See [[a]]. İğüş").encode("cp1254"))
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("ERROR wiki/concepts/b.md: not valid UTF-8", result.stdout)
+
+    def test_table_escaped_alias_resolves(self):
+        write(self.vault, "wiki/concepts/a.md", page("| h |\n|---|\n| [[b\\|Bee]] |"))
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("broken link", result.stdout)
+
+    def test_code_does_not_count_for_hubs(self):
+        sections = "".join(f"## {s}\nx\n" for s in ("Current state", "Next step", "Decisions", "Lessons"))
+        fenced = page("```\n" + sections + "```").replace("type: concept", "type: project")
+        write(self.vault, "projects/demo/demo.md", fenced)
+        write(self.vault, "index.md", "# Index\n- [[a]]\n- [[b]]\n`[[demo]]`\n")
+        out = run_lint(self.vault).stdout
+        self.assertIn("hub page has no '## Next step' section", out)
+        self.assertIn("WARN  projects/demo/demo.md: not listed in index.md", out)
+
+    def test_empty_next_step_warns(self):
+        hub = self.hub().replace("## Next step\nx\n", "## Next step\n")
+        write(self.vault, "projects/demo/demo.md", hub)
+        self.assertIn("empty '## Next step' section", run_lint(self.vault).stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

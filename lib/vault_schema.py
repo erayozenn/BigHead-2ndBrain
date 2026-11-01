@@ -31,13 +31,26 @@ HOT_MAX_WORDS = 500
 INDEX_MAX_BYTES = 16 * 1024
 CLAUDE_MD_MAX_LINES = 200  # official target per CLAUDE.md file
 
-WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+)(?:[#^][^\]|]*)?(?:\|[^\]]*)?\]\]")
+# `\|` is how Obsidian writes a link alias inside a table cell.
+WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+?)(?:[#^][^\]|]*)?(?:\\?\|[^\]]*)?\]\]")
 FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SUMMARY_HEAD = "> [!summary]"
 SUMMARY_LINE_RE = re.compile(r"^>\s*What:.*Why kept:.*Goes stale:\s*(\S.*)$", re.MULTILINE)
 STALE_MONTH_RE = re.compile(r"^(\d{4})-(\d{2})\b")  # "Goes stale: 2027-03", not "when ... 2024-12"
+
+
+def read_page(path: Path) -> tuple[str, list[str]]:
+    """A page's text with line endings intact, plus any encoding problem.
+
+    Text-mode reads translate CRLF to LF, which would hide it from page_problems.
+    """
+    data = path.read_bytes()
+    try:
+        return data.decode("utf-8"), []
+    except UnicodeDecodeError:
+        return data.decode("utf-8", errors="replace"), ["not valid UTF-8 (vault files use UTF-8)"]
 
 
 def is_vault(folder: Path) -> bool:
@@ -113,7 +126,7 @@ def page_problems(raw_text: str, rel: str, today: dt.date | None = None) -> list
     if fm is None:
         return problems + ["missing frontmatter"]
     if scalar(fm.get("author", "")) == "me":
-        return problems
+        return []
 
     keys = REQUIRED_KEYS + (SOURCE_KEYS if scalar(fm.get("type", "")) == "source" else [])
     missing = [k for k in keys if k not in fm]

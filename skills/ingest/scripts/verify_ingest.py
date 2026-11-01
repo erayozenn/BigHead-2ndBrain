@@ -32,7 +32,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
 from vault_schema import (HOT_MAX_WORDS, SYSTEM_FILES, WIKILINK_RE,  # noqa: E402
                           build_link_index, duplicate_basenames, needs_schema,
-                          page_problems, resolve_link, scalar, split_frontmatter,
+                          page_problems, read_page, resolve_link, scalar, split_frontmatter,
                           strip_code, vault_files)
 
 try:
@@ -141,7 +141,7 @@ def normalize(text: str) -> str:
 def check_page(page: Path, vault: Path, by_name: dict, rel_paths: set,
                given: list[str], raw: SourceTexts, report: Report) -> None:
     where = page.relative_to(vault).as_posix()
-    raw_text = page.read_text(encoding="utf-8")
+    raw_text, encoding_problems = read_page(page)
     text = raw_text.lstrip("﻿").replace("\r\n", "\n")
 
     is_system = page.name in SYSTEM_FILES
@@ -149,7 +149,7 @@ def check_page(page: Path, vault: Path, by_name: dict, rel_paths: set,
     if fm is not None and scalar(fm.get("author", "")) == "me":
         report.error(where, "author: me — Claude must not edit this note")
     if needs_schema(where):
-        for problem in page_problems(raw_text, where):
+        for problem in encoding_problems + page_problems(raw_text, where):
             report.error(where, problem)
 
     prose = strip_code(body if fm is not None else text)
