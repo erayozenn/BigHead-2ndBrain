@@ -39,6 +39,7 @@ Project and life-management notes live in `projects/` and `areas/`.
 | hot.md | every session (`@import`) | ≤ 500 words: now, recent changes, key facts, active threads |
 | Threads.md | by today/weekly/lint | full backlog of open topics |
 | projects/\<name\>/\<name\>.md | by `/bighead:project open` | one project's goal, state, next step, decisions, lessons |
+| playbooks/\<slug\>/\<slug\>.md | by `/bighead:playbook use` | a tested procedure: steps with evidence tags, contexts, checks |
 | log.md | on demand | append-only history |
 | rules.md | on demand | rules learned from the user's corrections |
 
@@ -57,7 +58,7 @@ The vault is the single source of truth; Claude Code's own auto-memory only poin
 
 1. Rules in the vault's CLAUDE.md.
 2. Permission rules in the vault's `.claude/settings.json` (deny `.obsidian/` and secrets,
-   ask before any write to `raw/`, deny shell move/rename/delete). Treated as a safety net, not a wall.
+   ask before any write to `raw/`, `projects/` or `playbooks/`, deny shell move/rename/delete). Treated as a safety net, not a wall.
 3. Hooks: `hooks/guard.py`, a PreToolUse guard on Write/Edit/NotebookEdit — denies changes to
    existing raw files, new raw files outside `raw/web/`, edits to `author: me` notes and anything
    under `.obsidian/`. Inert outside a vault; fails closed inside one. Shell commands are not
