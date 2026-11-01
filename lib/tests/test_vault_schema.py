@@ -88,6 +88,8 @@ class PageProblemsTest(unittest.TestCase):
         self.assertIn("X", strip_code("a\n``` b`c\nX\n"))       # backtick in the info string: no fence
         self.assertEqual(strip_code("a\n## H\n"), "a\n## H\n")  # lines stay on their own lines
         self.assertEqual(strip_code("a `X` b\n"), "a  b\n")     # inline code still goes
+        self.assertIn("X", strip_code("a \\`X\\` b\n"))         # escaped backticks are not code
+        self.assertNotIn("X", strip_code("a `X\\` b\n"))        # a backslash inside code is literal
 
     def test_needs_schema(self):
         self.assertTrue(needs_schema("wiki/concepts/a.md"))

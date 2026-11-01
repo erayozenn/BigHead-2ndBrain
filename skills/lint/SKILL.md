@@ -54,6 +54,9 @@ the vault.
 user note with indented, invalid frontmatter) is a WARN to report for the user — not a blind spot
 or bug in the script.
 
+**Known limit:** the script reads a code span across several lines, and a fence inside a blockquote,
+as prose. A broken link there is a false ERROR; say so rather than editing the page to silence it.
+
 A Layout path that is missing because nothing has used it yet (e.g. an empty `areas/`) is fine
 when the folder is created on first use — say so instead of proposing a fix.
 

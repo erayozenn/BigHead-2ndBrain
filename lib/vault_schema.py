@@ -37,7 +37,7 @@ CLAUDE_MD_MAX_LINES = 200  # official target per CLAUDE.md file
 WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+?)(?:[#^][^\]|]*)?(?:\\?\|[^\]]*)?\]\]")
 FENCE_LINE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 MSYS_DRIVE_RE = re.compile(r"^/([A-Za-z])(?=/|$)")
-INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+INLINE_CODE_RE = re.compile(r"(?<!\\)`[^`\n]*`")  # \` is a literal backtick; inside code \ is literal
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SUMMARY_HEAD = "> [!summary]- For future agent"
 SUMMARY_LINE_RE = re.compile(r"^>\s*What:.*Why kept:.*Goes stale:\s*(\S.*)$", re.MULTILINE)

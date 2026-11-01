@@ -84,6 +84,9 @@ Then run `/bighead:init` in an empty folder (or an existing Obsidian vault) and 
 
 Claude also picks these skills up on its own when your request matches (e.g. "ingest this paper").
 
+**Lint limit.** A code span across several lines, or a fence inside a blockquote, is read as prose,
+so a link in one can be reported as broken.
+
 **Study mode.** The plugin also ships a `tutor` [output style](https://code.claude.com/docs/en/output-styles):
 for study questions Claude asks for your guess first, gives hints in steps and the full answer
 only when you ask; vault operations (ingest, lint, …) run as usual. Turn it on with

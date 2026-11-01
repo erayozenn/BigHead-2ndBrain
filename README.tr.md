@@ -85,6 +85,9 @@ adımlarını izle.
 
 İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").
 
+**Lint sınırı.** Birden çok satıra yayılan code span ve blockquote içindeki fence düz metin sayılır;
+bu yüzden içlerindeki bir link kırık olarak raporlanabilir.
+
 **Çalışma modu.** Plugin ayrıca bir `tutor` [output style](https://code.claude.com/docs/en/output-styles)
 içerir: çalışma sorularında Claude önce senin tahminini ister, ipuçlarını kademeli verir, tam
 cevabı yalnızca sen istediğinde gösterir; vault işlemleri (ingest, lint, …) her zamanki gibi

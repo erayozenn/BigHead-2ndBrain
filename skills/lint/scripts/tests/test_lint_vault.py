@@ -183,6 +183,16 @@ class LintTest(unittest.TestCase):
         self.assertIn("WARN  playbooks/x-history/x-history.md: playbook slug must not end in -history",
                       result.stdout)
 
+    def test_blind_test_escaped_backticks(self):
+        write(self.vault, "wiki/concepts/a.md", page("See [[b]]. \\`[[zzqa]]\\`"))
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("broken link [[zzqa]]", result.stdout)
+
+    def test_hub_size_is_in_bytes(self):
+        write(self.vault, "projects/big/big.md", self.hub(extra="x" * 5000))
+        self.assertRegex(run_lint(self.vault).stdout, r"hub page is \d+ bytes \(max 4096\)")
+
     def test_blind_test_nested_fence_link(self):
         write(self.vault, "wiki/concepts/a.md", page("See [[b]].\n\n````\n```\n[[in-code]]\n````"))
         result = run_lint(self.vault)

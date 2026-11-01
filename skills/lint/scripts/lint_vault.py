@@ -121,8 +121,8 @@ def check_project_hubs(report: Report, vault: Path, pages: list[Path], indexed: 
             report.add("WARN", rel, "hub page has an empty '## Next step' section")
         size = hub.stat().st_size
         if size > HUB_MAX_BYTES:
-            report.add("WARN", rel, f"hub page is {size / 1024:.1f} KiB (max "
-                                    f"{HUB_MAX_BYTES // 1024}); move old items to {name}-history.md")
+            report.add("WARN", rel, f"hub page is {size} bytes (max {HUB_MAX_BYTES}); "
+                                    f"move old items to {name}-history.md")
         if name.lower() not in indexed:
             report.add("WARN", rel, "not listed in index.md")
 
