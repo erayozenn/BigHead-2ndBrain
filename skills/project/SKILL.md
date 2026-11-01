@@ -11,7 +11,6 @@ allowed-tools:
   - Bash(git -C * rev-list *)
   - Bash(git -C * merge-base *)
   - Bash(git -C * status *)
-  - Bash(git -C * log *)
 ---
 
 # Project memory
