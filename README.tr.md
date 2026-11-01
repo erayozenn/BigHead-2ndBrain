@@ -2,7 +2,7 @@
 
 ![BigHead 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
 
-> **Durum: v0.1 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
+> **Durum: v0.2 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
 > değişebilir. Güncellemeler mevcut bir vault'u asla yeniden yazmaz; vault'unun `CLAUDE.md`
 > dosyasının ilk satırı hangi şablondan kurulduğunu gösterir. Şimdiye kadar Windows'ta test
 > edildi; macOS ve Linux geri bildirimleri memnuniyetle karşılanır.
@@ -53,6 +53,18 @@ onaylarsın. Sonra yeni bir oturum başlat (veya `/reload-plugins` çalıştır)
 
 Ardından boş bir klasörde (veya mevcut bir Obsidian vault'unda) `/bighead:init` çalıştır ve [docs/obsidian-setup.md](docs/obsidian-setup.md)
 adımlarını izle.
+
+## Güncelleme
+
+Bu marketplace için otomatik güncelleme varsayılan olarak kapalıdır, bu yüzden elle güncelle:
+
+```
+claude plugin update bighead@bighead
+```
+
+Sonra yeni bir oturum başlat (veya `/reload-plugins` çalıştır). Otomatik güncelleme için `/plugin`
+panelini aç, **Marketplaces** sekmesinde `bighead`'i seç ve **Enable auto-update**'i seç. Vault'un
+değişmez.
 
 ## Gereksinimler
 

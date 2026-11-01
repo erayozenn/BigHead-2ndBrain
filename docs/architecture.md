@@ -6,7 +6,7 @@
 |---|---|---|
 | What | Claude Code plugin: skills, hooks, templates | Your notes, sources and wiki |
 | Visibility | Public, MIT | Private, always |
-| Updates | `/plugin update` | You and Claude, every day |
+| Updates | `claude plugin update bighead@bighead`, when `version` changes | You and Claude, every day |
 
 Personal content never enters the engine repo, so the engine can be public without risk.
 

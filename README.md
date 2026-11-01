@@ -2,7 +2,7 @@
 
 ![BigHead 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
 
-> **Status: v0.1 — experimental.** Skills and the vault schema may still change between 0.x
+> **Status: v0.2 — experimental.** Skills and the vault schema may still change between 0.x
 > versions. Updates never rewrite an existing vault; the first line of your vault's `CLAUDE.md`
 > shows which template it was made from. Tested on Windows so far; macOS and Linux reports are
 > welcome.
@@ -52,6 +52,17 @@ Or inside a Claude Code session: `/plugin marketplace add erayozenn/BigHead-2ndB
 confirm the install. Start a new session (or run `/reload-plugins`) afterwards.
 
 Then run `/bighead:init` in an empty folder (or an existing Obsidian vault) and follow [docs/obsidian-setup.md](docs/obsidian-setup.md).
+
+## Update
+
+Auto-update is off by default for this marketplace, so update by hand:
+
+```
+claude plugin update bighead@bighead
+```
+
+Then start a new session (or run `/reload-plugins`). To update automatically, open `/plugin`, go to
+**Marketplaces**, select `bighead` and choose **Enable auto-update**. Your vault is not changed.
 
 ## Requirements
 
