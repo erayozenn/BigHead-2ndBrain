@@ -34,7 +34,7 @@ CLAUDE_MD_MAX_LINES = 200  # official target per CLAUDE.md file
 
 # `\|` is how Obsidian writes a link alias inside a table cell.
 WIKILINK_RE = re.compile(r"!?\[\[([^\]|#^]+?)(?:[#^][^\]|]*)?(?:\\?\|[^\]]*)?\]\]")
-FENCE_RE = re.compile(r"```.*?```|~~~.*?~~~", re.DOTALL)
+FENCE_LINE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 MSYS_DRIVE_RE = re.compile(r"^/([A-Za-z])(?=/|$)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -96,8 +96,25 @@ def scalar(value: str) -> str:
     return value.split(" #", 1)[0].strip().strip("'\"")
 
 
+def strip_fences(text: str) -> str:
+    """Remove fenced code blocks by the CommonMark rules; an unclosed fence runs to the end."""
+    kept = []
+    fence = None
+    for line in text.splitlines(keepends=True):
+        m = FENCE_LINE_RE.match(line.rstrip("\r\n"))
+        if fence is None:
+            if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+                fence = m.group(1)
+            else:
+                kept.append(line)
+        elif (m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence)
+              and not m.group(2).strip()):
+            fence = None
+    return "".join(kept)
+
+
 def strip_code(text: str) -> str:
-    return INLINE_CODE_RE.sub("", FENCE_RE.sub("", text))
+    return INLINE_CODE_RE.sub("", strip_fences(text))
 
 
 def needs_schema(rel: str) -> bool:

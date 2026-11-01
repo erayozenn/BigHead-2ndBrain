@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from vault_schema import needs_schema, page_problems  # noqa: E402
+from vault_schema import needs_schema, page_problems, strip_code  # noqa: E402
 
 TODAY = dt.date(2026, 10, 30)
 SUMMARY = ("> [!summary]- For future agent\n"
@@ -63,6 +63,28 @@ class PageProblemsTest(unittest.TestCase):
 
     def test_author_me_skipped(self):
         self.assertEqual(problems(page({"author": "me"}, drop=("aliases",), body="# Mine\n")), [])
+
+    def test_strip_code_fences(self):
+        cases = [
+            "a\n```\nX\n```\nb\n",                  # plain
+            "a\n~~~\nX\n~~~\nb\n",                  # tilde
+            "a\n```py\nX\n```\nb\n",                # info string
+            "a\n   ```\nX\n   ```\nb\n",            # up to 3 leading spaces
+            "a\n````\n```\nX\n````\nb\n",           # shorter inner run is not a closer
+            "a\n```\nX\n``` not a closer\nX\n```\nb\n",  # text after the run is not a closer
+            "a\n```\n~~~\nX\n```\nb\n",             # the other marker is not a closer
+            "a\n```\nX\n`````\nb\n",                # a longer run closes
+        ]
+        for text in cases:
+            out = strip_code(text)
+            self.assertNotIn("X", out, text)
+            self.assertIn("a", out, text)
+            self.assertIn("b", out, text)
+        self.assertNotIn("X", strip_code("a\n```\nX\n"))        # unclosed runs to the end
+        self.assertIn("X", strip_code("a\n    ```\nX\n"))       # 4 spaces is not a fence
+        self.assertIn("X", strip_code("a\n``` b`c\nX\n"))       # backtick in the info string: no fence
+        self.assertEqual(strip_code("a\n## H\n"), "a\n## H\n")  # lines stay on their own lines
+        self.assertEqual(strip_code("a `X` b\n"), "a  b\n")     # inline code still goes
 
     def test_needs_schema(self):
         self.assertTrue(needs_schema("wiki/concepts/a.md"))
