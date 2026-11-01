@@ -1,4 +1,4 @@
-# Vault Schema & Rules (template v0.5)
+# Vault Schema & Rules (template v0.6)
 
 Personal knowledge base (Karpathy "LLM Wiki" pattern), maintained by Claude Code,
 co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it under 200 lines
@@ -25,6 +25,7 @@ co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it un
 | wiki/source-register.md | claude | One line per ingested source WITHOUT its own page. |
 | notes/, notes/daily/ | user | Human notes (author: me). Never edit. Daily notes are made by Obsidian. |
 | projects/ | shared | Project notes, one hub `<name>/<name>.md` per project (`/bighead:project`) — never code repos or dependencies. |
+| playbooks/ | shared | Tested procedures across projects, `<slug>/<slug>.md` plus `<slug>-history.md` (`/bighead:playbook`). Saves and use outcomes need the user's approval. |
 | areas/ | shared | Ongoing areas (e.g. career/, learning/). |
 | archive/YYYY-MM/ | shared | Archived entries and weekly reviews (weekly-YYYY-Www.md). Nothing is ever deleted. |
 | cards/ | claude | Flashcards `cards-<slug>.md` (Obsidian Spaced Repetition format). Append only, approved cards; never edit existing cards or `<!--SR:…-->` comments. |
@@ -62,8 +63,8 @@ need no frontmatter. Structure changes affect new notes only; existing notes are
 
 ## Autonomy
 - Free to write: wiki/**, index.md, log.md, hot.md.
-- Ask first: CLAUDE.md, rules.md, Threads.md, CRITICAL_FACTS.md, projects/, areas/, archive/,
-  raw/web/ (new files), .claude/, any hook or command.
+- Ask first: CLAUDE.md, rules.md, Threads.md, CRITICAL_FACTS.md, projects/, playbooks/, areas/,
+  archive/, raw/web/ (new files), .claude/, any hook or command.
 
 ## Freshness rule
 Every statement must be one of:
@@ -86,7 +87,7 @@ Forbidden: undated present-tense facts that change ("I have 3 open applications"
 
 ## Frontmatter (every page except raw/ and system files)
     ---
-    type: source | concept | entity | synthesis | decision | note | project
+    type: source | concept | entity | synthesis | decision | note | project | playbook
     status: draft | active | stable | archived
     created: YYYY-MM-DD
     updated: YYYY-MM-DD

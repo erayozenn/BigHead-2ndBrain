@@ -17,6 +17,9 @@ Checks (the vault CLAUDE.md "Lint" list, minus the judgment checks):
   WARN  wiki/ pages missing from index.md
   WARN  project hubs (projects/<name>/<name>.md): missing, wrong type, missing sections,
         over 4 KiB, not in index.md
+  WARN  playbooks (playbooks/<slug>/<slug>.md): misplaced, missing, wrong type, missing sections,
+        no steps, missing or impossible evidence tags, over 4 KiB, not in index.md, history
+        file missing or incomplete
   WARN  vault CLAUDE.md over 200 lines
   WARN  paths in the vault CLAUDE.md "Layout" table that do not exist (except .cache/)
 
@@ -40,6 +43,12 @@ from vault_schema import (CLAUDE_MD_MAX_LINES, HOT_MAX_WORDS, INDEX_MAX_BYTES,  
 LAYOUT_CELL_RE = re.compile(r"^\|\s*([^|]+?)\s*\|")
 HUB_SECTIONS = ("Current state", "Next step", "Decisions", "Lessons")
 HUB_MAX_BYTES = 4 * 1024
+SYSTEM_NAMES = {name.lower() for name in SYSTEM_FILES - {"CLAUDE.md"}}  # Windows ignores case
+PLAYBOOK_SECTIONS = ("Scope", "Steps", "Checks")
+PLAYBOOK_HISTORY_SECTIONS = ("Uses", "Versions")
+PLAYBOOK_MAX_BYTES = 4 * 1024
+STEP_RE = re.compile(r"^(\d+)\.[ \t]+(.*)$", re.MULTILINE)
+EVIDENCE_RE = re.compile(r"✓(\d+)/(\d+)")
 
 
 class Report:
@@ -118,6 +127,69 @@ def check_project_hubs(report: Report, vault: Path, pages: list[Path], indexed: 
             report.add("WARN", rel, "not listed in index.md")
 
 
+def missing_sections(prose: str, sections: tuple[str, ...]) -> list[str]:
+    return [s for s in sections if not re.search(rf"^## {s}[ \t]*$", prose, re.MULTILINE)]
+
+
+def check_playbooks(report: Report, vault: Path, pages: list[Path], indexed: set[str]) -> None:
+    """Every folder under playbooks/ needs a well-formed page with evidence tags and a history."""
+    folders = set()
+    for page in pages:
+        parts = page.relative_to(vault).parts
+        if parts[0] != "playbooks":
+            continue
+        if len(parts) == 2 and page.stem.endswith("-history"):
+            report.add("WARN", f"playbooks/{page.name}", "playbook history must live at "
+                       f"playbooks/{page.stem.removesuffix('-history')}/{page.name}")
+        elif len(parts) == 2:
+            report.add("WARN", f"playbooks/{page.name}",
+                       f"playbook must live at playbooks/{page.stem}/{page.name}")
+        else:
+            folders.add(parts[1])
+    for name in sorted(folders):
+        rel = f"playbooks/{name}/{name}.md"
+        path = vault / rel
+        if not path.is_file():
+            report.add("WARN", f"playbooks/{name}/", f"no playbook page {name}.md")
+            continue
+        if name.endswith("-history"):
+            report.add("WARN", rel, "playbook slug must not end in -history")
+        text = read_page(path)[0].replace("\r\n", "\n")
+        fm, _ = split_frontmatter(text.lstrip("﻿"))
+        if fm is None or scalar(fm.get("type", "")) != "playbook":
+            report.add("WARN", rel, "playbook page is not type: playbook")
+        prose = strip_code(text)
+        for section in missing_sections(prose, PLAYBOOK_SECTIONS):
+            report.add("WARN", rel, f"playbook has no '## {section}' section")
+        steps = re.search(r"^## Steps[ \t]*\n(.*?)(?=^## |\Z)", prose, re.MULTILINE | re.DOTALL)
+        if steps:
+            found = STEP_RE.findall(steps.group(1))
+            if not found:
+                report.add("WARN", rel, "playbook has no numbered steps")
+            for number, step in found:
+                tags = list(EVIDENCE_RE.finditer(step))
+                if not tags:
+                    report.add("WARN", rel, f"step {number} has no evidence tag (✓n/n)")
+                for tag in tags:
+                    if int(tag.group(1)) > int(tag.group(2)):
+                        report.add("WARN", rel, f"step {number} evidence {tag.group(0)} counts more "
+                                                "approvals than uses")
+        size = path.stat().st_size
+        if size > PLAYBOOK_MAX_BYTES:
+            report.add("WARN", rel, f"playbook page is {size} bytes (max {PLAYBOOK_MAX_BYTES}); "
+                                    "split it or tighten its steps")
+        if name.lower() not in indexed:
+            report.add("WARN", rel, "not listed in index.md")
+        history_rel = f"playbooks/{name}/{name}-history.md"
+        history = vault / history_rel
+        if not history.is_file():
+            report.add("WARN", rel, f"no history file {name}-history.md")
+            continue
+        history_prose = strip_code(read_page(history)[0].replace("\r\n", "\n"))
+        for section in missing_sections(history_prose, PLAYBOOK_HISTORY_SECTIONS):
+            report.add("WARN", history_rel, f"playbook history has no '## {section}' section")
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -140,7 +212,7 @@ def main() -> None:
         rel = page.relative_to(vault).as_posix()
         text, encoding_problems = read_page(page)
         user = is_user_note(rel, text)
-        if (page.name in SYSTEM_FILES - {"CLAUDE.md"} and rel != page.name
+        if (page.name.lower() in SYSTEM_NAMES and rel != page.name
                 and rel != "wiki/source-register.md" and rel.split("/")[0] not in USER_DIRS):
             report.add("ERROR", rel, "system file name outside the vault root; "
                                      "schema checks skip it, so rename it")
@@ -178,6 +250,7 @@ def main() -> None:
         if page.stem.lower() not in indexed:
             report.add("WARN", rel, "not listed in index.md")
     check_project_hubs(report, vault, pages, indexed)
+    check_playbooks(report, vault, pages, indexed)
 
     hot = vault / "hot.md"
     words = len(hot.read_text(encoding="utf-8").split()) if hot.exists() else 0

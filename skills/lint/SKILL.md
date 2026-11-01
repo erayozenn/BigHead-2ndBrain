@@ -46,7 +46,7 @@ Run (the first interpreter that works: `python3`, `python`, `py -3`):
 
 It is read-only and prints `ERROR` / `WARN` lines plus stats: schema problems, past "Goes
 stale" months, broken or ambiguous links, duplicate basenames, orphans, pages missing from
-index.md, project hub problems, hot.md / index.md size, Layout paths that do not exist. Keep the output for the report;
+index.md, project hub problems, playbook problems, hot.md / index.md size, Layout paths that do not exist. Keep the output for the report;
 do not re-check these by hand, and do not try to read the script — it lives in the plugin, outside
 the vault.
 
@@ -100,7 +100,7 @@ One table per severity, most severe first:
 ## 4. Fix (only what was approved)
 
 1. Apply the approved fixes with Edit/Write. Free to write: `wiki/**`, `index.md`, `log.md`,
-   `hot.md`; anything else (Threads.md, CLAUDE.md, projects/, areas/) needs its own approval.
+   `hot.md`; anything else (Threads.md, CLAUDE.md, projects/, playbooks/, areas/) needs its own approval.
 2. Each edited page gets `updated:` set to today. Keep every citation and marker; resolving a
    contradiction means marking it (disputed) with both sides, not deleting one side.
 3. Re-run the script; the approved items must be gone and nothing new may appear.

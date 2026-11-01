@@ -16,7 +16,8 @@ chat language; write hot.md in the wiki language.
 **Preconditions.** The current directory is a vault: `CLAUDE.md` and `hot.md` exist. If not,
 stop and say so.
 
-Free to write: `hot.md`. Ask first: `Threads.md`, `rules.md`, `archive/`, `projects/`, any commit.
+Free to write: `hot.md`. Ask first: `Threads.md`, `rules.md`, `archive/`, `projects/`,
+`playbooks/`, any commit.
 
 ## 1. Gather the session
 
@@ -52,6 +53,10 @@ If this session worked on a project that has a hub (`projects/<name>/<name>.md`)
 apply it only after approval. Leave its commit to step 5. Skip projects the session did not touch.
 Do not create a new hub here; mention `/bighead:project new <name>` if a project without one came
 up repeatedly.
+
+If this session applied a playbook (`/bighead:playbook use`) and its outcome is not recorded, ask
+for the outcome and follow the `record <slug>` steps in `${CLAUDE_SKILL_DIR}/../playbook/SKILL.md`.
+Never record an outcome the user did not state. Leave its commit to step 5.
 
 ## 4. Size
 

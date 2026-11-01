@@ -44,6 +44,9 @@ class PageProblemsTest(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertTrue(out[0].startswith("status: 'done'"))
 
+    def test_playbook_type_allowed(self):
+        self.assertEqual(problems(page({"type": "playbook"})), [])
+
     def test_dates(self):
         self.assertTrue(any("not a valid" in p for p in problems(page({"created": "2026-13-01"}))))
         self.assertTrue(any("in the future" in p for p in problems(page({"updated": "2026-11-01"}))))

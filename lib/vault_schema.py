@@ -20,7 +20,8 @@ REQUIRED_KEYS = ["type", "status", "created", "updated", "tags", "aliases",
                  "sources", "author", "sensitivity"]
 SOURCE_KEYS = ["source_type", "authority"]
 ALLOWED = {
-    "type": {"source", "concept", "entity", "synthesis", "decision", "note", "project"},
+    "type": {"source", "concept", "entity", "synthesis", "decision", "note", "project",
+             "playbook"},
     "status": {"draft", "active", "stable", "archived"},
     "author": {"claude", "me"},
     "sensitivity": {"public", "private"},

@@ -113,6 +113,82 @@ class LintTest(unittest.TestCase):
         self.assertIn("WARN  projects/big/big.md: hub page is", out)
         self.assertIn("WARN  projects/wrong/wrong.md: hub page is not type: project", out)
 
+    def playbook(self, sections=("Scope", "Steps", "Checks"), steps="1. Do it ✓1/2\n2. Then this ✓0/0\n"):
+        body = "".join(f"## {s}\n{steps if s == 'Steps' else 'x'}\n\n" for s in sections)
+        return page(body).replace("type: concept", "type: playbook")
+
+    def history(self):
+        return page("## Uses\nx\n\n## Versions\nx\n").replace("type: concept", "type: playbook")
+
+    def test_playbook_clean(self):
+        write(self.vault, "index.md", "# Index\n- [[a]]\n- [[b]]\n- [[demo]]\n")
+        write(self.vault, "playbooks/demo/demo.md", self.playbook())
+        write(self.vault, "playbooks/demo/demo-history.md", self.history())
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("playbooks/", result.stdout)  # history file needs no index line
+
+    def test_playbook_problems(self):
+        write(self.vault, "playbooks/loose.md", self.playbook())
+        write(self.vault, "playbooks/nopage/other.md", self.playbook())
+        write(self.vault, "playbooks/thin/thin.md", self.playbook(sections=("Scope",)))
+        write(self.vault, "playbooks/wrong/wrong.md", page("## Scope\n"))
+        write(self.vault, "playbooks/big/big.md", self.playbook(steps="1. Do it ✓0/0\n" + "x" * 5000))
+        write(self.vault, "playbooks/tags/tags.md", self.playbook(steps="1. No tag\n2. Bad ✓3/2\n3. Good ✓2/3\n"))
+        write(self.vault, "playbooks/empty/empty.md", self.playbook(steps=""))
+        out = run_lint(self.vault)
+        self.assertEqual(out.returncode, 0, out.stdout)  # WARN, not ERROR
+        out = out.stdout
+        self.assertIn("WARN  playbooks/loose.md: playbook must live at playbooks/loose/loose.md", out)
+        self.assertIn("WARN  playbooks/nopage/: no playbook page nopage.md", out)
+        self.assertIn("WARN  playbooks/thin/thin.md: playbook has no '## Steps' section", out)
+        self.assertIn("WARN  playbooks/thin/thin.md: not listed in index.md", out)
+        self.assertIn("WARN  playbooks/thin/thin.md: no history file thin-history.md", out)
+        self.assertIn("WARN  playbooks/wrong/wrong.md: playbook page is not type: playbook", out)
+        self.assertIn("WARN  playbooks/big/big.md: playbook page is", out)
+        self.assertIn("WARN  playbooks/tags/tags.md: step 1 has no evidence tag", out)
+        self.assertIn("WARN  playbooks/tags/tags.md: step 2 evidence ✓3/2 counts more approvals than uses", out)
+        self.assertNotIn("step 3", out)
+        self.assertIn("WARN  playbooks/empty/empty.md: playbook has no numbered steps", out)
+
+    def test_playbook_history_sections(self):
+        write(self.vault, "playbooks/demo/demo.md", self.playbook())
+        write(self.vault, "playbooks/demo/demo-history.md",
+              page("## Uses\nx\n").replace("type: concept", "type: playbook"))
+        self.assertIn("WARN  playbooks/demo/demo-history.md: playbook history has no '## Versions' section",
+                      run_lint(self.vault).stdout)
+
+    def test_code_does_not_count_for_playbooks(self):
+        fenced = page("```\n## Scope\n## Steps\n1. x ✓0/0\n## Checks\n```").replace("type: concept", "type: playbook")
+        write(self.vault, "playbooks/demo/demo.md", fenced)
+        self.assertIn("playbook has no '## Steps' section", run_lint(self.vault).stdout)
+
+    def test_blind_test_playbook_findings(self):
+        write(self.vault, "playbooks/late/late.md", self.playbook(steps="1. a ✓1/1 then ✓3/2\n"))
+        write(self.vault, "playbooks/big/big.md", self.playbook(steps="1. Do it ✓0/0\n" + "x" * 5000))
+        write(self.vault, "playbooks/demo-history.md", self.history())
+        out = run_lint(self.vault).stdout
+        self.assertIn("WARN  playbooks/late/late.md: step 1 evidence ✓3/2", out)
+        self.assertRegex(out, r"playbooks/big/big\.md: playbook page is \d+ bytes \(max 4096\)")
+        self.assertIn("WARN  playbooks/demo-history.md: playbook history must live at "
+                      "playbooks/demo/demo-history.md", out)
+
+    def test_blind_test_slug_findings(self):
+        write(self.vault, "playbooks/threads/threads.md", self.playbook())
+        write(self.vault, "playbooks/x-history/x-history.md", self.playbook())
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("ERROR playbooks/threads/threads.md: system file name outside the vault root",
+                      result.stdout)
+        self.assertIn("WARN  playbooks/x-history/x-history.md: playbook slug must not end in -history",
+                      result.stdout)
+
+    def test_blind_test_nested_fence_link(self):
+        write(self.vault, "wiki/concepts/a.md", page("See [[b]].\n\n````\n```\n[[in-code]]\n````"))
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("in-code", result.stdout)
+
     # Regressions from the 2026-11-01 black-box test.
     def write_bytes(self, rel, data):
         path = os.path.join(self.vault, *rel.split("/"))
