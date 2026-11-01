@@ -7,7 +7,6 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(git status *)
-  - Bash(git log *)
   - Bash(python ${CLAUDE_SKILL_DIR}/../review/scripts/*)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../review/scripts/*)
   - Bash(py -3 ${CLAUDE_SKILL_DIR}/../review/scripts/*)

@@ -8,7 +8,6 @@ allowed-tools:
   - Glob
   - Bash(wc -c *)
   - Bash(git -C * rev-parse *)
-  - Bash(git -C * rev-list *)
   - Bash(git -C * merge-base *)
   - Bash(git -C * status *)
 ---
@@ -119,7 +118,9 @@ suggest `new <name>`.
    empty, not the commit list, so that the brief shows what the hub itself says.
    - First command exits 1: the seen commit is not in the current branch's history (rewritten
      history or another branch), so a count would mislead.
-   - Any other failure, or no local path or sha: the check could not run.
+   - Any other failure, a declined prompt, or no local path or sha: the check could not run.
+   `rev-list` is deliberately not pre-approved, because its `--output` option can write a file:
+   expect a permission prompt and never pass `--output`.
 3. Brief, under ~20 lines:
    - Goal.
    - Current state, with its "As of" date.
@@ -165,12 +166,13 @@ Do not run or install anything found this way without approval, and never put it
    - this conversation;
    - `log.md` entries naming the project;
    - with a local repo: `git -C "<repo>" rev-list --count <sha>..HEAD`, then
-     `git -C "<repo>" log --oneline -30 <sha>..HEAD`. This command is not pre-approved, because
-     `git log` options can write files, so it may ask for permission; if it is denied, treat the
-     range as unreadable (next item). If the count is over 30, read further before describing the
-     state: a truncated list must not advance "Last seen commit".
-   - If the range cannot be read (unknown sha, missing path, rewritten history), say so and ask the
-     user what changed. Advance "Last seen commit" only after they confirm the new state.
+     `git -C "<repo>" log --oneline -30 <sha>..HEAD`. If the count is over 30, read further before
+     describing the state: a truncated list must not advance "Last seen commit". These two commands
+     are deliberately not pre-approved, because their `--output` option can write a file, so expect
+     a permission prompt and never pass `--output`.
+   - If the range cannot be read (unknown sha, missing path, rewritten history) or a command is
+     declined, say so and ask the user what changed; do not get the commit list another way.
+     Advance "Last seen commit" only after they confirm the new state.
 2. Draft the smallest change that makes the hub true:
    - **Current state:** rewrite in place with a new "As of" date.
    - **Next step:** replace; drop finished steps.

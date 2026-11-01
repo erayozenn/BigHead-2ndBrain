@@ -6,7 +6,6 @@ allowed-tools:
   - Read
   - Grep
   - Glob
-  - Bash(git log *)
   - Bash(git status *)
   - Bash(wc -w *)
   - Bash(python ${CLAUDE_SKILL_DIR}/../review/scripts/*)
@@ -34,7 +33,10 @@ and one `log.md` line. Never edits notes, Threads.md or wiki pages from this ski
 - `log.md` entries dated in the week (and `archive/YYYY-MM/log-YYYY-MM.md` if the month changed and the
   entries were archived). Group by operation: ingest, save, query (gaps), lint, decision, setup.
 - Vault git: `git log --since=<Monday> --until=<Sunday+1> --name-status --format="%h %ad %s"
-  --date=short -- wiki/ cards/` → pages created and changed.
+  --date=short -- wiki/ cards/` → pages created and changed. `git log` is deliberately not
+  pre-approved, because its `--output` option can write a file: expect a permission prompt and
+  never pass `--output`. If it is declined, use `log.md` alone and say the page list may be
+  incomplete.
 - `Threads.md`: items whose "(opened …)" or "(closed …)" date falls in the week.
 - hot.md "Now": open questions and blockers.
 - Flashcards: `cards.py stats --vault .` (from `${CLAUDE_SKILL_DIR}/../review/scripts/`; first
