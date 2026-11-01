@@ -3,11 +3,13 @@
 
 Usage:
   cards.py stats  [--vault <dir>] [--today YYYY-MM-DD] [--deck <name>]
-      JSON: card counts per file, new (never reviewed), due (scheduled date <= today), and the
-      due cards' questions with file and line.
-  cards.py prefix --file <cards file> [--lines N]
-      JSON: line count and SHA-256 of the first N lines (default: all). Run before appending,
-      then again with --lines <old count> after: equal hashes prove nothing above was changed.
+      JSON: card counts per cards-*.md file, new (never reviewed), due (scheduled date <= today),
+      and the due cards' questions with file and line. A reversed card counts once per direction
+      in the totals and appears once in due_cards.
+  cards.py prefix --file <cards file> [--bytes N | --lines N]
+      JSON: line and byte counts, and the SHA-256 of the first N bytes or lines, terminators
+      included (default: the whole file). Run before appending, then again with
+      --bytes <old bytes> after: equal hashes prove the existing bytes were not changed.
 
 Card syntax (plugin defaults): single-line `Q::A` and `Q:::A` (reversed, two cards);
 multi-line: question lines, a line `?` (or `??`), answer lines, ended by a blank line.
@@ -83,37 +85,47 @@ def parse_cards(text: str) -> list[dict]:
 def stats(vault: Path, today: dt.date, deck: str | None) -> dict:
     out = {"today": today.isoformat(), "files": [], "cards": 0, "new": 0, "due": 0, "due_cards": []}
     root = vault / "cards"
-    for path in sorted(root.rglob("*.md")) if root.is_dir() else []:
+    for path in sorted(root.rglob("cards-*.md")) if root.is_dir() else []:
         rel = path.relative_to(vault).as_posix()
         cards = parse_cards(path.read_text(encoding="utf-8", errors="replace"))
         if deck:
             cards = [c for c in cards if c["deck"] == deck or c["deck"].startswith(deck + "/")]
-        n_new = n_due = 0
+        n_cards = n_new = n_due = 0
         for c in cards:
-            if not c["dates"]:
-                n_new += 1
-                continue
+            n_cards += c["sides"]
+            n_new += max(c["sides"] - len(c["dates"]), 0)
             due = [d for d in c["dates"] if dt.date.fromisoformat(d) <= today]
             if due:
-                n_due += 1
+                n_due += min(len(due), c["sides"])
                 out["due_cards"].append({"file": rel, "line": c["line"], "deck": c["deck"],
                                          "question": c["question"][:200], "due": min(due)})
-        out["files"].append({"file": rel, "cards": len(cards), "new": n_new, "due": n_due})
-        out["cards"] += len(cards)
+        out["files"].append({"file": rel, "cards": n_cards, "new": n_new, "due": n_due})
+        out["cards"] += n_cards
         out["new"] += n_new
         out["due"] += n_due
     out["due_cards"].sort(key=lambda c: (c["due"], c["file"], c["line"]))
     return out
 
 
-def prefix(path: Path, n: int | None) -> dict:
-    data = path.read_bytes().decode("utf-8")
-    lines = data.split("\n")
-    count = len(lines) - (1 if data.endswith("\n") else 0)
-    n = count if n is None else n
-    head = "\n".join(lines[:n])
-    return {"file": path.as_posix(), "lines": count, "hashed_lines": n,
-            "sha256": hashlib.sha256(head.encode("utf-8")).hexdigest()}
+def prefix(path: Path, n_lines: int | None, n_bytes: int | None) -> dict:
+    data = path.read_bytes()
+    parts = data.split(b"\n")
+    lines = [part + b"\n" for part in parts[:-1]] + ([parts[-1]] if parts[-1] else [])
+    if n_bytes is not None:
+        head = data[:n_bytes]
+    elif n_lines is not None:
+        head = b"".join(lines[:n_lines])
+    else:
+        head = data
+    return {"file": path.as_posix(), "lines": len(lines), "bytes": len(data),
+            "hashed_bytes": len(head), "sha256": hashlib.sha256(head).hexdigest()}
+
+
+def count(value: str) -> int:
+    number = int(value)
+    if number < 0:
+        raise argparse.ArgumentTypeError("must not be negative")
+    return number
 
 
 def main() -> None:
@@ -128,12 +140,14 @@ def main() -> None:
     p_stats.add_argument("--deck")
     p_prefix = sub.add_parser("prefix")
     p_prefix.add_argument("--file", required=True)
-    p_prefix.add_argument("--lines", type=int)
+    size = p_prefix.add_mutually_exclusive_group()
+    size.add_argument("--lines", type=count)
+    size.add_argument("--bytes", type=count)
     args = parser.parse_args()
     if args.cmd == "stats":
         result = stats(Path(args.vault).resolve(), dt.date.fromisoformat(args.today), args.deck)
     else:
-        result = prefix(Path(args.file), args.lines)
+        result = prefix(Path(args.file), args.lines, args.bytes)
     print(json.dumps(result, ensure_ascii=False, indent=1))
 
 

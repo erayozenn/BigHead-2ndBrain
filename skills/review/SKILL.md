@@ -60,9 +60,9 @@ JSON: cards, new (never reviewed), due (scheduled date ≤ today) per file, and 
      `sensitivity` as the page's), the summary callout
      (`What: flashcards for [[<page>]]. Why kept: spaced-repetition review. Goes stale: when
      [[<page>]] changes.`), a blank line, `#flashcards/<slug>`, then the cards.
-   - **Existing file:** first `cards.py prefix --file <file>` (note `lines` and `sha256`). Read
+   - **Existing file:** first `cards.py prefix --file <file>` (note `bytes` and `sha256`). Read
      the file, then Write it back with the new cards appended at the end — every existing byte
-     unchanged. Then `cards.py prefix --file <file> --lines <old lines>`: the hash must match.
+     unchanged. Then `cards.py prefix --file <file> --bytes <old bytes>`: the hash must match.
      If it does not, say so at once and restore the previous content (from git or the Read).
    - Update `updated:` in the frontmatter only for a new file; on append leave the frontmatter
      alone (it is above the plugin's comments, but keep edits minimal).

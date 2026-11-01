@@ -1,5 +1,6 @@
 """Tests for cards.py. Run: python -m unittest discover skills/review/scripts/tests"""
 
+import hashlib
 import json
 import os
 import subprocess
@@ -56,7 +57,7 @@ class CardsTest(unittest.TestCase):
 
     def test_stats(self):
         out = run("stats", "--vault", self.vault, "--today", "2026-10-31")
-        self.assertEqual(out["cards"], 5)
+        self.assertEqual(out["cards"], 6)        # the reversed card is two cards
         self.assertEqual(out["new"], 1)          # accuracy card, never reviewed
         self.assertEqual(out["due"], 3)          # precision, reversed (one side due), NB
         questions = [c["question"] for c in out["due_cards"]]
@@ -86,6 +87,63 @@ class CardsTest(unittest.TestCase):
             f.write(text.replace("<!--SR:!2026-10-20,3,250-->\n", ""))
         broken = run("prefix", "--file", self.file, "--lines", str(before["lines"]))
         self.assertNotEqual(before["sha256"], broken["sha256"])
+
+    # Regressions from the 2026-11-01 black-box test of hooks and cards.
+    def write_cards(self, text, name="cards-metrics.md"):
+        path = os.path.join(self.vault, "cards", name)
+        with open(path, "wb") as f:
+            f.write(text if isinstance(text, bytes) else text.encode("utf-8"))
+        return path
+
+    def counts(self):
+        out = run("stats", "--vault", self.vault, "--today", "2026-10-31")
+        return out["cards"], out["new"], out["due"]
+
+    def test_reversed_cards_count_per_direction(self):
+        self.write_cards("Q:::A\n")
+        self.assertEqual(self.counts(), (2, 2, 0))
+        self.write_cards("Q:::A\n<!--SR:!2026-10-01,2,230-->\n")
+        self.assertEqual(self.counts(), (2, 1, 1))
+        self.write_cards("Q:::A\n<!--SR:!2026-10-01,2,230!2026-10-02,2,230-->\n")
+        self.assertEqual(self.counts(), (2, 0, 2))
+        self.write_cards("Q\n??\nA\n")
+        self.assertEqual(self.counts(), (2, 2, 0))
+
+    def test_only_cards_prefixed_files_count(self):
+        self.write_cards("a::b\n", name="notes.md")
+        self.write_cards("a::b\n")
+        self.assertEqual(self.counts(), (1, 1, 0))
+
+    def test_prefix_is_a_byte_proof(self):
+        path = self.write_cards(b"a::1\nb::2\n")
+        before = run("prefix", "--file", path)
+        self.assertEqual(before["sha256"], hashlib.sha256(b"a::1\nb::2\n").hexdigest())
+        self.assertEqual(before["bytes"], 9 + 1)
+        self.write_cards(b"a::1\nb::2")  # final newline removed
+        self.assertNotEqual(before["sha256"], run("prefix", "--file", path, "--bytes", "10")["sha256"])
+        self.assertNotEqual(before["sha256"], run("prefix", "--file", path, "--lines", "2")["sha256"])
+
+    def test_prefix_append_to_empty_file_and_no_final_newline(self):
+        path = self.write_cards(b"")
+        before = run("prefix", "--file", path)
+        self.assertEqual(before["lines"], 0)
+        self.write_cards(b"a::1\n")
+        for flag, value in (("--bytes", before["bytes"]), ("--lines", before["lines"])):
+            self.assertEqual(before["sha256"], run("prefix", "--file", path, flag, str(value))["sha256"])
+        path = self.write_cards(b"a::1")
+        before = run("prefix", "--file", path)
+        self.write_cards(b"a::1\nb::2\n")
+        self.assertEqual(before["sha256"], run("prefix", "--file", path, "--bytes", str(before["bytes"]))["sha256"])
+
+    def test_prefix_handles_non_utf8(self):
+        path = self.write_cards(b"caf\xe9::1\n")
+        self.assertEqual(run("prefix", "--file", path)["sha256"], hashlib.sha256(b"caf\xe9::1\n").hexdigest())
+
+    def test_prefix_rejects_negative_counts(self):
+        for flag in ("--lines", "--bytes"):
+            result = subprocess.run([sys.executable, CARDS, "prefix", "--file", self.file, flag, "-1"],
+                                    capture_output=True, text=True, timeout=60)
+            self.assertNotEqual(result.returncode, 0)
 
 
 if __name__ == "__main__":
