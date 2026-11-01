@@ -68,3 +68,13 @@ The vault is the single source of truth; Claude Code's own auto-memory only poin
    decision so Claude fixes them in the same turn; never blocks on its own errors.
    Tests: `python -m unittest discover hooks/tests` and `python -m unittest discover lib/tests`.
 4. Git: every change is reversible.
+
+## Measuring page finding
+
+`skills/query/scripts/eval_search.py` scores ways of finding pages against a question file kept in
+the vault: found@5, recall@5 and MRR, plus questions the vault cannot answer. It compares grep,
+BM25 and BM25 with Turkish normalisation (`search.py`, standard library, no index on disk), and can
+score page lists or rewritten queries produced elsewhere, such as by an agent. `/bighead:query` does
+not use `search.py`: connect it only if a measurement on your vault shows it finds pages the index
+misses. Write the questions and the decision rule before looking at results, and tune only on a
+separate part of the questions. Tests: `python -m unittest discover skills/query/scripts/tests`.

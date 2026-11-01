@@ -47,7 +47,8 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 2c today, weekly, review (flashcards), exam, research-deep (main session, no subagents) + learning
 layer (tutor style, teach-back, question-first ingest); challenge once decision notes exist ·
 2d project memory (batch 1), then playbooks (batch 2); no subagents unless a small eval justifies one ·
-3 Search & eval (BM25 + Turkish stemming, queries.json, recall/MRR) · 4 Custom IDE — deferred
+3 Search & eval (BM25 + Turkish normalisation, queries.json, recall/MRR): tool built, search not
+connected until a measurement justifies it · 4 Custom IDE — deferred
 indefinitely (2026-10-31; Obsidian + terminal is the interface, no plan) · 5 Advanced.
 
 ## Commits
