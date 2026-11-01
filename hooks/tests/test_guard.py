@@ -91,8 +91,14 @@ class GuardTest(unittest.TestCase):
     def test_non_vault_untouched(self):
         self.assertNoDecision(run_guard(file_event(os.path.join(self.other, "raw", "data.csv"))))
 
-    def test_no_path_no_decision(self):
-        self.assertNoDecision(run_guard({"tool_name": "Edit", "tool_input": {}}))
+    def test_no_path_fails_closed_in_vault_only(self):
+        events = ({"tool_name": "Edit"},
+                  {"tool_name": "Edit", "tool_input": None},
+                  {"tool_name": "Edit", "tool_input": {}},
+                  {"tool_name": "Edit", "tool_input": {"file_path": None}})
+        for event in events:
+            self.assertEqual(run_guard(event, cwd=self.vault).returncode, 2, event)
+            self.assertEqual(run_guard(event, cwd=self.other).returncode, 1, event)
 
     def test_bad_json_fails_closed_in_vault_only(self):
         self.assertEqual(run_guard("not json", cwd=self.vault).returncode, 2)
@@ -144,6 +150,32 @@ class GuardTest(unittest.TestCase):
         event = file_event(self.v("wiki", "page.md"), tool="NotebookEdit")
         event["tool_input"]["notebook_path"] = self.v("raw", "paper.md")
         self.assertDenied(run_guard(event))
+
+    # Decisions on the ambiguous cases of that test, 2026-11-01.
+    def test_author_me_variants_denied(self):
+        variants = {"key": "---\nAuthor: me\n---\n", "value": "---\nauthor: Me\n---\n",
+                    "list": "---\nauthor: [me]\n---\n", "blank": "\n---\nauthor: me\n---\n"}
+        for name, text in variants.items():
+            write(self.v("notes", f"{name}.md"), text)
+            self.assertDenied(run_guard(file_event(self.v("notes", f"{name}.md"))))
+
+    def test_similar_authors_stay_allowed(self):
+        write(self.v("wiki", "other.md"), "---\nauthor: mentor\n---\n")
+        self.assertNoDecision(run_guard(file_event(self.v("wiki", "other.md"))))
+        write(self.v("wiki", "pair.md"), "---\nauthor: [me, claude]\n---\n")
+        self.assertNoDecision(run_guard(file_event(self.v("wiki", "pair.md"))))
+        write(self.v("wiki", "body.md"), "\nNot frontmatter.\n---\nauthor: me\n---\n")
+        self.assertNoDecision(run_guard(file_event(self.v("wiki", "body.md"))))
+
+    def test_nested_obsidian_folder_denied(self):
+        self.assertDenied(run_guard(file_event(self.v("wiki", ".obsidian", "a.json"), tool="Write")))
+        self.assertNoDecision(run_guard(file_event(self.v("wiki", ".obsidian-notes.md"), tool="Write")))
+
+    @unittest.skipUnless(os.name == "nt", "MSYS paths exist on Windows only")
+    def test_msys_path_is_protected(self):
+        posix = self.v("raw", "paper.md").replace("\\", "/")
+        msys = f"/{posix[0].lower()}{posix[2:]}"
+        self.assertDenied(run_guard(file_event(msys)))
 
 
 if __name__ == "__main__":

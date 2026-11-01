@@ -101,14 +101,15 @@ It denies:
 
 - changes to existing files under `raw/`, and new raw files outside `raw/web/`
 - edits to notes whose frontmatter says `author: me`
-- anything under `.obsidian/`
+- anything under a `.obsidian/` folder
 
 Outside a vault it does nothing. If the guard itself fails inside a vault, it blocks the edit
 rather than letting it through.
 
 **Limit:** the guard sees file tools only. Shell commands (`rm`, `del`, `python -c "os.remove(...)"`,
 `>` redirection) are not inspected; the vault's permission rules deny the common ones, and git
-makes the rest reversible.
+makes the rest reversible. A hard link to a raw file made outside `raw/` looks like an ordinary
+file, so it is not protected either.
 
 **Validator.** A `PostToolUse` hook checks every vault page Claude just wrote or edited against
 the schema: required frontmatter keys and allowed values, valid dates (`updated` not before

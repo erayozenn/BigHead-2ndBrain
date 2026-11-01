@@ -6,7 +6,7 @@ break the vault's hard rules:
   - modify an existing file under raw/ (sources are immutable)
   - create a file under raw/ outside raw/web/
   - edit a note whose frontmatter says `author: me`
-  - touch .obsidian/
+  - touch a .obsidian/ folder anywhere in the vault
 
 Paths outside a vault get no decision (normal permission flow).
 A vault is a folder holding raw/ and a CLAUDE.md that starts with VAULT_MARKER.
@@ -15,7 +15,11 @@ or .obsidian/ does not lift the protection of the outer vault.
 
 Failure mode: if the guard itself breaks while the target is inside a vault
 (or cannot be determined and the event's cwd or the process cwd is a vault),
-it blocks with exit 2. Outside a vault it never blocks.
+it blocks with exit 2. An event with no file path counts as that. Outside a
+vault it never blocks.
+
+Limit: a hard link looks like an ordinary file, so one made outside raw/ is
+not protected. Like shell commands, that is outside what this guard sees.
 
 Standard library only; Python 3.10+.
 """
@@ -30,7 +34,13 @@ import sys
 VAULT_MARKER = "# Vault Schema & Rules"
 PATH_KEYS = ("file_path", "notebook_path")
 UTF16_BOMS = (b"\xff\xfe", b"\xfe\xff")
-AUTHOR_ME = re.compile(r"""^author\s*:\s*["']?me["']?\s*(#.*)?$""")
+AUTHOR_ME = re.compile(r"""^author\s*:\s*\[?\s*["']?me["']?\s*\]?\s*(#.*)?$""", re.IGNORECASE)
+MSYS_DRIVE = re.compile(r"^/([A-Za-z])(?=/|$)")
+
+
+def from_msys(path: str) -> str:
+    """On Windows, /c/Users/x (Git Bash form) means C:/Users/x."""
+    return MSYS_DRIVE.sub(r"\1:", path) if os.name == "nt" else path
 
 
 def norm(path: str) -> str:
@@ -65,6 +75,8 @@ def has_author_me(path: str) -> bool:
         data = f.read()
     encoding = "utf-16" if data[:2] in UTF16_BOMS else "utf-8-sig"
     lines = data.decode(encoding, errors="replace").splitlines()
+    while lines and not lines[0].strip():  # a blank line before the frontmatter still means it
+        lines.pop(0)
     if not lines or lines[0].strip() != "---":
         return False
     for line in lines[1:]:
@@ -85,7 +97,7 @@ def check(path: str) -> str | None:
     for vault in vaults:
         parts = os.path.relpath(target, vault).split(os.sep)
         top = parts[0]
-        if top == ".obsidian":
+        if ".obsidian" in parts:
             return ".obsidian/ is Obsidian's config; the vault rules forbid touching it."
         if top == "raw":
             if exists:
@@ -110,7 +122,7 @@ def deny(reason: str) -> None:
 def in_any_vault(candidates: list) -> bool:
     for candidate in candidates:
         try:
-            if isinstance(candidate, str) and candidate and find_vaults(norm(candidate)):
+            if isinstance(candidate, str) and candidate and find_vaults(norm(from_msys(candidate))):
                 return True
         except Exception:
             continue
@@ -124,9 +136,12 @@ def main() -> int:
         event = json.load(sys.stdin)
         tool_input = event.get("tool_input") or {}
         paths = [tool_input[k] for k in PATH_KEYS if tool_input.get(k)]
+        if not paths:
+            raise ValueError("the event names no file path")
         for path in paths:
             if not isinstance(path, str):
                 raise TypeError(f"path is not a string: {path!r}")
+            path = from_msys(path)
             if not os.path.isabs(path) and event.get("cwd"):
                 path = os.path.join(event["cwd"], path)
             reason = check(path)

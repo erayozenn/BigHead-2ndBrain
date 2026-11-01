@@ -102,14 +102,15 @@ olan klasör) her `Write`, `Edit` ve `NotebookEdit` öncesinde çalışan bir `P
 
 - `raw/` altındaki mevcut dosyalarda değişiklik ve `raw/web/` dışında yeni raw dosyası
 - frontmatter'ında `author: me` olan notlarda düzenleme
-- `.obsidian/` altındaki her şey
+- herhangi bir `.obsidian/` klasörünün altındaki her şey
 
 Vault dışında hiçbir şey yapmaz. Guard vault içinde kendisi hata verirse, düzenlemeyi geçirmek
 yerine engeller.
 
 **Sınır:** guard yalnızca dosya araçlarını görür. Shell komutları (`rm`, `del`,
 `python -c "os.remove(...)"`, `>` yönlendirme) incelenmez; yaygın olanları vault'un izin kuralları
-reddeder, kalanını git geri alınabilir kılar.
+reddeder, kalanını git geri alınabilir kılar. `raw/` dışında oluşturulmuş, bir raw dosyasına giden
+hard link sıradan bir dosya gibi görünür, bu yüzden o da korunmaz.
 
 **Validator.** Bir `PostToolUse` hook'u, Claude'un az önce yazdığı veya düzenlediği her vault
 sayfasını şemaya göre kontrol eder: zorunlu frontmatter alanları ve izin verilen değerler, geçerli
