@@ -109,6 +109,13 @@ class CardsTest(unittest.TestCase):
         self.write_cards("Q\n??\nA\n")
         self.assertEqual(self.counts(), (2, 2, 0))
 
+    def test_invalid_sr_date_is_reported_not_fatal(self):
+        self.write_cards("Bad::1\n<!--SR:!2026-13-45,2,230-->\nGood::2\n<!--SR:!2026-10-01,2,230-->\n")
+        out = run("stats", "--vault", self.vault, "--today", "2026-10-31")
+        self.assertEqual((out["cards"], out["new"], out["due"]), (2, 0, 1))
+        self.assertEqual([w["date"] for w in out["warnings"]], ["2026-13-45"])
+        self.assertEqual(out["warnings"][0]["line"], 1)
+
     def test_only_cards_prefixed_files_count(self):
         self.write_cards("a::b\n", name="notes.md")
         self.write_cards("a::b\n")

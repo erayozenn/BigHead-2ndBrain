@@ -5,7 +5,7 @@ Usage:
   cards.py stats  [--vault <dir>] [--today YYYY-MM-DD] [--deck <name>]
       JSON: card counts per cards-*.md file, new (never reviewed), due (scheduled date <= today),
       and the due cards' questions with file and line. A reversed card counts once per direction
-      in the totals and appears once in due_cards.
+      in the totals and appears once in due_cards. Invalid scheduled dates go to warnings.
   cards.py prefix --file <cards file> [--bytes N | --lines N]
       JSON: line and byte counts, and the SHA-256 of the first N bytes or lines, terminators
       included (default: the whole file). Run before appending, then again with
@@ -83,7 +83,8 @@ def parse_cards(text: str) -> list[dict]:
 
 
 def stats(vault: Path, today: dt.date, deck: str | None) -> dict:
-    out = {"today": today.isoformat(), "files": [], "cards": 0, "new": 0, "due": 0, "due_cards": []}
+    out = {"today": today.isoformat(), "files": [], "cards": 0, "new": 0, "due": 0, "due_cards": [],
+           "warnings": []}
     root = vault / "cards"
     for path in sorted(root.rglob("cards-*.md")) if root.is_dir() else []:
         rel = path.relative_to(vault).as_posix()
@@ -94,7 +95,13 @@ def stats(vault: Path, today: dt.date, deck: str | None) -> dict:
         for c in cards:
             n_cards += c["sides"]
             n_new += max(c["sides"] - len(c["dates"]), 0)
-            due = [d for d in c["dates"] if dt.date.fromisoformat(d) <= today]
+            due = []
+            for date in c["dates"]:
+                try:
+                    if dt.date.fromisoformat(date) <= today:
+                        due.append(date)
+                except ValueError:
+                    out["warnings"].append({"file": rel, "line": c["line"], "date": date})
             if due:
                 n_due += min(len(due), c["sides"])
                 out["due_cards"].append({"file": rel, "line": c["line"], "deck": c["deck"],
