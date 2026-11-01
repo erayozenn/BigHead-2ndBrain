@@ -151,6 +151,18 @@ class LintTest(unittest.TestCase):
         write(self.vault, "projects/demo/demo.md", hub)
         self.assertIn("empty '## Next step' section", run_lint(self.vault).stdout)
 
+    def test_system_file_name_outside_root(self):
+        write(self.vault, "wiki/concepts/rules.md", "no frontmatter\n")
+        write(self.vault, "projects/demo/log.md", "no frontmatter\n")
+        write(self.vault, "wiki/source-register.md", "# Register\n")  # its layout home
+        write(self.vault, "notes/hot.md", "user note\n")               # user's folder
+        write(self.vault, "projects/demo/CLAUDE.md", "# Project rules\n")
+        out = run_lint(self.vault).stdout
+        self.assertIn("ERROR wiki/concepts/rules.md: system file name outside the vault root", out)
+        self.assertIn("ERROR projects/demo/log.md: system file name outside the vault root", out)
+        for rel in ("wiki/source-register.md", "notes/hot.md", "projects/demo/CLAUDE.md"):
+            self.assertNotIn(f"{rel}: system file name", out)
+
 
 if __name__ == "__main__":
     unittest.main()

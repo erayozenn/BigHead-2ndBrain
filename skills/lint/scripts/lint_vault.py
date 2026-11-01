@@ -30,7 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
 from vault_schema import (CLAUDE_MD_MAX_LINES, HOT_MAX_WORDS, INDEX_MAX_BYTES,  # noqa: E402
-                          WIKILINK_RE,
+                          SYSTEM_FILES, USER_DIRS, WIKILINK_RE,
                           build_link_index, duplicate_basenames, needs_schema,
                           page_problems, read_page, scalar, split_frontmatter, strip_code,
                           vault_files)
@@ -138,6 +138,10 @@ def main() -> None:
         rel = page.relative_to(vault).as_posix()
         text, encoding_problems = read_page(page)
         user = is_user_note(rel, text)
+        if (page.name in SYSTEM_FILES - {"CLAUDE.md"} and rel != page.name
+                and rel != "wiki/source-register.md" and rel.split("/")[0] not in USER_DIRS):
+            report.add("ERROR", rel, "system file name outside the vault root; "
+                                     "schema checks skip it, so rename it")
         if needs_schema(rel):
             for problem in encoding_problems + page_problems(text, rel):
                 report.add("ERROR", rel, problem)
