@@ -12,7 +12,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 |---|---|
 | .claude-plugin/plugin.json | Plugin manifest. |
 | .claude-plugin/marketplace.json | Single-plugin marketplace (`/plugin marketplace add <owner>/<repo>`). |
-| skills/ | Workflows (ingest, query, save, handoff, lint, teach-back, review, today, weekly, exam, research-deep) — Phase 2. |
+| skills/ | Workflows (ingest, query, save, handoff, lint, teach-back, review, today, weekly, exam, research-deep, project) — Phase 2. |
 | output-styles/ | Opt-in output styles (tutor). Never `force-for-plugin`. |
 | hooks/ | Validation + guard hooks (Python, stdlib only) — Phase 2b. |
 | lib/ | Shared Python modules (vault_schema.py: schema + page checks) for hooks and skill scripts. |
@@ -38,12 +38,13 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
    `claude -p`, the Agent SDK or an API key is optional and documented as such.
 9. Before each git operation, state which repo you are in (kit vs vault).
 
-## Roadmap (current: public v0.1.0; Phase 2c batch 2 — exam, research-deep)
+## Roadmap (current: public v0.1.0; Phase 2d batch 1 — project memory)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public (done) ·
 2c today, weekly, review (flashcards), exam, research-deep (main session, no subagents) + learning
 layer (tutor style, teach-back, question-first ingest); challenge once decision notes exist ·
+2d project memory (batch 1), then playbooks (batch 2); no subagents unless a small eval justifies one ·
 3 Search & eval (BM25 + Turkish stemming, queries.json, recall/MRR) · 4 Custom IDE — deferred
 indefinitely (2026-10-31; Obsidian + terminal is the interface, no plan) · 5 Advanced.
 

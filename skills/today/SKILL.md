@@ -28,6 +28,8 @@ stop and say so.
 
 - hot.md (already loaded): "Now" — NEXT steps, open questions, blockers.
 - `Threads.md`: the "Open" list only.
+- Project hubs: Glob `projects/*/*.md` and keep files whose stem equals their folder name. Grep
+  each for `^status:` and, on `status: active` hubs, the first line under `## Next step`.
 - `log.md`: entries of the last 2 days (Grep `^## \[` and take the newest).
 - `notes/daily/<today>.md` if it exists (Obsidian names it by date): what the user wrote for
   today. Read it; quote nothing private back unless the user asks.
@@ -43,8 +45,9 @@ Keep it under ~15 lines:
 1. **Carry-over** — uncommitted work, half-done items from "Now" (one line each).
 2. **Plan for today** — 3–5 items, ordered, each startable now (a command such as
    `/bighead:ingest <path>`, a file, or a decision to make). Put the user's focus (argument or
-   daily note) first; then hot.md NEXT; then due cards (`/bighead:review quiz`, with the count);
-   then at most one Thread worth moving.
+   daily note) first; then hot.md NEXT; then active projects' next steps not already listed
+   (`/bighead:project open <name>`); then due cards (`/bighead:review quiz`, with the count); then
+   at most one Thread worth moving.
 3. **Waiting on the user** — open questions and decisions from "Now" / Threads, if any.
 4. **One recall question** — from the newest log entry with a wiki page (ingest or save): one
    question about that page's main idea, without the answer. If the user answers, check it

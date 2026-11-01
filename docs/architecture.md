@@ -38,6 +38,7 @@ Project and life-management notes live in `projects/` and `areas/`.
 | CRITICAL_FACTS.md | every session (`@import`) | ~120-token identity card |
 | hot.md | every session (`@import`) | ≤ 500 words: now, recent changes, key facts, active threads |
 | Threads.md | by today/weekly/lint | full backlog of open topics |
+| projects/\<name\>/\<name\>.md | by `/bighead:project open` | one project's goal, state, next step, decisions, lessons |
 | log.md | on demand | append-only history |
 | rules.md | on demand | rules learned from the user's corrections |
 

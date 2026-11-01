@@ -16,7 +16,7 @@ chat language; write hot.md in the wiki language.
 **Preconditions.** The current directory is a vault: `CLAUDE.md` and `hot.md` exist. If not,
 stop and say so.
 
-Free to write: `hot.md`. Ask first: `Threads.md`, `rules.md`, `archive/`, any commit.
+Free to write: `hot.md`. Ask first: `Threads.md`, `rules.md`, `archive/`, `projects/`, any commit.
 
 ## 1. Gather the session
 
@@ -53,7 +53,14 @@ hot.md ≤ 500 words (count with `wc -w hot.md`). Over the limit, in order:
 3. Move long-lived items from "Now" or "Active threads" to `Threads.md` — ask first, then add
    them as `- [ ] <topic> — <context> (opened YYYY-MM-DD)`.
 
-## 4. Uncommitted and unpushed work
+## 4. Project hubs
+
+If this session worked on a project that has a hub (`projects/<name>/<name>.md`), follow the
+`update <name>` steps in `${CLAUDE_SKILL_DIR}/../project/SKILL.md`: draft the change, show it, and
+apply it only after approval. Skip projects the session did not touch. Do not create a new hub
+here; mention `/bighead:project new <name>` if a project without one came up repeatedly.
+
+## 5. Uncommitted and unpushed work
 
 List uncommitted changes per repo. Propose commits with messages in the repo's style
 (vault: `chore: hot cache handoff` plus any pending work units). Never commit or push without
@@ -64,14 +71,14 @@ approves commits: run them, then update "Now" to the post-commit state ("State":
 pushed or not; drop NEXT steps that were only "commit X"), and include hot.md in the last vault
 commit — or commit it right after — so the committed hot.md is never stale.
 
-## 5. Rules learned
+## 6. Rules learned
 
 Scan the session for corrections by the user and for rule breaks you caught yourself. For each
 that would change future behaviour, draft one line in the `rules.md` format
 (`- YYYY-MM-DD: <rule> — why: <reason>`). Propose at most 3; skip anything already in CLAUDE.md
 or rules.md. Write only the ones the user approves.
 
-## 6. Month change
+## 7. Month change
 
 If `log.md` contains entries from a previous month, offer the archive step from CLAUDE.md:
 copy those entries to `archive/YYYY-MM/log-YYYY-MM.md`, then remove them from log.md. Ask first.
@@ -83,7 +90,7 @@ copy those entries to `archive/YYYY-MM/log-YYYY-MM.md`, then remove them from lo
   (e.g. diff the `## [YYYY-MM` lines of both files).
 - Add `Earlier months: [[log-YYYY-MM]]` under the log.md header and an `archive` log line.
 
-## 7. Close
+## 8. Close
 
-Report in a few lines: what "Now" says next, hot.md word count, pending commits, approved
-rules. Suggest `/compact` or a fresh session — hot.md carries the state.
+Report in a few lines: what "Now" says next, hot.md word count, hubs updated, pending commits,
+approved rules. Suggest `/compact` or a fresh session — hot.md carries the state.

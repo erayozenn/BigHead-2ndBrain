@@ -87,6 +87,32 @@ class LintTest(unittest.TestCase):
         result = run_lint(self.vault)
         self.assertIn("duplicate basename 'log'", result.stdout)  # a plain log.md collides
 
+    def hub(self, sections=("Current state", "Next step", "Decisions", "Lessons"), extra=""):
+        body = "".join(f"## {s}\nx\n\n" for s in sections) + extra
+        return page(body).replace("type: concept", "type: project")
+
+    def test_project_hub_clean(self):
+        write(self.vault, "index.md", "# Index\n- [[a]]\n- [[b]]\n- [[demo]]\n")
+        write(self.vault, "projects/demo/demo.md", self.hub())
+        write(self.vault, "projects/demo/demo-history.md", self.hub())
+        result = run_lint(self.vault)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("projects/", result.stdout)  # no hub warnings; history file needs no index line
+
+    def test_project_hub_problems(self):
+        write(self.vault, "projects/nohub/notes-file.md", self.hub())
+        write(self.vault, "projects/thin/thin.md", self.hub(sections=("Current state",)))
+        write(self.vault, "projects/big/big.md", self.hub(extra="x" * 5000))
+        write(self.vault, "projects/wrong/wrong.md", page("## Current state\n"))
+        result = run_lint(self.vault)
+        out = result.stdout
+        self.assertEqual(result.returncode, 0, out)  # WARN, not ERROR
+        self.assertIn("WARN  projects/nohub/: no hub page nohub.md", out)
+        self.assertIn("WARN  projects/thin/thin.md: hub page has no '## Next step' section", out)
+        self.assertIn("WARN  projects/thin/thin.md: not listed in index.md", out)
+        self.assertIn("WARN  projects/big/big.md: hub page is", out)
+        self.assertIn("WARN  projects/wrong/wrong.md: hub page is not type: project", out)
+
 
 if __name__ == "__main__":
     unittest.main()

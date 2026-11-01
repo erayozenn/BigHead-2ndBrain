@@ -13,6 +13,8 @@ Checks (the vault CLAUDE.md "Lint" list, minus the judgment checks):
   ERROR hot.md over 500 words, index.md over 16 KiB
   WARN  orphan pages (wiki/ pages no other file links to)
   WARN  wiki/ pages missing from index.md
+  WARN  project hubs (projects/<name>/<name>.md): missing, wrong type, missing sections,
+        over 4 KiB, not in index.md
   WARN  vault CLAUDE.md over 200 lines
   WARN  paths in the vault CLAUDE.md "Layout" table that do not exist (except .cache/)
 
@@ -33,6 +35,8 @@ from vault_schema import (CLAUDE_MD_MAX_LINES, HOT_MAX_WORDS, INDEX_MAX_BYTES,  
                           page_problems, scalar, split_frontmatter, strip_code, vault_files)
 
 LAYOUT_CELL_RE = re.compile(r"^\|\s*([^|]+?)\s*\|")
+HUB_SECTIONS = ("Current state", "Next step", "Decisions", "Lessons")
+HUB_MAX_BYTES = 4 * 1024
 
 
 class Report:
@@ -77,6 +81,34 @@ def layout_paths(claude_md: str) -> list[str]:
             if p and "YYYY" not in p and "<" not in p and not p.startswith(".cache"):
                 paths.append(p)
     return paths
+
+
+def check_project_hubs(report: Report, vault: Path, pages: list[Path], indexed: set[str]) -> None:
+    """Every folder under projects/ that holds notes needs a well-formed hub page."""
+    folders = set()
+    for page in pages:
+        parts = page.relative_to(vault).parts
+        if parts[0] == "projects" and len(parts) >= 3:
+            folders.add(parts[1])
+    for name in sorted(folders):
+        rel = f"projects/{name}/{name}.md"
+        hub = vault / rel
+        if not hub.is_file():
+            report.add("WARN", f"projects/{name}/", f"no hub page {name}.md")
+            continue
+        text = hub.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+        fm, _ = split_frontmatter(text.lstrip("﻿"))
+        if fm is None or scalar(fm.get("type", "")) != "project":
+            report.add("WARN", rel, "hub page is not type: project")
+        for section in HUB_SECTIONS:
+            if not re.search(rf"^## {section}\s*$", text, re.MULTILINE):
+                report.add("WARN", rel, f"hub page has no '## {section}' section")
+        size = hub.stat().st_size
+        if size > HUB_MAX_BYTES:
+            report.add("WARN", rel, f"hub page is {size / 1024:.1f} KiB (max "
+                                    f"{HUB_MAX_BYTES // 1024}); move old items to {name}-history.md")
+        if name.lower() not in indexed:
+            report.add("WARN", rel, "not listed in index.md")
 
 
 def main() -> None:
@@ -132,6 +164,7 @@ def main() -> None:
             report.add("WARN", rel, "orphan page (no other file links to it)")
         if page.stem.lower() not in indexed:
             report.add("WARN", rel, "not listed in index.md")
+    check_project_hubs(report, vault, pages, indexed)
 
     hot = vault / "hot.md"
     words = len(hot.read_text(encoding="utf-8").split()) if hot.exists() else 0
