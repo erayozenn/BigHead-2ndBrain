@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-"""Rank a vault's wiki pages for a query. Read-only: no index is written. Standard library only.
+"""Rank a vault's wiki pages, or chunks of its raw sources, for a query. Read-only: no index is
+written. Standard library only.
 
 Usage:
   search.py --vault <dir> --query "<text>" [--method grep|bm25|bm25-tr] [--top 5] [--prefix 4]
+            [--corpus wiki|raw]
+
+Corpora:
+  wiki  pages under wiki/ (default)
+  raw   chunks of raw/ text: Markdown and .txt files split at headings, PDFs through their cached
+        text in .cache/raw-text/ split at pages; each chunk at most CHUNK_WORDS words. The heading
+        path counts like a page name. A PDF with no cached text is named on stderr and skipped.
+        Results: {"chunk", "source", "heading", "score", "text"}.
 
 Methods:
   grep     most distinct query terms found as substrings, then most found in the name or aliases
@@ -12,7 +21,7 @@ Methods:
 
 Prints {"method": ..., "results": [{"page": <stem>, "score": <number>}, ...]}, best first, and only
 pages that match. The page name and aliases count NAME_WEIGHT times; other frontmatter does not
-count. Exit codes: 0 reported (even with no results), 1 no wiki/ folder, 2 bad arguments.
+count. Exit codes: 0 reported (even with no results), 1 no wiki/ (or raw/) folder, 2 bad arguments.
 """
 from __future__ import annotations
 
@@ -45,11 +54,88 @@ nasıl ne neden niye o olan veya ve ya
 """.split())
 
 
+CHUNK_WORDS = 200
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
+PDF_PAGE_RE = re.compile(r"^=== page (\d+) ===$")
+RAW_TEXT_SUFFIXES = (".md", ".txt")
+CACHE_DIR = Path(".cache") / "raw-text"
+
+
 @dataclass
 class Page:
-    stem: str
-    name: str  # the page name and aliases
+    stem: str  # the page name, or a chunk id "<source>#<n>"
+    name: str  # the page name and aliases, or a chunk's heading path
     body: str
+    source: str = ""
+    heading: str = ""
+
+
+def sections(text: str, markdown: bool) -> list[tuple[str, str]]:
+    """(heading path, text) in file order: Markdown at headings, cached PDF text at page markers."""
+    out: list[tuple[str, list[str]]] = [("", [])]
+    path: list[tuple[int, str]] = []
+    fence = ""
+    for line in text.splitlines():
+        marker = line.lstrip()[:3]
+        if markdown and marker in ("```", "~~~") and (not fence or marker == fence):
+            fence = "" if fence else marker
+        heading = HEADING_RE.match(line) if markdown and not fence else None
+        page = None if markdown else PDF_PAGE_RE.match(line)
+        if heading:
+            level = len(heading.group(1))
+            path = [item for item in path if item[0] < level] + [(level, heading.group(2))]
+            out.append((" > ".join(title for _, title in path), []))
+        elif page:
+            out.append((f"page {page.group(1)}", []))
+        else:
+            out[-1][1].append(line)
+    return [(heading, "\n".join(lines)) for heading, lines in out]
+
+
+def chunk_file(source: str, text: str, markdown: bool, start: int) -> list[Page]:
+    chunks = []
+    for heading, body in sections(text, markdown):
+        words = body.split()
+        if not words and not heading:
+            continue
+        for i in range(0, max(len(words), 1), CHUNK_WORDS):
+            start += 1
+            chunks.append(Page(f"{source}#{start}", heading, " ".join(words[i:i + CHUNK_WORDS]),
+                               source, heading))
+    return chunks
+
+
+def read_text(path: Path) -> str | None:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        print(f"search: skipped {path.name}: {error.__class__.__name__}", file=sys.stderr)
+        return None
+    return text.removeprefix("﻿").replace("\r\n", "\n")
+
+
+def load_raw_chunks(vault: Path) -> list[Page]:
+    chunks: list[Page] = []
+    for path in sorted((vault / "raw").rglob("*")):
+        if not path.is_file():
+            continue
+        source = path.relative_to(vault).as_posix()
+        suffix = path.suffix.lower()
+        if suffix == ".pdf":
+            cached = vault / CACHE_DIR / (path.relative_to(vault / "raw").as_posix() + ".txt")
+            if not cached.is_file():
+                print(f"search: no cached text for {source}; skipped", file=sys.stderr)
+                continue
+            text, markdown = read_text(cached), False
+        elif suffix in RAW_TEXT_SUFFIXES:
+            text, markdown = read_text(path), suffix == ".md"
+            if text is not None and markdown:
+                text = split_frontmatter(text)[1]
+        else:
+            continue
+        if text is not None:
+            chunks += chunk_file(source, text, markdown, 0)
+    return chunks
 
 
 def aliases_value(text: str) -> str:
@@ -144,7 +230,13 @@ def rank(pages: list[Page], query: str, method: str,
         scored = rank_grep(pages, query)
     else:
         scored = rank_bm25(pages, query, method, prefix)
-    return sorted(scored, key=lambda item: (-item[1], item[0]))
+    return sorted(scored, key=lambda item: (-item[1], *id_order(item[0])))
+
+
+def id_order(stem: str) -> tuple[str, int]:
+    """Page names sort as text; chunk ids "<source>#<n>" sort by source, then n as a number."""
+    source, _, number = stem.rpartition("#")
+    return (source, int(number)) if source and number.isdigit() else (stem, 0)
 
 
 def positive_int(value: str) -> int:
@@ -161,10 +253,10 @@ def non_negative_int(value: str) -> int:
     return number
 
 
-def vault_path(value: str) -> Path:
+def vault_path(value: str, folder: str = "wiki") -> Path:
     vault = Path(from_msys(value))
-    if not (vault / "wiki").is_dir():
-        print(f"search: no wiki/ folder in {value}".replace("\n", "\\n"), file=sys.stderr)
+    if not (vault / folder).is_dir():
+        print(f"search: no {folder}/ folder in {value}".replace("\n", "\\n"), file=sys.stderr)
         sys.exit(1)
     return vault
 
@@ -179,10 +271,20 @@ def main() -> None:
     parser.add_argument("--method", choices=METHODS, default="bm25-tr")
     parser.add_argument("--top", type=positive_int, default=5)
     parser.add_argument("--prefix", type=non_negative_int, default=DEFAULT_PREFIX)
+    parser.add_argument("--corpus", choices=("wiki", "raw"), default="wiki")
     args = parser.parse_args()
+    if args.corpus == "raw":
+        chunks = load_raw_chunks(vault_path(args.vault, "raw"))
+        by_id = {chunk.stem: chunk for chunk in chunks}
+        ranked = rank(chunks, args.query, args.method, args.prefix)[:args.top]
+        results = [{"chunk": cid, "source": by_id[cid].source, "heading": by_id[cid].heading,
+                    "score": round(score, 4), "text": by_id[cid].body} for cid, score in ranked]
+        print(json.dumps({"method": args.method, "corpus": "raw", "results": results},
+                         ensure_ascii=False))
+        return
     pages = load_pages(vault_path(args.vault))
     ranked = rank(pages, args.query, args.method, args.prefix)[:args.top]
-    print(json.dumps({"method": args.method,
+    print(json.dumps({"method": args.method, "corpus": "wiki",
                       "results": [{"page": stem, "score": round(score, 4)} for stem, score in ranked]},
                      ensure_ascii=False))
 

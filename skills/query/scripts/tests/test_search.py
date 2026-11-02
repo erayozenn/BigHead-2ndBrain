@@ -47,6 +47,87 @@ class Base(unittest.TestCase):
         return [r["page"] for r in self.search(query, *args)]
 
 
+class RawCorpusTest(Base):
+    """--corpus raw: section-sized chunks of raw/ Markdown and cached PDF text."""
+
+    def raw(self, rel, text, newline="\n"):
+        path = os.path.join(self.vault, *rel.split("/"))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline=newline) as f:
+            f.write(text)
+
+    def chunks(self, query, *args):
+        result = run(SEARCH, "--vault", self.vault, "--query", query, "--corpus", "raw", *args)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        data = json.loads(result.stdout)
+        self.assertEqual(data["corpus"], "raw")
+        return data["results"]
+
+    def test_markdown_is_split_at_headings_with_the_heading_path(self):
+        self.raw("raw/web/a.md", "# Clocks\nintro words\n## Reeds\nmarsh reeds tip over\n## Bells\nbronze bells\n")
+        hits = self.chunks("reeds")
+        self.assertEqual([(h["source"], h["heading"]) for h in hits], [("raw/web/a.md", "Clocks > Reeds")])
+        self.assertIn("marsh reeds tip over", hits[0]["text"])
+        self.assertTrue(hits[0]["chunk"].startswith("raw/web/a.md#"))
+
+    def test_heading_words_alone_find_the_chunk(self):
+        self.raw("raw/web/a.md", "# Overflow basin\nadded in winter\n# Other\nnothing here\n")
+        self.assertEqual([h["heading"] for h in self.chunks("basin")], ["Overflow basin"])
+
+    def test_long_section_is_split_into_windows_of_at_most_200_words(self):
+        words = [f"w{i}" for i in range(450)]
+        self.raw("raw/web/long.md", "# Long\n" + " ".join(words) + "\n")
+        hits = self.chunks("w0 w449", "--top", "10", "--method", "grep")
+        self.assertEqual(len(hits), 2)
+        for hit in hits:
+            self.assertLessEqual(len(hit["text"].split()), 200)
+        ids = sorted(h["chunk"] for h in self.chunks("w0 w250 w449", "--top", "10", "--method", "grep"))
+        self.assertEqual(ids, ["raw/web/long.md#1", "raw/web/long.md#2", "raw/web/long.md#3"])
+
+    def test_cached_pdf_text_is_split_by_page_and_named_by_the_pdf(self):
+        self.raw("raw/web/p.pdf", "%PDF-1.4 binary")
+        self.raw(".cache/raw-text/web/p.pdf.txt", "=== page 1 ===\ntitle page\n=== page 2 ===\nnarwhal results\n")
+        hits = self.chunks("narwhal")
+        self.assertEqual([(h["source"], h["heading"]) for h in hits], [("raw/web/p.pdf", "page 2")])
+
+    def test_pdf_without_cached_text_is_named_on_stderr(self):
+        self.raw("raw/web/q.pdf", "%PDF-1.4 binary")
+        self.raw("raw/web/a.md", "# A\nkiwi\n")
+        result = run(SEARCH, "--vault", self.vault, "--query", "kiwi", "--corpus", "raw")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("raw/web/q.pdf", result.stderr)
+        self.assertEqual(len(json.loads(result.stdout)["results"]), 1)
+
+    def test_frontmatter_of_a_raw_file_is_not_searched_and_crlf_is_fine(self):
+        self.raw("raw/web/a.md", "---\nurl: https://example.org/zebra\n---\n# Title\nkiwi\n", newline="\r\n")
+        self.assertEqual(self.chunks("zebra"), [])
+        self.assertEqual([h["heading"] for h in self.chunks("kiwi")], ["Title"])
+
+    def test_corpora_stay_apart(self):
+        self.write("wikipage", page(body="mango"))
+        self.raw("raw/web/a.md", "# A\npapaya\n")
+        self.assertEqual(self.chunks("mango"), [])
+        self.assertEqual(self.pages("papaya"), [])
+
+    # Regressions from the 2026-11-02 spec-only test of --corpus raw.
+    def test_tied_chunks_come_in_file_order(self):
+        self.raw("raw/web/t.md", "".join(f"# H{i}\nkiwi\n" for i in range(1, 12)))
+        ids = [h["chunk"] for h in self.chunks("kiwi", "--top", "11", "--method", "bm25")]
+        self.assertEqual(ids, [f"raw/web/t.md#{i}" for i in range(1, 12)])
+
+    def test_heading_lines_inside_code_fences_do_not_split(self):
+        self.raw("raw/web/c.md", "# Usage\nrun it\n```python\n# a comment\nzorb()\n```\n~~~\n# also\n~~~\n")
+        hits = self.chunks("zorb")
+        self.assertEqual([h["heading"] for h in hits], ["Usage"])
+        self.assertIn("# a comment", hits[0]["text"])
+
+    def test_no_raw_folder_exits_1_and_bad_corpus_exits_2(self):
+        result = run(SEARCH, "--vault", self.vault, "--query", "kiwi", "--corpus", "raw")
+        self.assertEqual((result.returncode, result.stdout), (1, ""))
+        result = run(SEARCH, "--vault", self.vault, "--query", "kiwi", "--corpus", "notes")
+        self.assertEqual((result.returncode, result.stdout), (2, ""))
+
+
 class SearchTest(Base):
     def test_more_occurrences_rank_higher(self):
         self.write("many", page(body="kiwi kiwi kiwi kiwi filler words here"))
