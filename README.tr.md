@@ -138,6 +138,18 @@ hatalarında hiçbir şeyi engellemez.
 
 Python 3 bulunamazsa iki hook da bir uyarı yazar ve devre dışı kalır.
 
+## Arama gerekiyor mu?
+
+Yazarın kendi wiki'sinde henüz değil. `/bighead:query` sayfaları arama motoru olmadan, `index.md`'yi
+okuyarak bulur. Çoğu Türkçe soru ve İngilizce sayfalardan oluşan 31 sayfalık bir wiki'de iki test
+grep'i, BM25'i, Türkçe normalizasyonlu BM25'i, yalnızca index'i okuyan bir ajanı ve soruyu BM25 için
+yeniden yazan bir ajanı karşılaştırdı. Arama kodundan önce commit'lenen kural: Yeniden yazma yöntemi
+index ajanından en az 3 soru fazla bulursa arama bağlanır. Bulamadı: İlk testte ikisi de 22 sorunun
+22'sini, ikinci testte, soruları index'te görünmeyen sayfa ayrıntılarından gelen 15 sorunun 15'ini
+buldu. Script'ler tek başına 22 sorunun 8 ile 13'ünü buldu. Bu yüzden arama bağlı değil; script'ler
+kendi vault'unu ölçebilmen için kit'te geliyor ([docs/architecture.md](docs/architecture.md) içinde
+"Measuring page finding"). Sınırlar: tek ve küçük bir wiki, yalnızca sayfa bulma, toplam 37 soru.
+
 ## Teşekkür
 
 - Andrej Karpathy — [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)

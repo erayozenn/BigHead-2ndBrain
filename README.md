@@ -136,6 +136,19 @@ errors.
 
 If no Python 3 is found, both hooks print a warning and stay inactive.
 
+## Does it need search?
+
+Not yet, on the author's own wiki. `/bighead:query` finds pages by reading `index.md`, with no
+search engine. Two tests on a 31-page wiki, mostly Turkish questions over English pages, compared
+grep, BM25, BM25 with Turkish normalisation, an agent reading only the index, and an agent that
+rewrites the question for BM25. The rule, committed before any search code: connect search only if
+the rewrite method finds at least 3 more questions than the index agent. It did not: both found 22
+of 22 in the first test and 15 of 15 in the second, whose questions came from page details not
+shown in the index. Scripts alone found 8 to 13 of 22. So search is not connected; the scripts ship
+so you can measure your own vault (see "Measuring page finding" in
+[docs/architecture.md](docs/architecture.md)). Limits: one small wiki, page finding only, 37
+questions in all.
+
 ## Credits
 
 - Andrej Karpathy — the [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
