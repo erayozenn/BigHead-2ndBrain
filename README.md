@@ -70,7 +70,8 @@ Then start a new session (or run `/reload-plugins`). To update automatically, op
 - Obsidian
 - Git
 - Python 3.10+ (for hooks and skill scripts)
-- Windows: Git for Windows (Git Bash) — the guard hook runs through bash
+- Windows: Git for Windows (Git Bash) — the hooks run through bash. Without it, Claude Code runs
+  them in PowerShell, where they can fail and Write/Edit calls can be blocked
 - Optional: pypdf (`pip install pypdf`) for PDFs longer than 10 pages and for cheap text-only
   reads. Without it, `ingest` reads PDFs of up to 10 pages natively.
 

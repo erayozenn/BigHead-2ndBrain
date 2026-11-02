@@ -72,7 +72,8 @@ değişmez.
 - Obsidian
 - Git
 - Python 3.10+ (hook'lar ve skill script'leri için)
-- Windows: Git for Windows (Git Bash) — guard hook bash üzerinden çalışır
+- Windows: Git for Windows (Git Bash) — hook'lar bash üzerinden çalışır. Yoksa Claude Code onları
+  PowerShell'de çalıştırır; orada başarısız olabilir ve Write/Edit çağrıları engellenebilir
 - İsteğe bağlı: pypdf (`pip install pypdf`), 10 sayfadan uzun PDF'ler ve ucuz salt-metin okuma
   için. Kurulu değilse `ingest` 10 sayfaya kadar olan PDF'leri doğrudan okur.
 
