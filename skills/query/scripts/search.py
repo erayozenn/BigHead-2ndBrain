@@ -128,8 +128,8 @@ def load_raw_chunks(vault: Path) -> list[Page]:
                 continue
             text, markdown = read_text(cached), False
         elif suffix in RAW_TEXT_SUFFIXES:
-            text, markdown = read_text(path), suffix == ".md"
-            if text is not None and markdown:
+            text, markdown = read_text(path), True
+            if text is not None and suffix == ".md":
                 text = split_frontmatter(text)[1]
         else:
             continue

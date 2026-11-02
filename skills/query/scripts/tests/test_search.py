@@ -110,6 +110,12 @@ class RawCorpusTest(Base):
         self.assertEqual(self.pages("papaya"), [])
 
     # Regressions from the 2026-11-02 spec-only test of --corpus raw.
+    def test_txt_is_split_at_headings_but_keeps_its_frontmatter(self):
+        self.raw("raw/notes/a.txt", "---\nkeep: zebra\n---\npre\n# Tt\nzorb\n")
+        hits = self.chunks("zorb")
+        self.assertEqual([(h["chunk"], h["heading"], h["text"]) for h in hits], [("raw/notes/a.txt#2", "Tt", "zorb")])
+        self.assertEqual(len(self.chunks("zebra")), 1)
+
     def test_tied_chunks_come_in_file_order(self):
         self.raw("raw/web/t.md", "".join(f"# H{i}\nkiwi\n" for i in range(1, 12)))
         ids = [h["chunk"] for h in self.chunks("kiwi", "--top", "11", "--method", "bm25")]
