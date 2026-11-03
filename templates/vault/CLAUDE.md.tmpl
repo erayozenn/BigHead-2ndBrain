@@ -1,4 +1,4 @@
-# Vault Schema & Rules (template v0.6)
+# Vault Schema & Rules (template v0.7)
 
 Personal knowledge base (Karpathy "LLM Wiki" pattern), maintained by Claude Code,
 co-existing with Obsidian. This file is a MAP and RULES, not content. Keep it under 200 lines
@@ -122,6 +122,25 @@ hot.md (loaded) → index.md → pages. Read budget beyond those two files:
 Quick 12 KiB · Standard 48 KiB (default) · Deep 128 KiB. Cite with [[links]].
 If the wiki is insufficient, say so explicitly, then go to raw/.
 Offer to save good answers to wiki/syntheses/.
+### Project work (no slash command needed)
+1. When the user works on a project, read its hub (`projects/<name>/<name>.md`) first. For "everything
+   done so far", also read its Milestones and, if needed, log.md.
+2. Before building, changing or choosing something, research in this order: the hub's decisions,
+   lessons and open findings → matching playbooks → the code involved → at least one targeted web
+   search for the general problem (how others solve it), not this project's name. Read result
+   snippets first and open at most 1–2 full pages per step. Exempt: small fixes with a known cause;
+   say that you skipped and why. Say what you looked at.
+3. Report options with trade-offs and a recommendation, then let the user pick. Only then write code.
+4. When the work stops, offer to update the hub and hot.md.
+5. Never ask the user to type a slash command. Offer the action ("I can update the hub — shall I?")
+   and do it on approval; name the command at most in passing. Exception: commands only the user
+   can run (`/compact`, `/clear`, `/reload-plugins`).
+6. The hub is a pointer, not the truth: if the code or repo state disagrees with it, trust the code
+   and say what differs.
+7. The wiki is a cited summary, not settled fact. When you use a wiki claim, give its date and source.
+   Before a decision rests on a claim that is dated, provisional or disputed, or on a fast-moving
+   topic (versions, APIs, prices), check raw/ or current docs first. If they conflict, tell the user
+   and propose the wiki update; never fix it silently.
 ### Lint (report first, fix only after approval)
 Contradictions · freshness violations · past "Goes stale" dates · orphan pages · broken links ·
 duplicate basenames (incl. wiki vs raw) · missing frontmatter/summary · important concepts without pages ·
