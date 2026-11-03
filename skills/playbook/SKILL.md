@@ -151,7 +151,7 @@ Newest first in both sections.
 The check and the verdict write nothing to the vault.
 
 **No slug:** Glob `playbooks/*/*.md`, keep files whose stem equals their folder name, and list each
-one's slug, `status` and Scope line. Then ask which one fits. None: say so and suggest `save`.
+one's slug, `status` and Scope line. Then ask which one fits. None: say so and offer to save one.
 
 **With a slug**
 1. Read the page. Read the history only if the page is `archived`: say it is retired, give the

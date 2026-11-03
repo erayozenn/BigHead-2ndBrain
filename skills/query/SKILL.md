@@ -89,6 +89,9 @@ Read the ranked pages within budget. While reading:
 - Every factual claim from the vault cites its page: `[[page]]`, or `[[raw/<full path>]]` when it
   came from raw/. Cite the wiki page, not the source page behind it, unless the user asks.
 - Carry markers and dates over; never upgrade a (provisional) or (disputed) claim to a plain one.
+  The wiki is a cited summary, not settled fact: if the user will act on a claim that is dated,
+  marked, or about a fast-moving topic (versions, APIs, prices), say so and offer to check the
+  source or current docs first.
 - Anything not from the vault (general knowledge, your own reasoning) is labelled as such,
   e.g. "(not in the vault)". Never present it as a vault claim.
 - Never invent quotes, page numbers, dates or URLs. Quote only text you read in this session.
@@ -107,7 +110,7 @@ Say so explicitly first: what the wiki covers, and what is missing. Then:
    - Read matches within the remaining budget (offset/limit around the hit, not whole files).
 2. Answer from raw/, citing the raw file, not the cache — `[[raw/<full path>]]`, p. N — and say
    the answer is not compiled into the wiki yet.
-3. Propose the fix: ingest that raw file (`/bighead:ingest <path>`), or, if no source
+3. Propose the fix: offer to ingest that raw file (the ingest skill, run on the user's yes), or, if no source
    exists, add the gap to `Threads.md` (ask first — it is not free to write).
 
 Do not search the web from this skill; if the vault has nothing, say so and suggest a source to

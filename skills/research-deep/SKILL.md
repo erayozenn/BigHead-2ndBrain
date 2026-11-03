@@ -74,10 +74,10 @@ Label your own reasoning "(interpretation)".
 ## 5. Hand-off
 
 Ask, as choices:
-- **Capture sources:** which numbered sources to ingest — each via `/bighead:ingest <url>`,
-  one at a time (that skill asks before writing into `raw/web/`). Recommend at most 3, the
-  primary/official ones.
-- **Save the brief:** offer `/bighead:save` for a synthesis page. Web claims in it must cite
+- **Capture sources:** which numbered sources to ingest — each through the ingest skill, run on
+  the user's yes, one at a time (that skill asks before writing into `raw/web/`). Recommend at
+  most 3, the primary/official ones.
+- **Save the brief:** offer to save it as a synthesis page (the save skill). Web claims in it must cite
   ingested raw files, so ingest first — otherwise the save keeps them marked (unsupported)
   and lists them under "Open questions".
 

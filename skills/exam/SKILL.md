@@ -63,8 +63,8 @@ Be strict and consistent with the rubric; accept equivalent wording and notation
 Then:
 - **Score** — total and percent.
 - **Weak topics** — ideas behind the lost points, grouped.
-- **Follow-ups** — for each weak topic one of: `/bighead:review make <page>` (cards),
-  `/bighead:teach-back <topic>`, or re-reading a named section of a page.
+- **Follow-ups** — for each weak topic, offer one of: cards from a page (review `make`), a
+  teach-back on the topic, or re-reading a named section of a page. Start it if the user agrees.
 
 ## 5. Log
 

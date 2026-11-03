@@ -79,8 +79,8 @@ JSON: cards, new (never reviewed), due (scheduled date ≤ today) per file, and 
    wrong in one line, the card's answer, and — if wrong or partly — one sentence on the gap with
    the page link. No hints before the attempt; if the user asks for one, give the first step only.
 3. Keep a tally. At the end: score, the cards missed, and the advice to review them in Obsidian
-   (that is where the schedule updates). Offer `/bighead:teach-back <topic>` for a topic with
-   several misses.
+   (that is where the schedule updates). Offer a teach-back on a topic with several misses,
+   and start it if the user agrees.
 4. Quiz mode writes nothing.
 
 ## 4. Report

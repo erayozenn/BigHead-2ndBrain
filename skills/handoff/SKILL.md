@@ -51,8 +51,8 @@ wrong.
 If this session worked on a project that has a hub (`projects/<name>/<name>.md`), follow the
 `update <name>` steps in `${CLAUDE_SKILL_DIR}/../project/SKILL.md`: draft the change, show it, and
 apply it only after approval. Leave its commit to step 5. Skip projects the session did not touch.
-Do not create a new hub here; mention `/bighead:project new <name>` if a project without one came
-up repeatedly.
+Do not create a new hub here; if a project without one came up repeatedly, offer to create its hub
+(project `new`) in a later session.
 
 If this session applied a playbook (`/bighead:playbook use`) and its outcome is not recorded, ask
 for the outcome and follow the `record <slug>` steps in `${CLAUDE_SKILL_DIR}/../playbook/SKILL.md`.

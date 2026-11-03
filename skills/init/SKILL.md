@@ -83,7 +83,7 @@ Report in a few lines:
 - the identity card status (filled / placeholders left);
 - **next step:** open a new Claude Code session *in the vault folder* — CLAUDE.md, hot.md and
   `.claude/settings.json` load only at session start;
-- then the first ingest: `/bighead:ingest <path-or-url>`.
+- then the first ingest: in that session, ask Claude to ingest a file path or URL (the ingest skill).
 
 Then ask one choice question (not a line buried in the report): **"Put the vault under git
 now?"** — yes (recommended: every Claude edit becomes reviewable and reversible; the vault's
