@@ -77,4 +77,6 @@ BM25 and BM25 with Turkish normalisation (`search.py`, standard library, no inde
 score page lists or rewritten queries produced elsewhere, such as by an agent. `/bighead:query` does
 not use `search.py`: connect it only if a measurement on your vault shows it finds pages the index
 misses. Write the questions and the decision rule before looking at results, and tune only on a
-separate part of the questions. Tests: `python -m unittest discover skills/query/scripts/tests`.
+separate part of the questions. `search.py --corpus raw` searches chunks of the raw sources instead
+of wiki pages (Markdown and text split at headings, PDFs by page from `.cache/raw-text/`, at most
+200 words each), for comparing answers from raw retrieval with answers from the wiki. Tests: `python -m unittest discover skills/query/scripts/tests`.

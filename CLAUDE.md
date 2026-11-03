@@ -40,7 +40,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 10. Raise `version` in `plugin.json` before any push meant to reach users. Installed copies stay on
     their cached version until that string changes, however many commits are pushed.
 
-## Roadmap (current: public v0.3.0; Phase 3 — search & eval)
+## Roadmap (current: public v0.4.0; Phase 3 — search & eval)
 0 Prep (done) · 1a Kit skeleton + templates · 1b Personal vault from templates, permission tests ·
 2a Skills: ingest, query, save, handoff + init → v0.1, sanitizer (done; stays private) ·
 2b lint + PostToolUse validation hook + PreToolUse guard hook → install test, credits, public (done) ·
@@ -48,7 +48,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 layer (tutor style, teach-back, question-first ingest); challenge once decision notes exist ·
 2d project memory (batch 1), then playbooks (batch 2); no subagents unless a small eval justifies one ·
 3 Search & eval (BM25 + Turkish normalisation, queries.json, recall/MRR): tool built, search not
-connected until a measurement justifies it · 4 Custom IDE — deferred
+connected until a measurement justifies it; raw corpus added for answer tests (v0.4.0) · 4 Custom IDE — deferred
 indefinitely (2026-10-31; Obsidian + terminal is the interface, no plan) · 5 Advanced.
 
 ## Commits
