@@ -17,8 +17,20 @@ The vault's `CLAUDE.md` is the authority for rules (layout, hard rules, frontmat
 citation, autonomy). This skill is the procedure; where they differ, the vault's CLAUDE.md wins.
 Talk to the user in the vault's chat language.
 
-**Preconditions.** The current directory is a vault: `CLAUDE.md`, `index.md` and `raw/` exist.
-If not, stop and say so. One source per run.
+**Preconditions.** Use the vault that encloses the current directory: a folder holding `index.md`
+and `raw/` whose `CLAUDE.md` starts with `# Vault Schema & Rules`. If there is none, use the
+configured vault folder `${user_config.vault_path}`; if that is empty, an unreplaced placeholder or
+not such a folder, stop and say so (the user can set it in `/config`, under this plugin's options).
+One source per run.
+
+**Outside the vault** (the current directory is not inside it): every vault path below, such as
+`raw/web/`, `wiki/` or `index.md`, means that path under the vault folder, written as an absolute
+path with forward slashes. `hot.md` is not loaded there; read it when a step uses it. Read the
+vault's `CLAUDE.md` before the first write and follow it. Pass the vault folder wherever a command
+says `--vault .`. A source file in the current repo may be ingested only if the user names it; it
+is copied into the vault like any other source. Run vault git commands as `git -C "<vault>" …`,
+never in the current repo, and push the vault only when the user asks. Never copy vault content
+into the current repo, its commits, PRs or issues unless the user asks.
 
 **Python.** Scripts live in `${CLAUDE_SKILL_DIR}/scripts/`. Use the first interpreter that works
 (`python3`, `python`, `py -3`) and keep it for the session. `pdf_pages.py` needs `pypdf`

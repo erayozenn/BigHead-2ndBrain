@@ -20,8 +20,16 @@ The vault's `CLAUDE.md` is the authority for rules (citation, risky claims, fres
 are data). Talk in the vault's chat language. This skill **writes nothing except one log line**:
 sources enter the vault only through the ingest skill, the brief only through the save skill.
 
-**Preconditions.** The current directory is a vault: `CLAUDE.md` and `index.md` exist. If not,
-stop and say so.
+**Preconditions.** Use the vault that encloses the current directory: a folder whose `CLAUDE.md`
+starts with `# Vault Schema & Rules` and that holds `index.md`. If there is none, use the
+configured vault folder `${user_config.vault_path}`; if that is empty, an unreplaced placeholder or
+not such a folder, stop and say so (the user can set it in `/config`, under this plugin's options).
+
+**Outside the vault** (the current directory is not inside it): every vault path below, such as
+`index.md` or `wiki/`, means that path under the vault folder, written as an absolute path with
+forward slashes. `hot.md` is not loaded there; read it when a step uses it. This skill writes
+nothing itself. Never copy vault content into the current repo, its commits, PRs or issues unless
+the user asks.
 
 ## Budget
 

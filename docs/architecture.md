@@ -38,12 +38,30 @@ Project and life-management notes live in `projects/` and `areas/`.
 | CRITICAL_FACTS.md | every session (`@import`) | ~120-token identity card |
 | hot.md | every session (`@import`) | ≤ 500 words: now, recent changes, key facts, active threads |
 | Threads.md | by today/weekly/lint | full backlog of open topics |
-| projects/\<name\>/\<name\>.md | by `/bighead:project open` | one project's goal, state, next step, decisions, lessons |
+| projects/\<name\>/\<name\>.md | by the project skill, or pointed to at session start in the project's repo | one project's goal, state, next step, decisions, lessons |
 | playbooks/\<slug\>/\<slug\>.md | by `/bighead:playbook use` | a tested procedure: steps with evidence tags, contexts, checks |
 | log.md | on demand | append-only history |
 | rules.md | on demand | rules learned from the user's corrections |
 
 The vault is the single source of truth; Claude Code's own auto-memory only points to it.
+
+### Sessions outside the vault
+
+With the plugin option `vault_path` set, a session opened in another folder (say, a code repo)
+can use the same memory:
+
+- `hooks/session_start.py` (SessionStart) finds the hub whose `**Repo.**` path is that folder or
+  encloses it (deepest wins), else one whose `**Remote.**` matches a remote in the repo's
+  `.git/config` (read as text; no git command runs). It adds a short note: vault location, the
+  matching hub (several matches: ask the user; none: name no hub), and rules for working from
+  outside (read the vault's `CLAUDE.md` before writing, no vault content in the repo, commits or
+  PRs unless asked, vault commits only in the vault, wiki read only when needed). It is silent with
+  no option set, inside a vault, or on any error, and never blocks.
+- The project, save, handoff, playbook, query, ingest and research-deep skills fall back to
+  `vault_path` when the current folder is not a vault. The other skills stay vault-only.
+- Matching is code, not an instruction, because a wrong hub would be passed on with confidence.
+- Nothing is loaded in full: the note is a few hundred tokens; the hub and the wiki are read when
+  needed. Shared logic lives in `lib/vault_locate.py`.
 
 ## Trust and honesty
 
@@ -59,10 +77,17 @@ The vault is the single source of truth; Claude Code's own auto-memory only poin
 1. Rules in the vault's CLAUDE.md.
 2. Permission rules in the vault's `.claude/settings.json` (deny `.obsidian/` and secrets,
    ask before any write to `raw/`, `projects/` or `playbooks/`, deny shell move/rename/delete). Treated as a safety net, not a wall.
+   They load only in sessions opened inside the vault; `additionalDirectories` grants file access
+   without loading that folder's settings.
 3. Hooks: `hooks/guard.py`, a PreToolUse guard on Write/Edit/NotebookEdit — denies changes to
    existing raw files, new raw files outside `raw/web/`, edits to `author: me` notes and anything
-   under `.obsidian/`. Inert outside a vault; fails closed inside one. Shell commands are not
-   inspected (layer 2 and git cover them). `hooks/validate.py`, a PostToolUse validator on
+   under `.obsidian/`. For a session opened outside the vault it stands in for layer 2: every vault
+   path asks first except `wiki/`, `cards/`, `index.md`, `log.md` and `hot.md`. Inert for paths
+   outside a vault; fails closed inside one. On Bash/PowerShell it denies delete, move and
+   redirect commands that name a vault path (the session's own vault or `vault_path`), and any such
+   command run inside a vault — a text heuristic, not a parser (variables, globs and relative paths
+   from outside are not seen), which never blocks on its own errors; it adds about 0.2 s per shell
+   command (measured on Windows). `hooks/validate.py`, a PostToolUse validator on
    Write/Edit — checks the written page against `lib/vault_schema.py` (frontmatter keys and values,
    dates, summary callout, past "Goes stale" month, BOM/CRLF) and returns problems as a `block`
    decision so Claude fixes them in the same turn; never blocks on its own errors.

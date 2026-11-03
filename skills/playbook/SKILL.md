@@ -18,8 +18,21 @@ The vault's `CLAUDE.md` is the authority for rules (frontmatter, freshness, auto
 skill is the procedure; where they differ, the vault's CLAUDE.md wins. Talk in the vault's chat
 language; write playbook pages in the wiki language.
 
-**Preconditions.** The current directory is a vault: `raw/`, `index.md` and `hot.md` exist and the first line
-of `CLAUDE.md` starts with `# Vault Schema & Rules`. If not, stop and say so. If its `CLAUDE.md`
+**Preconditions.** Use the vault that encloses the current directory: a folder holding `raw/`,
+`index.md` and `hot.md` whose `CLAUDE.md` starts with `# Vault Schema & Rules`. If there is none,
+use the configured vault folder `${user_config.vault_path}`; if that is empty, an unreplaced
+placeholder or not such a folder, stop and say so (the user can set it in `/config`, under this
+plugin's options).
+
+**Outside the vault** (the current directory is not inside it): every vault path below, such as
+`playbooks/` or `log.md`, means that path under the vault folder, written as an absolute path with
+forward slashes. `hot.md` is not loaded there; read it when a step uses it. Read the vault's
+`CLAUDE.md` before the first write and follow it. Run vault git commands as `git -C "<vault>" …`,
+never in the current repo, and push the vault only when the user asks. Never copy vault content
+into the current repo, its commits, PRs or issues unless the user asks. A playbook's own steps may
+act on the current repo; that is the job, not a vault write.
+
+If the vault's `CLAUDE.md`
 does not list `playbooks/` under Layout, or `playbook` as a frontmatter type, the vault predates
 this skill: stop, show the lines to add from the kit's template, and let the user approve them.
 

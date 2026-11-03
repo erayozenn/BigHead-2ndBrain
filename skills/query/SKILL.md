@@ -19,8 +19,16 @@ This skill is the procedure; where they differ, the vault's CLAUDE.md wins. Answ
 vault's chat language. Querying is read-only: this skill writes nothing except the log line in
 step 7.
 
-**Preconditions.** The current directory is a vault: `CLAUDE.md` and `index.md` exist. If not,
-stop and say so.
+**Preconditions.** Use the vault that encloses the current directory: a folder whose `CLAUDE.md`
+starts with `# Vault Schema & Rules` and that holds `index.md`. If there is none, use the
+configured vault folder `${user_config.vault_path}`; if that is empty, an unreplaced placeholder or
+not such a folder, stop and say so (the user can set it in `/config`, under this plugin's options).
+
+**Outside the vault** (the current directory is not inside it): every vault path below, such as
+`index.md`, `raw/` or `.cache/raw-text/`, means that path under the vault folder, written as an
+absolute path with forward slashes. `hot.md` is not loaded there; read it as step 1. Pass the vault
+folder wherever a command says `--vault .`. Read the vault's `CLAUDE.md` before any write. Never
+copy vault content into the current repo, its commits, PRs or issues unless the user asks.
 
 ## Read budget
 

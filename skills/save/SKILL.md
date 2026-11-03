@@ -14,8 +14,19 @@ citation, markers, autonomy). This skill is the procedure; where they differ, th
 CLAUDE.md wins. Talk to the user in the vault's chat language; write the page in the wiki
 language.
 
-**Preconditions.** The current directory is a vault: `CLAUDE.md` and `index.md` exist. If not,
-stop and say so. One synthesis per run.
+**Preconditions.** Use the vault that encloses the current directory: a folder whose `CLAUDE.md`
+starts with `# Vault Schema & Rules` and that holds `index.md`. If there is none, use the
+configured vault folder `${user_config.vault_path}`; if that is empty, an unreplaced placeholder or
+not such a folder, stop and say so (the user can set it in `/config`, under this plugin's options).
+One synthesis per run.
+
+**Outside the vault** (the current directory is not inside it): every vault path below, such as
+`wiki/syntheses/` or `log.md`, means that path under the vault folder, written as an absolute path
+with forward slashes. `hot.md` is not loaded there; read it when a step uses it. Read the vault's
+`CLAUDE.md` before the first write and follow it. Pass the vault folder wherever a command says
+`--vault .`. Run vault git commands as `git -C "<vault>" …`, never in the current repo, and push the
+vault only when the user asks. Never copy vault content into the current repo, its commits, PRs or
+issues unless the user asks.
 
 ## 1. Pick the content
 
