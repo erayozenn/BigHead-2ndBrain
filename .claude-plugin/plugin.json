@@ -7,5 +7,12 @@
     "url": "https://github.com/erayozenn"
   },
   "license": "MIT",
-  "keywords": ["obsidian", "knowledge-base", "llm-wiki", "second-brain", "pkm"]
+  "keywords": ["obsidian", "knowledge-base", "llm-wiki", "second-brain", "pkm"],
+  "userConfig": {
+    "vault_path": {
+      "type": "directory",
+      "title": "Vault folder",
+      "description": "Optional. Your vault's folder. Set it to use the vault from other project folders: sessions there get a pointer to the matching project hub, and the project, save, handoff, playbook, query, ingest and research-deep skills work there. Leave empty to use the kit only inside the vault."
+    }
+  }
 }

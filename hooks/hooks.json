@@ -1,9 +1,20 @@
 {
-  "description": "BigHead 2ndBrain: guard (protects raw/, author: me notes, .obsidian/) and schema validator for vault pages.",
+  "description": "BigHead 2ndBrain: guard (protects raw/, author: me notes, .obsidian/, ask-first vault paths written from other folders, shell deletes in the vault), schema validator for vault pages, and a session-start pointer to the project hub when a session opens outside the vault.",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" session_start",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|NotebookEdit",
+        "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
