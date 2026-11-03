@@ -39,10 +39,12 @@ class CrossFolderGuardTest(unittest.TestCase):
     def v(self, *parts):
         return os.path.join(self.vault, *parts)
 
-    def run_guard(self, event, vault_setting=None, cwd=None):
-        env = {k: val for k, val in os.environ.items() if k != ENV_KEY}
+    def run_guard(self, event, vault_setting=None, cwd=None, project_dir=None):
+        env = {k: val for k, val in os.environ.items() if k not in (ENV_KEY, "CLAUDE_PROJECT_DIR")}
         if vault_setting is not None:
             env[ENV_KEY] = vault_setting
+        if project_dir is not None:
+            env["CLAUDE_PROJECT_DIR"] = project_dir
         return subprocess.run([sys.executable, GUARD], input=json.dumps(event), capture_output=True,
                               text=True, cwd=cwd or self.proj, env=env, timeout=30)
 
@@ -100,6 +102,26 @@ class CrossFolderGuardTest(unittest.TestCase):
     def test_outside_paths_untouched(self):
         self.assertIsNone(self.decision(self.run_guard(
             self.edit(os.path.join(self.proj, "src", "app.py"), self.proj))))
+
+    def test_shell_cd_into_vault_does_not_lift_ask(self):  # regression: live check step F
+        # The project session ran `cd <vault>` earlier, so the event cwd is the vault;
+        # the session's own folder (CLAUDE_PROJECT_DIR) is still the project.
+        result = self.run_guard(self.edit(self.v("projects", "p", "p.md"), self.vault),
+                                project_dir=self.proj)
+        self.assertEqual(self.decision(result), "ask")
+
+    def test_project_dir_inside_vault_no_ask(self):
+        result = self.run_guard(self.edit(self.v("projects", "p", "p.md"), self.proj),
+                                project_dir=self.vault)
+        self.assertIsNone(self.decision(result))
+
+    def test_project_dir_wins_for_free_paths_too(self):
+        result = self.run_guard(self.edit(self.v("wiki", "page.md"), self.vault), project_dir=self.proj)
+        self.assertIsNone(self.decision(result))
+
+    def test_shell_inside_vault_cwd_still_denied_from_project_session(self):
+        result = self.run_guard(self.shell("rm hot.md", self.vault), self.vault, project_dir=self.proj)
+        self.assertEqual(self.decision(result), "deny")
 
     def test_non_write_tool_gets_no_decision(self):  # regression: spec-only test GF-90
         result = self.run_guard(self.edit(self.v("projects", "p", "p.md"), self.proj, tool="Read"))

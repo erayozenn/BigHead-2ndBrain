@@ -60,6 +60,9 @@ can use the same memory:
 - The project, save, handoff, playbook, query, ingest and research-deep skills fall back to
   `vault_path` when the current folder is not a vault. The other skills stay vault-only.
 - Matching is code, not an instruction, because a wrong hub would be passed on with confidence.
+- "The session's folder" is `CLAUDE_PROJECT_DIR` when Claude Code sets it, not the event `cwd`:
+  the event `cwd` follows the shell's `cd`, so one `cd <vault>` would otherwise make a project
+  session look like a vault session (found in the live check).
 - Nothing is loaded in full: the note is a few hundred tokens; the hub and the wiki are read when
   needed. Shared logic lives in `lib/vault_locate.py`.
 

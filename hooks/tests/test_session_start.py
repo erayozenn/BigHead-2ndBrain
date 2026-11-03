@@ -38,10 +38,12 @@ class SessionStartTest(unittest.TestCase):
         write(os.path.join(self.vault, "projects", name, f"{name}.md"),
               f"---\ntype: project\n---\n# {name}\n\n{repo_line}\n")
 
-    def run_hook(self, cwd, vault_setting=None, event=None, raw=None):
-        env = {k: v for k, v in os.environ.items() if k != ENV_KEY}
+    def run_hook(self, cwd, vault_setting=None, event=None, raw=None, project_dir=None):
+        env = {k: v for k, v in os.environ.items() if k not in (ENV_KEY, "CLAUDE_PROJECT_DIR")}
         if vault_setting is not None:
             env[ENV_KEY] = vault_setting
+        if project_dir is not None:
+            env["CLAUDE_PROJECT_DIR"] = project_dir
         if raw is None:
             payload = event if event is not None else {
                 "hook_event_name": "SessionStart", "source": "startup", "cwd": cwd}
@@ -122,6 +124,11 @@ class SessionStartTest(unittest.TestCase):
         self.assertIn("index.md", text)
         self.assertIn("Never copy vault content", text)
         self.assertIn("more", text)
+
+    def test_project_dir_wins_over_shell_cwd(self):  # live check: shell `cd` moves the event cwd
+        event = {"hook_event_name": "SessionStart", "source": "compact", "cwd": self.vault}
+        result = self.run_hook(self.vault, self.vault, event=event, project_dir=self.proj)
+        self.assertIn("proj1.md", self.context(result))
 
     def test_empty_stdin_is_silent(self):  # spec-only test SS-102: empty input is invalid
         self.assertSilent(self.run_hook(self.proj, self.vault, raw=""))

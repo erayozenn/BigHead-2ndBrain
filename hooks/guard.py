@@ -143,7 +143,15 @@ def check(path: str) -> str | None:
 
 
 def cross_folder_ask(path: str, cwd) -> str | None:
-    """Ask reason for a vault path written from a session outside that vault, else None."""
+    """Ask reason for a vault path written from a session outside that vault, else None.
+
+    The session's folder is CLAUDE_PROJECT_DIR when Claude Code sets it: the event cwd follows
+    the shell's `cd`, so a project session that once ran `cd <vault>` would otherwise look like
+    a vault session.
+    """
+    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", "").strip()
+    if project_dir:
+        cwd = project_dir
     if not isinstance(cwd, str) or not cwd:
         return None
     target = norm(path)

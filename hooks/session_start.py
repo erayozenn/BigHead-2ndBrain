@@ -81,7 +81,11 @@ def build(cwd: str, env: dict) -> str | None:
 def main() -> int:
     try:
         event = json.loads(sys.stdin.read())  # empty or invalid input: silent (except below)
-        cwd = event.get("cwd") if isinstance(event, dict) else None
+        # The session's folder: CLAUDE_PROJECT_DIR when set, because the event cwd follows the
+        # shell's `cd` (on resume or compact it may point into the vault).
+        cwd = os.environ.get("CLAUDE_PROJECT_DIR", "").strip() or None
+        if cwd is None and isinstance(event, dict):
+            cwd = event.get("cwd")
         if not isinstance(cwd, str) or not cwd:
             cwd = os.getcwd()
         text = build(cwd, dict(os.environ))
