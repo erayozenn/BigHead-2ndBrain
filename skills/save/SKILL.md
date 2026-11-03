@@ -33,18 +33,27 @@ support: cited wiki pages, cited raw files, (unsupported) / "(not in the vault)"
   mentions) → no synthesis: it would put an unsourced core into the wiki and be rewritten once
   a real source is ingested. Instead add the vault-backed parts that carry lasting value to the
   related concept page(s), cited, and propose ingesting a source for the core.
-- **Restates an existing synthesis** → say so, do not save. Mention any small new detail and
-  offer to add just that to the existing page.
+- **Restates an existing synthesis** → say so, do not save a new page. If there is a small new
+  detail, add just that to the existing page (step 3 decides whether to ask first); if nothing is
+  new, say so and stop.
 - **Overlaps an existing synthesis but adds something** (new axis, new evidence, an answered open
   question) → extend that page.
 - **New question** → new page `wiki/syntheses/<slug>.md`. Slug: English, ASCII, lowercase
   kebab-case, named after the question (e.g. `metric-choice-by-error-cost`). Check that the
   basename is unique vault-wide (Glob `**/<slug>.md`).
 
-## 3. Plan (wait for approval)
+## 3. Plan, then write or wait
 
 State in a few lines: new page or which page is extended, title, the 1–3 related pages that will
-get a link, and the system files (index, log, hot). Wait for the user's approval. Then write.
+get a link, and the system files (index, log, hot). Then:
+
+- **Write now** when the user's own message asked to save ("save it", "keep this", "kaydet",
+  "sakla") and every file in the plan is one the vault's CLAUDE.md lets Claude write freely
+  (wiki pages, index, log, hot). Take your recommended option, write it, and in the report say
+  which option you took, the alternative, and that the change is uncommitted, so `git diff`
+  shows it and `git checkout -- <file>` undoes it.
+- **Wait for approval** otherwise: the save was only your own offer, the plan touches a path the
+  vault's CLAUDE.md marks ask-first, or the user's message is unclear about saving.
 
 ## 4. Write the page
 
