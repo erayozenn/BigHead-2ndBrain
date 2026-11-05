@@ -9,7 +9,7 @@ import unittest
 
 HOOK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "session_start.py")
 ENV_KEY = "CLAUDE_PLUGIN_OPTION_VAULT_PATH"
-MAX_CHARS = 2000
+MAX_CHARS = 3200  # raised from 2000 for the work rules (acceptance test run 1)
 
 
 def write(path, text=""):
@@ -124,6 +124,15 @@ class SessionStartTest(unittest.TestCase):
         self.assertIn("index.md", text)
         self.assertIn("Never copy vault content", text)
         self.assertIn("more", text)
+
+    def test_work_rules_from_acceptance_test(self):  # AT-0.6 run 1: scenarios 2, 3, 5, 8
+        text = self.context(self.run_hook(self.proj, self.vault)).lower()
+        self.assertIn("before building or choosing", text)   # research first, options, user picks
+        self.assertIn("web search", text)
+        self.assertIn("show the exact change", text)         # hub writes asked in chat
+        self.assertIn("dated", text)                         # dated wiki claims checked
+        self.assertIn("projects/", text)                     # nothing else under projects/
+        self.assertIn("slash command", text)                 # offer, do not make the user type
 
     def test_project_dir_wins_over_shell_cwd(self):  # live check: shell `cd` moves the event cwd
         event = {"hook_event_name": "SessionStart", "source": "compact", "cwd": self.vault}

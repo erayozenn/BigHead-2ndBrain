@@ -56,6 +56,9 @@ WRITE_TOOLS = ("Write", "Edit", "NotebookEdit")
 FREE_TOPS = ("wiki", "cards")
 FREE_FILES = ("index.md", "log.md", "hot.md")
 QUOTED = re.compile(r""""[^"]*"|'[^']*'""")
+# `cat <<EOF ... EOF` with no pipe on its line writes text; its body is data, not commands.
+TEXT_HEREDOC = re.compile(r"""^(\s*cat\b[^\n|]*<<-?\s*['"]?(\w+)['"]?[^\n|]*)\n.*?\n\s*\2[ \t]*$""",
+                          re.MULTILINE | re.DOTALL)
 VERB = re.compile(
     r"(?:^|[\s;&|(])(rm|rmdir|rd|del|erase|mv|move|ren|rename|unlink|shred|truncate|"
     r"remove-item|move-item|rename-item|clear-content|ri|mi|rni|clc)(?=\s|$)", re.IGNORECASE)
@@ -206,7 +209,7 @@ def shell_check(event: dict) -> str | None:
     if not isinstance(command, str) or not command.strip():
         return None
     cwd = event.get("cwd") if isinstance(event.get("cwd"), str) else os.getcwd()
-    unquoted = QUOTED.sub(" ", command)
+    unquoted = QUOTED.sub(" ", TEXT_HEREDOC.sub(r"\1", command))
     destructive = bool(VERB.search(unquoted) or GIT_VERB.search(unquoted))
     if find_vaults(norm(from_msys(cwd))):
         if destructive:

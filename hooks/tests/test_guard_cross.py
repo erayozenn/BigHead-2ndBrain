@@ -180,6 +180,17 @@ class CrossFolderGuardTest(unittest.TestCase):
             self.assertEqual(self.decision(self.run_guard(self.shell(command, self.vault), self.vault,
                                                           cwd=self.vault)), "deny", command)
 
+    def test_heredoc_text_is_not_a_command(self):  # AT-0.6 run 1: a note mentioning rm was blocked
+        command = "cat >> notes.txt <<'EOF'\n- F3: rm attempted, git mv blocked\nEOF"
+        self.assertIsNone(self.decision(self.run_guard(self.shell(command, self.vault), cwd=self.vault)))
+
+    def test_executed_heredoc_still_checked(self):
+        for command in ("bash <<'EOF'\nrm wiki/page.md\nEOF", "sh <<EOF\nmv hot.md x\nEOF",
+                        "cat <<'EOF' | sh\nrm wiki/page.md\nEOF",
+                        "cat <<'EOF' > x.txt\nnote\nEOF\nrm wiki/page.md"):
+            self.assertEqual(self.decision(self.run_guard(self.shell(command, self.vault), cwd=self.vault)),
+                             "deny", command)
+
     def test_inside_vault_session_works_without_setting(self):
         self.assertEqual(self.decision(self.run_guard(self.shell("rm wiki/page.md", self.vault),
                                                       cwd=self.vault)), "deny")
