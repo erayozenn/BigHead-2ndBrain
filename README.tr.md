@@ -134,6 +134,11 @@ Tek vault, tek model, yalnızca Windows.
 **Lint sınırı.** Birden çok satıra yayılan code span ve blockquote içindeki fence düz metin sayılır;
 bu yüzden içlerindeki bir link kırık olarak raporlanabilir.
 
+**Veri klasörleri.** Wiki olmayan veri klasörüne, örneğin `areas/` altındaki eval çıktılarına, boş
+bir `.lint-skip` dosyası koy: lint o klasörün sayfalarını atlar (link hedefi olmaya ve aynı ad
+kontrolüne girmeye devam ederler) ve klasörü raporunda adıyla belirtir. Vault kökünde ve `wiki/`
+altında dikkate alınmaz. Yazma anındaki validator bu dosyayı okumaz.
+
 **Çalışma modu.** Plugin ayrıca bir `tutor` [output style](https://code.claude.com/docs/en/output-styles)
 içerir: çalışma sorularında Claude önce senin tahminini ister, ipuçlarını kademeli verir, tam
 cevabı yalnızca sen istediğinde gösterir; vault işlemleri (ingest, lint, …) her zamanki gibi

@@ -70,6 +70,39 @@ class LintTest(unittest.TestCase):
         self.assertNotIn("source-page", out)  # CLAUDE.md example links are skipped
         self.assertNotIn("lines (target", out)
 
+    def test_lint_skip_folder_is_not_checked(self):
+        write(self.vault, "areas/eval/.lint-skip", "Test data; lint does not check pages here.\n")
+        write(self.vault, "areas/eval/run-1/answer.md", "No frontmatter, link [[missing]].\n")
+        write(self.vault, "wiki/concepts/c.md", page("Results in [[answer]]."))  # still a link target
+        write(self.vault, "index.md", "# Index\n- [[a]]\n- [[b]]\n- [[c]]\n")
+        result = run_lint(self.vault)
+        self.assertNotIn("areas/eval/run-1", result.stdout)  # no problems reported for its pages
+        self.assertIn("0 error(s)", result.stdout)
+        self.assertIn("areas/eval/: 1 page(s) skipped (.lint-skip)", result.stdout)
+
+    def test_lint_skip_only_its_own_folder(self):
+        write(self.vault, "areas/eval/.lint-skip", "")
+        write(self.vault, "areas/eval-2/page.md", "No frontmatter.\n")  # sibling prefix, not skipped
+        write(self.vault, "areas/other.md", "No frontmatter.\n")
+        result = run_lint(self.vault)
+        self.assertIn("areas/eval-2/page.md: missing frontmatter", result.stdout)
+        self.assertIn("areas/other.md: missing frontmatter", result.stdout)
+
+    def test_lint_skip_folder_named_like_marker_is_not_a_marker(self):  # from the spec-only test
+        os.makedirs(os.path.join(self.vault, "areas", "eval", ".lint-skip"))
+        write(self.vault, "areas/eval/page.md", "No frontmatter.\n")
+        result = run_lint(self.vault)
+        self.assertIn("areas/eval/page.md: missing frontmatter", result.stdout)
+        self.assertNotIn("skipped (.lint-skip)", result.stdout)
+
+    def test_lint_skip_ignored_in_wiki_and_root(self):  # the wiki itself must never be skipped
+        write(self.vault, ".lint-skip", "")
+        write(self.vault, "wiki/.lint-skip", "")
+        write(self.vault, "wiki/concepts/c.md", page("Broken [[missing]]."))
+        result = run_lint(self.vault)
+        self.assertIn("broken link [[missing]]", result.stdout)
+        self.assertIn(".lint-skip ignored", result.stdout)
+
     def test_long_claude_md(self):
         with open(os.path.join(self.vault, "CLAUDE.md"), "a", encoding="utf-8", newline="\n") as f:
             f.write("- rule\n" * 200)

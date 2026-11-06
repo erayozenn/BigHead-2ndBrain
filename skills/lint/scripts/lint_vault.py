@@ -22,6 +22,11 @@ Checks (the vault CLAUDE.md "Lint" list, minus the judgment checks):
         file missing or incomplete
   WARN  vault CLAUDE.md over 200 lines
   WARN  paths in the vault CLAUDE.md "Layout" table that do not exist (except .cache/)
+  WARN  a .lint-skip marker at the vault root or under wiki/ (ignored there)
+
+A folder holding a `.lint-skip` file (e.g. eval outputs under areas/) is data, not wiki: its pages
+get no schema, link, orphan or index checks; they stay link targets and count for duplicate
+basenames. The report names each skipped folder and its page count.
 
 Exit code 1 if any ERROR, else 0.
 """
@@ -49,6 +54,7 @@ PLAYBOOK_HISTORY_SECTIONS = ("Uses", "Versions")
 PLAYBOOK_MAX_BYTES = 4 * 1024
 STEP_RE = re.compile(r"^(\d+)\.[ \t]+(.*)$", re.MULTILINE)
 EVIDENCE_RE = re.compile(r"✓(\d+)/(\d+)")
+LINT_SKIP = ".lint-skip"
 
 
 class Report:
@@ -190,6 +196,32 @@ def check_playbooks(report: Report, vault: Path, pages: list[Path], indexed: set
             report.add("WARN", history_rel, f"playbook history has no '## {section}' section")
 
 
+def lint_skip_dirs(report: Report, vault: Path) -> list[Path]:
+    """Folders holding a LINT_SKIP marker: data such as eval outputs, not wiki pages.
+
+    Their pages get no schema, link, orphan or index checks but stay link targets and count for
+    duplicate basenames. A marker at the vault root or under wiki/ is ignored: the wiki is always
+    checked.
+    """
+    found = []
+    for marker in sorted(vault.rglob(LINT_SKIP)):
+        if not marker.is_file():
+            continue  # a folder named .lint-skip is not a marker
+        rel = marker.parent.relative_to(vault).parts
+        if rel and rel[0] in (".git", ".obsidian"):
+            continue
+        if not rel or rel[0] == "wiki":
+            where = "/".join(rel + (LINT_SKIP,))
+            report.add("WARN", where, f"{LINT_SKIP} ignored: the vault root and wiki/ are always checked")
+            continue
+        found.append(marker.parent)
+    return found
+
+
+def skipped_by(path: Path, folders: list[Path]) -> bool:
+    return any(folder in path.parents for folder in folders)
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -204,8 +236,11 @@ def main() -> None:
     report = Report()
     files = vault_files(vault)
     by_name, _ = build_link_index(vault, files)
+    skip_dirs = lint_skip_dirs(report, vault)
+    skipped = [f for f in files if f.suffix.lower() == ".md" and skipped_by(f, skip_dirs)]
     pages = [f for f in files if f.suffix.lower() == ".md"
-             and not f.relative_to(vault).as_posix().startswith("raw/")]
+             and not f.relative_to(vault).as_posix().startswith("raw/")
+             and f not in skipped]
     inbound: dict[Path, int] = defaultdict(int)
 
     for page in pages:
@@ -271,6 +306,9 @@ def main() -> None:
 
     report.print()
     print(f"\nStats: {len(pages)} pages checked, hot.md {words} words, index.md {size / 1024:.1f} KiB")
+    for folder in skip_dirs:
+        count = sum(1 for f in skipped if skipped_by(f, [folder]))
+        print(f"{folder.relative_to(vault).as_posix()}/: {count} page(s) skipped (.lint-skip)")
     print(f"{report.count('ERROR')} error(s), {report.count('WARN')} warning(s)")
     sys.exit(1 if report.count("ERROR") else 0)
 
