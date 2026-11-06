@@ -2,7 +2,7 @@
 
 ![BigHead 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
 
-> **Status: v0.2 — experimental.** Skills and the vault schema may still change between 0.x
+> **Status: v0.6 — experimental.** Skills and the vault schema may still change between 0.x
 > versions. Updates never rewrite an existing vault; the first line of your vault's `CLAUDE.md`
 > shows which template it was made from. Tested on Windows so far; macOS and Linux reports are
 > welcome.
@@ -64,6 +64,38 @@ claude plugin update bighead@bighead
 Then start a new session (or run `/reload-plugins`). To update automatically, open `/plugin`, go to
 **Marketplaces**, select `bighead` and choose **Enable auto-update**. Your vault is not changed.
 
+## Using it from other project folders
+
+You usually open Claude Code in a code repo, not in the vault. To use the same memory there, set
+the plugin's **Vault folder** option (`/config`, under bighead's options) to your vault's folder.
+Leave it empty to use the kit only inside the vault. Because Claude Code may block reads outside
+the folder you start in, also add the vault to your user settings
+(`"permissions": {"additionalDirectories": ["<vault folder>"]}`) or start with
+`claude --add-dir <vault folder>`.
+
+Then, in a session opened in a project folder:
+
+- **A short note at session start** (about 500 tokens) gives the vault location, the project hub
+  whose `**Repo.**` path contains the folder (or whose optional `**Remote.**` matches the repo's
+  remote), and the rules for working from outside the vault: research before building, show hub
+  changes before writing them, check dated wiki claims, read no other project's hub unless asked,
+  no vault content in the repo, its commits or PRs. With several matching hubs Claude asks; with
+  none it names no hub.
+- **project, save, handoff, playbook, query, ingest and research-deep** work there; the other
+  skills stay vault-only.
+- **"Save this"** works without a slash command: project decisions go to the hub (after you approve
+  the change), general knowledge to the wiki, where the next project can find it.
+- **Protection:** writes to `wiki/`, `cards/`, `index.md`, `log.md` and `hot.md` go through; every
+  other vault path asks first, even in accept-edits mode. Shell deletes and moves into the vault
+  are denied.
+
+Tested in an acceptance test with a copy of a real vault, two repos and a folder without a hub,
+judged blind against a spec frozen before the run: memory 14/14 facts with no invention, research
+before building, saving without slash commands, knowledge saved in one project found from another
+(after a hint), dated wiki claims checked against PyPI, no vault text in commits, shell deletes
+blocked. The first run failed five scenarios because project sessions never load the vault's
+`CLAUDE.md`; the session note now carries those rules. One vault, one model, Windows only.
+
 ## Requirements
 
 - Claude Code (Pro or Max subscription)
@@ -120,12 +152,23 @@ It denies:
 - anything under a `.obsidian/` folder
 
 Outside a vault it does nothing. If the guard itself fails inside a vault, it blocks the edit
-rather than letting it through.
+rather than letting it through. From a session opened outside the vault (see "Using it from other
+project folders"), every vault path except `wiki/`, `cards/`, `index.md`, `log.md` and `hot.md`
+asks first.
 
-**Limit:** the guard sees file tools only. Shell commands (`rm`, `del`, `python -c "os.remove(...)"`,
-`>` redirection) are not inspected; the vault's permission rules deny the common ones, and git
-makes the rest reversible. A hard link to a raw file made outside `raw/` looks like an ordinary
-file, so it is not protected either.
+**Shell commands.** The guard also reads `Bash` and `PowerShell` commands. It denies deletes,
+moves and `>` redirections that name the vault (or the **Vault folder** option), and any such
+command run inside a vault, including `git rm`, `git mv`, `git clean` and `git reset --hard`. It
+adds about 0.2 s per shell command.
+
+**Limits:** the shell check is a text heuristic, not a parser. Variables, globs, relative paths
+from outside the vault and indirect deletes (`python -c "os.remove(...)"`) are not seen; git makes
+the rest reversible. Inside a vault it can also refuse a harmless command whose text only mentions
+`rm` (for example in a `git commit -F -` message; quoted text and `cat <<EOF` bodies are skipped).
+A hard link to a raw file made outside `raw/` looks like an ordinary file, so it is not protected.
+
+**Session start.** A `SessionStart` hook adds the short note described in "Using it from other
+project folders". It is silent with no **Vault folder** set, inside a vault, or on any error.
 
 **Validator.** A `PostToolUse` hook checks every vault page Claude just wrote or edited against
 the schema: required frontmatter keys and allowed values, valid dates (`updated` not before
@@ -134,7 +177,8 @@ BOM/CRLF. Problems go straight back to Claude, which fixes the page in the same 
 `notes/`, system files and `author: me` notes are skipped. The validator never blocks on its own
 errors.
 
-If no Python 3 is found, both hooks print a warning and stay inactive.
+If no Python 3 is found, the guard and the validator print a warning and stay inactive; the
+session-start hook stays silent.
 
 ## Does it need search?
 
@@ -148,6 +192,13 @@ shown in the index. Scripts alone found 8 to 13 of 22. So search is not connecte
 so you can measure your own vault (see "Measuring page finding" in
 [docs/architecture.md](docs/architecture.md)). Limits: one small wiki, page finding only, 37
 questions in all.
+
+A later answer test on the same vault (15 sources, 28 fact questions) asked how well each method
+answers, not only finds pages: grep over the raw sources answered 26, BM25 over raw chunks 23,
+`/bighead:query` 22, the wiki pages alone 20, at similar token costs (grep ~11.6k, query ~10.2k per
+question). No method invented answers; the wiki lost details by compressing them.
+`/bighead:query` falls back to the raw sources when it notices the wiki is short, which recovers
+some of that detail, not all. One small corpus, so treat this as a hint, not a benchmark.
 
 ## Credits
 

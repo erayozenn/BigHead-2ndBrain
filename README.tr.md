@@ -2,7 +2,7 @@
 
 ![BigHead 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
 
-> **Durum: v0.2 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
+> **Durum: v0.6 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
 > değişebilir. Güncellemeler mevcut bir vault'u asla yeniden yazmaz; vault'unun `CLAUDE.md`
 > dosyasının ilk satırı hangi şablondan kurulduğunu gösterir. Şimdiye kadar Windows'ta test
 > edildi; macOS ve Linux geri bildirimleri memnuniyetle karşılanır.
@@ -66,6 +66,39 @@ Sonra yeni bir oturum başlat (veya `/reload-plugins` çalıştır). Otomatik g�
 panelini aç, **Marketplaces** sekmesinde `bighead`'i seç ve **Enable auto-update**'i seç. Vault'un
 değişmez.
 
+## Başka proje klasörlerinden kullanım
+
+Claude Code'u genelde vault'ta değil, bir kod reposunda açarsın. Orada da aynı hafızayı kullanmak
+için plugin'in **Vault folder** seçeneğine (`/config`, bighead'in seçenekleri altında) vault'unun
+klasörünü yaz. Boş bırakırsan kit yalnızca vault içinde çalışır. Claude Code başladığın klasörün
+dışındaki okumaları engelleyebileceği için vault'u kullanıcı ayarlarına da ekle
+(`"permissions": {"additionalDirectories": ["<vault klasörü>"]}`) ya da oturumu
+`claude --add-dir <vault klasörü>` ile başlat.
+
+Bundan sonra bir proje klasöründe açılan oturumda:
+
+- **Oturum başında kısa bir not** (yaklaşık 500 token) gelir: vault'un yeri, `**Repo.**` yolu bu
+  klasörü içeren (ya da isteğe bağlı `**Remote.**` satırı reponun remote'uyla eşleşen) proje
+  hub'ı ve vault dışından çalışma kuralları: yapmadan önce araştır, hub değişikliğini yazmadan önce
+  göster, tarihli wiki bilgilerini kontrol et, istenmedikçe başka projenin hub'ını okuma, vault
+  içeriğini repoya, commit'lere ya da PR'lara koyma. Birden çok hub eşleşirse Claude sorar; hiçbiri
+  eşleşmezse hub adı vermez.
+- **project, save, handoff, playbook, query, ingest ve research-deep** orada çalışır; diğer
+  skill'ler yalnızca vault içinde çalışır.
+- **"Bunu kaydet"** slash komut olmadan çalışır: proje kararları hub'a (değişikliği onaylayınca),
+  genel bilgi wiki'ye gider; sonraki proje onu oradan bulabilir.
+- **Koruma:** `wiki/`, `cards/`, `index.md`, `log.md` ve `hot.md`'ye yazma doğrudan geçer; vault'taki
+  diğer her yol, accept-edits modunda bile önce sorar. Vault'a yönelik shell silme ve taşıma
+  komutları reddedilir.
+
+Gerçek bir vault'un kopyası, iki repo ve hub'ı olmayan bir klasörle kabul testinden geçti; sonuçları
+çalıştırmadan önce dondurulmuş bir spec'e göre kör bir değerlendirici puanladı: hafıza 14/14 bilgi
+ve uydurma yok, yapmadan önce araştırma, slash komutsuz kaydetme, bir projede kaydedilen bilginin
+diğerinden bulunması (bir ipucundan sonra), tarihli wiki bilgisinin PyPI'dan kontrolü, commit'lerde
+vault metni yok, shell silmeleri engelli. İlk çalıştırma beş senaryoda kaldı, çünkü proje
+oturumları vault'un `CLAUDE.md` dosyasını hiç yüklemiyor; artık oturum notu bu kuralları taşıyor.
+Tek vault, tek model, yalnızca Windows.
+
 ## Gereksinimler
 
 - Claude Code (Pro veya Max abonelik)
@@ -122,12 +155,23 @@ olan klasör) her `Write`, `Edit` ve `NotebookEdit` öncesinde çalışan bir `P
 - herhangi bir `.obsidian/` klasörünün altındaki her şey
 
 Vault dışında hiçbir şey yapmaz. Guard vault içinde kendisi hata verirse, düzenlemeyi geçirmek
-yerine engeller.
+yerine engeller. Vault dışında açılmış bir oturumda ("Başka proje klasörlerinden kullanım"),
+`wiki/`, `cards/`, `index.md`, `log.md` ve `hot.md` dışındaki her vault yolu önce sorar.
 
-**Sınır:** guard yalnızca dosya araçlarını görür. Shell komutları (`rm`, `del`,
-`python -c "os.remove(...)"`, `>` yönlendirme) incelenmez; yaygın olanları vault'un izin kuralları
-reddeder, kalanını git geri alınabilir kılar. `raw/` dışında oluşturulmuş, bir raw dosyasına giden
-hard link sıradan bir dosya gibi görünür, bu yüzden o da korunmaz.
+**Shell komutları.** Guard `Bash` ve `PowerShell` komutlarını da okur. Vault'u (ya da **Vault
+folder** seçeneğini) adlandıran silme, taşıma ve `>` yönlendirmelerini, ve vault içinde
+çalıştırılan böyle her komutu (`git rm`, `git mv`, `git clean`, `git reset --hard` dahil) reddeder.
+Her shell komutuna yaklaşık 0,2 sn ekler.
+
+**Sınırlar:** shell kontrolü bir ayrıştırıcı değil, metin sezgisidir. Değişkenler, glob'lar, vault
+dışından göreli yollar ve dolaylı silmeler (`python -c "os.remove(...)"`) görülmez; kalanını git
+geri alınabilir kılar. Vault içinde, metni yalnızca `rm` kelimesini içeren zararsız bir komutu da
+reddedebilir (ör. bir `git commit -F -` mesajı; tırnak içi metin ve `cat <<EOF` gövdeleri
+atlanır). `raw/` dışında oluşturulmuş, bir raw dosyasına giden hard link sıradan bir dosya gibi
+görünür, bu yüzden korunmaz.
+
+**Oturum başlangıcı.** Bir `SessionStart` hook'u "Başka proje klasörlerinden kullanım" bölümündeki
+kısa notu ekler. **Vault folder** boşsa, vault içinde ya da herhangi bir hatada sessiz kalır.
 
 **Validator.** Bir `PostToolUse` hook'u, Claude'un az önce yazdığı veya düzenlediği her vault
 sayfasını şemaya göre kontrol eder: zorunlu frontmatter alanları ve izin verilen değerler, geçerli
@@ -136,7 +180,8 @@ geçmiş bir "Goes stale" ayı, BOM/CRLF. Sorunlar doğrudan Claude'a döner ve 
 düzeltir. `raw/`, `notes/`, sistem dosyaları ve `author: me` notları atlanır. Validator kendi
 hatalarında hiçbir şeyi engellemez.
 
-Python 3 bulunamazsa iki hook da bir uyarı yazar ve devre dışı kalır.
+Python 3 bulunamazsa guard ve validator bir uyarı yazar ve devre dışı kalır; oturum başlangıcı
+hook'u sessiz kalır.
 
 ## Arama gerekiyor mu?
 
@@ -149,6 +194,14 @@ index ajanından en az 3 soru fazla bulursa arama bağlanır. Bulamadı: İlk te
 buldu. Script'ler tek başına 22 sorunun 8 ile 13'ünü buldu. Bu yüzden arama bağlı değil; script'ler
 kendi vault'unu ölçebilmen için kit'te geliyor ([docs/architecture.md](docs/architecture.md) içinde
 "Measuring page finding"). Sınırlar: tek ve küçük bir wiki, yalnızca sayfa bulma, toplam 37 soru.
+
+Aynı vault'ta (15 kaynak, 28 bilgi sorusu) daha sonraki bir cevap testi, yöntemlerin yalnızca sayfa
+bulmayı değil, cevaplamayı ne kadar iyi yaptığını ölçtü: ham kaynaklar üzerinde grep 26,
+ham parçalar üzerinde BM25 23, `/bighead:query` 22, yalnızca wiki sayfaları 20 soruyu doğru
+cevapladı; token maliyetleri benzerdi (soru başına grep ~11,6k, query ~10,2k). Hiçbir yöntem cevap
+uydurmadı; wiki ayrıntıları sıkıştırırken kaybetti. `/bighead:query` wiki'nin yetmediğini fark
+edince ham kaynaklara döner; bu, kaybolan ayrıntının bir kısmını geri kazandırır, hepsini değil.
+Tek ve küçük bir derlem; bunu bir benchmark değil, bir ipucu olarak oku.
 
 ## Teşekkür
 
