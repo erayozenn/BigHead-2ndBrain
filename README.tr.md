@@ -69,8 +69,8 @@ değişmez.
 ## Başka proje klasörlerinden kullanım
 
 Claude Code'u genelde vault'ta değil, bir kod reposunda açarsın. Orada da aynı hafızayı kullanmak
-için plugin'in **Vault folder** seçeneğine (`/config`, bighead'in seçenekleri altında) vault'unun
-klasörünü yaz. Boş bırakırsan kit yalnızca vault içinde çalışır. Claude Code başladığın klasörün
+için plugin'in **Vault folder** seçeneğine vault'unun klasörünü yaz: oturumda
+`/plugin configure bighead@bighead`, ya da `claude plugin install bighead@bighead --config vault_path=<vault klasörü>`. Boş bırakırsan kit yalnızca vault içinde çalışır. Claude Code başladığın klasörün
 dışındaki okumaları engelleyebileceği için vault'u kullanıcı ayarlarına da ekle
 (`"permissions": {"additionalDirectories": ["<vault klasörü>"]}`) ya da oturumu
 `claude --add-dir <vault klasörü>` ile başlat.

@@ -67,7 +67,8 @@ Then start a new session (or run `/reload-plugins`). To update automatically, op
 ## Using it from other project folders
 
 You usually open Claude Code in a code repo, not in the vault. To use the same memory there, set
-the plugin's **Vault folder** option (`/config`, under bighead's options) to your vault's folder.
+the plugin's **Vault folder** option to your vault's folder: `/plugin configure bighead@bighead` in
+a session, or `claude plugin install bighead@bighead --config vault_path=<vault folder>`.
 Leave it empty to use the kit only inside the vault. Because Claude Code may block reads outside
 the folder you start in, also add the vault to your user settings
 (`"permissions": {"additionalDirectories": ["<vault folder>"]}`) or start with
