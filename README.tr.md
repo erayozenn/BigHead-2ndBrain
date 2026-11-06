@@ -99,6 +99,17 @@ vault metni yok, shell silmeleri engelli. İlk çalıştırma beş senaryoda kal
 oturumları vault'un `CLAUDE.md` dosyasını hiç yüklemiyor; artık oturum notu bu kuralları taşıyor.
 Tek vault, tek model, yalnızca Windows.
 
+**Hub gerçek işte kullanılıyor mu?** Kit klasöründe `python skills/project/scripts/usage_report.py --human`
+Claude Code oturum kayıtlarını okur ve notunda hub adı geçen oturumlar için sayar: hub okundu mu,
+proje dosyaları düzenlendi mi, hub güncellendi mi ve proje dosyaları kaç kez hub güncellenmeden
+değişti. Yalnızca okur, model çağırmaz, hiçbir şey yazmaz ve `--names` eklemedikçe proje adı
+vermez. Varsayılan aralık 14 gün (`--days 0` hepsi). Kayıt biçimi belgelenmemiş olduğu için
+sayıları kanıt değil, işaret olarak al.
+
+**Oturum kayıtlarını sakla.** Claude Code 30 günden eski oturum kayıtlarını varsayılan olarak siler
+([belge](https://code.claude.com/docs/en/claude-directory)). Daha geriye bakmak ya da ölçmek için
+`~/.claude/settings.json` içinde `"cleanupPeriodDays"` değerini yükselt (örneğin `365`).
+
 ## Gereksinimler
 
 - Claude Code (Pro veya Max abonelik)

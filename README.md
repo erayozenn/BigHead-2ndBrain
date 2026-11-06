@@ -97,6 +97,17 @@ before building, saving without slash commands, knowledge saved in one project f
 blocked. The first run failed five scenarios because project sessions never load the vault's
 `CLAUDE.md`; the session note now carries those rules. One vault, one model, Windows only.
 
+**Is the hub used in real work?** `python skills/project/scripts/usage_report.py --human` (from the
+kit folder) reads your Claude Code session transcripts and counts, for sessions whose note named a
+hub: was the hub read, were project files edited, was the hub updated, and how often project files
+changed with no hub update. It reads only, calls no model, writes nothing, and names no project
+unless you add `--names`. The default window is 14 days (`--days 0` for all). The transcript format
+is undocumented, so treat the counts as a signal, not proof.
+
+**Keep your transcripts.** Claude Code deletes session transcripts older than 30 days by default
+([docs](https://code.claude.com/docs/en/claude-directory)). To measure or look back further, raise
+`"cleanupPeriodDays"` in `~/.claude/settings.json` (for example `365`).
+
 ## Requirements
 
 - Claude Code (Pro or Max subscription)
