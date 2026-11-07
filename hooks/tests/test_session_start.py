@@ -140,6 +140,60 @@ class SessionStartTest(unittest.TestCase):
         self.assertNotIn("except the matching hub", text)
         self.assertIn("other projects", text)                # still closed unless asked
 
+    def hub_path(self, name="proj1"):
+        return os.path.join(self.vault, "projects", name, f"{name}.md")
+
+    def set_next_steps(self, *steps):
+        body = "".join(f"{i}. {s}\n" for i, s in enumerate(steps, 1))
+        with open(self.hub_path(), "a", encoding="utf-8", newline="\n") as f:
+            f.write(f"\n## Next step\n{body}\n## Decisions\n")
+
+    def test_due_steps_are_shown(self):  # WP5: overdue and near Next step items
+        from datetime import date, timedelta
+        d = lambda n: (date.today() + timedelta(days=n)).isoformat()  # noqa: E731
+        self.set_next_steps(f"Ship it 📅 {d(3)}", f"Review PR 📅 {d(-2)}", f"Later 📅 {d(30)}")
+        text = self.context(self.run_hook(self.proj, self.vault))
+        self.assertIn(f"Review PR 📅 {d(-2)} (overdue by 2 days)", text)
+        self.assertIn(f"Ship it 📅 {d(3)} (in 3 days)", text)
+        self.assertNotIn("Later", text)
+        self.assertLess(text.index("Review PR"), text.index("Ship it"))
+
+    def test_due_today_wording(self):
+        from datetime import date
+        self.set_next_steps(f"Demo 📅 {date.today().isoformat()}")
+        self.assertIn("(due today)", self.context(self.run_hook(self.proj, self.vault)))
+
+    def test_no_due_line_without_dates(self):
+        self.set_next_steps("Plain step")
+        self.assertNotIn("📅", self.context(self.run_hook(self.proj, self.vault)))
+
+    def test_at_most_three_due_steps(self):
+        from datetime import date, timedelta
+        steps = [f"s{i} 📅 {(date.today() + timedelta(days=i)).isoformat()}" for i in range(5)]
+        self.set_next_steps(*steps)
+        text = self.context(self.run_hook(self.proj, self.vault))
+        self.assertIn("s2 ", text)
+        self.assertNotIn("s3 ", text)
+
+    def test_procedures_pointer(self):  # WP5: People and Procedures live in the overview page
+        overview = os.path.join(self.vault, "projects", "proj1", "proj1-overview.md")
+        write(overview, "# o\n\n## People\n- Ana merges\n\n## Procedures\n- run tests before PR\n")
+        text = self.context(self.run_hook(self.proj, self.vault))
+        self.assertIn("## Procedures", text)
+        self.assertIn("proj1-overview.md", text)
+        self.assertIn("## People", text)
+        self.assertNotIn("run tests before PR", text)   # pointer only, no content copied
+
+    def test_no_procedures_pointer_without_section(self):
+        overview = os.path.join(self.vault, "projects", "proj1", "proj1-overview.md")
+        write(overview, "# o\n\n```\n## Procedures\n```\n")
+        self.assertNotIn("## Procedures", self.context(self.run_hook(self.proj, self.vault)))
+
+    def test_several_matches_show_no_dates(self):
+        self.set_next_steps("Overdue 📅 2020-01-01")
+        self.add_hub("proj2", f"**Repo.** `{self.proj}`")
+        self.assertNotIn("Overdue", self.context(self.run_hook(self.proj, self.vault)))
+
     def test_project_dir_wins_over_shell_cwd(self):  # live check: shell `cd` moves the event cwd
         event = {"hook_event_name": "SessionStart", "source": "compact", "cwd": self.vault}
         result = self.run_hook(self.vault, self.vault, event=event, project_dir=self.proj)

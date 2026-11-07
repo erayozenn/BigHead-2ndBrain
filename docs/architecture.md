@@ -60,8 +60,10 @@ can use the same memory:
   and offer options before building, show hub changes in chat before writing, check dated wiki
   claims, read only the hub and the pages it links in its own folder under `projects/` (other
   projects only when asked), never make the user type a slash command (an
-  acceptance test failed on each of these before they were added). About 2,100 characters, capped
-  at 3,200. It is silent with no option set, inside a vault, or on any error, and never blocks.
+  acceptance test failed on each of these before they were added). With one matching hub it adds
+  up to 3 Next step items that are overdue or due within 7 days (`📅 YYYY-MM-DD`) and a pointer to
+  the `## Procedures` and `## People` sections of `<name>-overview.md`, never their content
+  (`lib/project_pages.py`). About 2,100 characters, capped at 3,200. It is silent with no option set, inside a vault, or on any error, and never blocks.
 - The project, save, handoff, playbook, query, ingest and research-deep skills fall back to
   `vault_path` when the current folder is not a vault. The other skills stay vault-only.
 - Matching is code, not an instruction, because a wrong hub would be passed on with confidence.

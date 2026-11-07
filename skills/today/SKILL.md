@@ -28,7 +28,8 @@ stop and say so.
 - hot.md (already loaded): "Now" — NEXT steps, open questions, blockers.
 - `Threads.md`: the "Open" list only.
 - Project hubs: Glob `projects/*/*.md` and keep files whose stem equals their folder name. Grep
-  each for `^status:` and, on `status: active` hubs, the first line under `## Next step`.
+  each for `^status:` and, on `status: active` hubs, the first line under `## Next step`. Also
+  Grep active hubs for `📅` and keep the Next step lines whose date is past or within 7 days.
 - `log.md`: entries of the last 2 days (Grep `^## \[` and take the newest).
 - `notes/daily/<today>.md` if it exists (Obsidian names it by date): what the user wrote for
   today. Read it; quote nothing private back unless the user asks.
@@ -42,6 +43,8 @@ Do not read wiki pages for this; the brief is about state, not content.
 
 Keep it under ~15 lines:
 1. **Carry-over** — uncommitted work, half-done items from "Now" (one line each).
+   **Due** — project steps that are overdue or due within 7 days, oldest first, each with its
+   project and `overdue by N days`, `due today` or `in N days`.
 2. **Plan for today** — 3–5 items, ordered, each startable now (something Claude can do on a yes, such
    as ingesting a named file, a file to open, or a decision to make). Put the user's focus
    (argument or daily note) first; then hot.md NEXT; then active projects' next steps not already

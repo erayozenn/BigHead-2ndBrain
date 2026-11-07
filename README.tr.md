@@ -83,7 +83,9 @@ Bundan sonra bir proje klasöründe açılan oturumda:
   göster, tarihli wiki bilgilerini kontrol et, hub'ı ve kendi klasöründe linklediği sayfaları oku
   ama istenmedikçe başka projeye bakma, vault
   içeriğini repoya, commit'lere ya da PR'lara koyma. Birden çok hub eşleşirse Claude sorar; hiçbiri
-  eşleşmezse hub adı vermez.
+  eşleşmezse hub adı vermez. Tek hub eşleşince tarihi geçmiş ya da 7 gün içinde dolan sıradaki
+  adımları da gösterir (`📅 YYYY-MM-DD`, Obsidian Tasks biçimi) ve projenin `## People` ile
+  `## Procedures` bölümlerini işaret eder; böylece "PR öncesi" gibi listeler doğru anda okunur.
 - **project, save, handoff, playbook, query, ingest ve research-deep** orada çalışır; diğer
   skill'ler yalnızca vault içinde çalışır.
 - **"Bunu kaydet"** slash komut olmadan çalışır: proje kararları hub'a (değişikliği onaylayınca),
@@ -136,9 +138,9 @@ sayıları kanıt değil, işaret olarak al.
 | `/bighead:review make <sayfa> \| quiz [deste]` | Bilgi kartları: bir wiki sayfasından hatırlama kartları taslağı çıkarır, onayladıklarını `cards/` içine ekler (Obsidian [Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition) formatı) ya da sohbette, vadesi gelenlerden başlayarak seni sınar. Mevcut kartlara ve zamanlamalarına asla dokunmaz. |
 | `/bighead:exam <sayfa> [n] [one-by-one]` | Bir kaynak veya konu sayfasından ve linklediği kavramlardan deneme sınavı: karışık sorular (tanım, hesaplama, neden/ne zaman, karşılaştırma), sayfalara atıflı rubrikle puanlama, zayıf konular ve takip önerileri. Log satırı dışında hiçbir şey yazmaz. |
 | `/bighead:research-deep <soru> [quick\|deep]` | Vault'un ötesinde araştırma: önce wiki, sonra eksikler için arama bütçesi içinde web; kaynakları otoriteye göre sıralanmış, atıflı bir rapor döner. Kendisi bir şey yazmaz — ingest edilecek kaynakları sen seçersin, raporu kaydedebilirsin. |
-| `/bighead:project new <ad> \| open [ad] \| update <ad>` | Proje belleği: her proje için temiz bir oturumun kaldığı yerden devam edebileceği tek bir ana sayfa (hedef, repo pointer'ı, güncel durum, sıradaki adım, kararlar, dersler). `open` hiçbir şey yazmaz ve ana sayfanın görmediği repo commit'lerini sayar; değişiklikler ancak sen onaylayınca yazılır. |
+| `/bighead:project new <ad> \| open [ad] \| update <ad>` | Proje belleği: her proje için temiz bir oturumun kaldığı yerden devam edebileceği tek bir ana sayfa (hedef, repo pointer'ı, güncel durum, sıradaki adım, kararlar, dersler); isteğe bağlı olarak `## People` ve `## Procedures` kontrol listeleri olan bir overview sayfası ve bir durum sayfası. Sıradaki adımlara `📅` teslim tarihi eklenebilir. `open` hiçbir şey yazmaz ve ana sayfanın görmediği repo commit'lerini sayar; değişiklikler ancak sen onaylayınca yazılır. |
 | `/bighead:playbook save <slug> \| use [slug] \| record <slug> \| retire <slug>` | Denenmiş prosedürler: bir işi yapmanın tekrar kullanılabilir her yolu için bir sayfa; adımlarda kanıt etiketleri, denendiği bağlamlar ve sürüm geçmişi. `use` önce prosedürü kaynaklarıyla karşılaştırıp bir hüküm verir; yalnızca onayladığın sonuçlar sayılır; bir playbook'u skill'e yükseltmeyi önerebilir ama kararı sen verirsin. Hiçbir şey silinmez. |
-| `/bighead:today [odak]` | Güne başlangıç: hot cache, açık thread'ler, son log, bugünkü daily note ve vadesi gelen kartlar → kısa bir plan ve bir hatırlama sorusu. Hiçbir şey yazmaz. |
+| `/bighead:today [odak]` | Güne başlangıç: hot cache, açık thread'ler, son log, bugünkü daily note, vadesi gelen kartlar ve 7 gün içinde dolan proje adımları → kısa bir plan ve bir hatırlama sorusu. Hiçbir şey yazmaz. |
 | `/bighead:weekly [YYYY-Www]` | Haftalık değerlendirme: eklenen, değişen ve karar verilen şeyler, eksikler, thread'ler, kartlar, gelecek hafta için üç öneri; onaylarsan `archive/` içine kaydedilir. |
 
 İsteğin uyduğunda Claude bu skill'leri kendiliğinden de kullanır (ör. "bu makaleyi ingest et").

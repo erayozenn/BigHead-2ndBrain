@@ -19,11 +19,13 @@ from __future__ import annotations
 import json
 import os
 import sys
+from datetime import date
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib"))
 
 MAX_CHARS = 3200  # Claude Code caps additionalContext at 10,000; typical notes are ~2,100
 MAX_NAMES = 5
+MAX_DUE = 3
 
 RULES = """Rules for using the vault from this folder:
 - Before building or choosing something (not small fixes with a known cause): check the hub's decisions and lessons, the vault's index.md and at least one web search for the general problem; then give options with trade-offs and a recommendation, and wait for the user to pick before writing code.
@@ -41,6 +43,40 @@ RULES = """Rules for using the vault from this folder:
 
 def slash(path: str) -> str:
     return path.replace("\\", "/")
+
+
+def read(path: str) -> str:
+    with open(path, encoding="utf-8-sig", errors="replace") as f:
+        return f.read()
+
+
+def project_lines(hub: str, name: str) -> list[str]:
+    """Due Next step items from the hub, and a pointer to People / Procedures in the overview."""
+    import project_pages as pp
+
+    lines = []
+    try:
+        due = pp.due_items(read(hub), date.today())[:MAX_DUE]
+    except OSError:
+        due = []
+    if due:
+        lines.append("Due (from the hub's Next step): " + "; ".join(
+            f'{i["step"]} \U0001F4C5 {i["date"]} ({pp.due_phrase(i["days"])})' for i in due))
+    overview = os.path.join(os.path.dirname(hub), f"{name}-overview.md")
+    try:
+        text = read(overview) if os.path.isfile(overview) else ""
+    except OSError:
+        text = ""
+    if pp.section(text, "Procedures") is not None:
+        line = (f'Project procedures: the "## Procedures" section of {slash(overview)}. Read it '
+                "before a PR, push, merge or measurement and follow it; this repo's CLAUDE.md wins "
+                "on conflict.")
+        if pp.section(text, "People") is not None:
+            line += ' Who owns, reviews and merges what: its "## People" section.'
+        lines.append(line)
+    elif pp.section(text, "People") is not None:
+        lines.append(f'Who owns, reviews and merges what: the "## People" section of {slash(overview)}.')
+    return lines
 
 
 def build(cwd: str, env: dict) -> str | None:
@@ -63,6 +99,7 @@ def build(cwd: str, env: dict) -> str | None:
             lines.append(f"Older decisions and lessons: {slash(history)}")
         lines.append("Read the hub before project work. It is a pointer, not the truth: if the code "
                      "disagrees, trust the code and say what differs.")
+        lines.extend(project_lines(m["path"], name))
         lines.append("Other projects' hubs: open them only when the user asks.")
     elif matches:
         names = ", ".join(f'"{m["name"][:60]}"' for m in matches[:MAX_NAMES])

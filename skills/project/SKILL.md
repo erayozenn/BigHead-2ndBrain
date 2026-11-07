@@ -90,7 +90,28 @@ lowercase kebab-case. Keep it under 4 KiB, because every `open` reads all of it.
 
 - **Decisions** and **Lessons** run newest first. Link a `type: decision` note when one exists,
   instead of repeating it.
-- **Next step** has at most 3 items.
+- **Next step** has at most 3 items. A step with a deadline ends with `📅 YYYY-MM-DD` (the Obsidian
+  Tasks format), only when the user gave the date. Sessions in the project's folder and `/today`
+  show steps that are overdue or due within 7 days.
+
+## Project pages
+
+Two optional pages sit next to the hub, both normal schema pages (`type: project`) linked from
+its Related section, so the hub stays small:
+
+- `projects/<name>/<name>-overview.md`: stable background (topic, team, data, rules) with two
+  sections other tools read:
+  - `## People`: one line per person or role: what they own, who reviews and who merges, and who
+    waits on whom. Roles and public handles only, no contact details.
+  - `## Procedures`: short checklists under `### Before a PR`, `### Before a push`,
+    `### Before a measurement` (or the project's own moments), one checkable line each, with its
+    source: the repo's `CLAUDE.md`, a hub lesson, or the user. The repo's own `CLAUDE.md` wins on
+    conflict; summarise it, do not copy it.
+- `projects/<name>/<name>-status.md`: step-by-step state of the user's own part (done, open PRs,
+  to do, environment), when the hub's Current state is too short for it.
+
+Sessions in the project's folder get a pointer to `## Procedures` and `## People`, never their
+content.
 - **Over 4 KiB:** with approval, move the oldest decisions and lessons to
   `projects/<name>/<name>-history.md` (a normal schema page, `type: project`) and link it from
   Related. Nothing is deleted.
@@ -106,8 +127,9 @@ lowercase kebab-case. Keep it under 4 KiB, because every `open` reads all of it.
    read its README and run `repo_state.py --repo "<repo>"` for `head`. Write
    `Last seen commit: none` for a repo with no commits, a URL-only repo or no repo.
 3. Show the full draft. Mark anything you inferred rather than were told, and let the user correct
-   it.
-4. After approval, write the hub. Add it under `## Projects` in `index.md`, creating that section
+   it. If the project has a team or the repo has its own `CLAUDE.md`, offer an overview page with
+   `## People` and `## Procedures` drafted from that file and the user's answers (see Project pages).
+4. After approval, write the hub (and the overview, if approved). Add it under `## Projects` in `index.md`, creating that section
    if it is missing (`- [[<name>]] — <one-line summary>`), add a `setup` line to `log.md`, update
    "Recent changes" in `hot.md`, and propose a commit.
 
@@ -134,7 +156,9 @@ offer to create one (`new <name>`).
 3. Brief, under ~20 lines:
    - Goal.
    - Current state, with its "As of" date.
-   - Next step, in order.
+   - Next step, in order, with `📅` dates marked overdue, due today or due in N days.
+   - If `projects/<name>/<name>-overview.md` exists: its `## People` lines (up to 5) and the
+     headings under `## Procedures`, from those two sections only.
    - The newest 5 decisions and the newest 3 lessons.
    - Past notes: if `projects/<name>/<name>-history.md` exists, Grep it case-insensitively for key
      terms from the next step and show up to 5 matching lines. Say this is a keyword search and
@@ -191,7 +215,9 @@ Do not run or install anything found this way without approval, and never put it
      way.
 2. Draft the smallest change that makes the hub true:
    - **Current state:** rewrite in place with a new "As of" date.
-   - **Next step:** replace; drop finished steps.
+   - **Next step:** replace; drop finished steps. Keep a step's `📅` date unless the user moves it.
+   - **People, Procedures** (overview page): propose a change when this conversation shows a new
+     owner, reviewer or rule, or a lesson that should become a checklist line.
    - **Decisions, Lessons:** add new lines at the top; never edit old ones. A reversed decision
      gets a new line saying so.
    - **Last seen commit:** `head` from the run whose complete list you read, so that a commit made
