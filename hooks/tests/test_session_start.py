@@ -134,6 +134,12 @@ class SessionStartTest(unittest.TestCase):
         self.assertIn("projects/", text)                     # nothing else under projects/
         self.assertIn("slash command", text)                 # offer, do not make the user type
 
+    def test_hub_folder_pages_are_allowed(self):  # 2026-11-07: -overview/-status pages were ruled out
+        text = self.context(self.run_hook(self.proj, self.vault)).lower()
+        self.assertIn("pages it links inside its own project folder", text)
+        self.assertNotIn("except the matching hub", text)
+        self.assertIn("other projects", text)                # still closed unless asked
+
     def test_project_dir_wins_over_shell_cwd(self):  # live check: shell `cd` moves the event cwd
         event = {"hook_event_name": "SessionStart", "source": "compact", "cwd": self.vault}
         result = self.run_hook(self.vault, self.vault, event=event, project_dir=self.proj)

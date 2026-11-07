@@ -79,7 +79,8 @@ Then, in a session opened in a project folder:
 - **A short note at session start** (about 500 tokens) gives the vault location, the project hub
   whose `**Repo.**` path contains the folder (or whose optional `**Remote.**` matches the repo's
   remote), and the rules for working from outside the vault: research before building, show hub
-  changes before writing them, check dated wiki claims, read no other project's hub unless asked,
+  changes before writing them, check dated wiki claims, read the hub and the pages it links in its
+  own folder but no other project unless asked,
   no vault content in the repo, its commits or PRs. With several matching hubs Claude asks; with
   none it names no hub.
 - **project, save, handoff, playbook, query, ingest and research-deep** work there; the other

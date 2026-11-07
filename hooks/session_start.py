@@ -28,7 +28,7 @@ MAX_NAMES = 5
 RULES = """Rules for using the vault from this folder:
 - Before building or choosing something (not small fixes with a known cause): check the hub's decisions and lessons, the vault's index.md and at least one web search for the general problem; then give options with trade-offs and a recommendation, and wait for the user to pick before writing code.
 - Questions on libraries, versions, APIs or prices: also check the vault's index.md. If the wiki has a dated claim, give its date and page, check a current source, and offer to update the page if it is stale.
-- Read nothing under the vault's projects/ except the matching hub, unless the user asks.
+- Read the matching hub and the pages it links inside its own project folder; read other projects under the vault's projects/ only when the user asks.
 - To save: project decisions go to the hub, general knowledge to the wiki. Before writing the hub, show the exact change in chat and wait for approval. Never ask the user to type a slash command; offer the action and do it on approval.
 - Before writing to the vault, read {vault}/CLAUDE.md and follow it (citations, dates, approvals).
 - Decisions and lessons go to the hub or the wiki, not to this repo's auto memory (a pointer there is fine).

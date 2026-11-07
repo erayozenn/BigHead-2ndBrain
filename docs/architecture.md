@@ -58,7 +58,8 @@ can use the same memory:
   PRs unless asked, vault commits only in the vault, wiki read only when needed). It also carries
   the vault's work rules, because a project session never loads the vault's `CLAUDE.md`: research
   and offer options before building, show hub changes in chat before writing, check dated wiki
-  claims, read nothing else under `projects/`, never make the user type a slash command (an
+  claims, read only the hub and the pages it links in its own folder under `projects/` (other
+  projects only when asked), never make the user type a slash command (an
   acceptance test failed on each of these before they were added). About 2,100 characters, capped
   at 3,200. It is silent with no option set, inside a vault, or on any error, and never blocks.
 - The project, save, handoff, playbook, query, ingest and research-deep skills fall back to

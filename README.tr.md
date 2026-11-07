@@ -80,7 +80,8 @@ Bundan sonra bir proje klasöründe açılan oturumda:
 - **Oturum başında kısa bir not** (yaklaşık 500 token) gelir: vault'un yeri, `**Repo.**` yolu bu
   klasörü içeren (ya da isteğe bağlı `**Remote.**` satırı reponun remote'uyla eşleşen) proje
   hub'ı ve vault dışından çalışma kuralları: yapmadan önce araştır, hub değişikliğini yazmadan önce
-  göster, tarihli wiki bilgilerini kontrol et, istenmedikçe başka projenin hub'ını okuma, vault
+  göster, tarihli wiki bilgilerini kontrol et, hub'ı ve kendi klasöründe linklediği sayfaları oku
+  ama istenmedikçe başka projeye bakma, vault
   içeriğini repoya, commit'lere ya da PR'lara koyma. Birden çok hub eşleşirse Claude sorar; hiçbiri
   eşleşmezse hub adı vermez.
 - **project, save, handoff, playbook, query, ingest ve research-deep** orada çalışır; diğer
