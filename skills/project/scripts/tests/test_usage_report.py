@@ -148,6 +148,23 @@ class UsageReportTest(unittest.TestCase):
                              capture_output=True, text=True, encoding="utf-8", timeout=60)
         self.assertEqual(json.loads(res.stdout)["sessions_scanned"], 0)
 
+    def test_procedure_reminders_and_reruns(self):
+        def denied(tid, content):
+            return {"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": tid, "is_error": True, "content": content}]}}
+        reason = '[bighead procedures] Before "git push" in project "demo": ...'
+        self.session("p1", "a", [note(), prompt(),
+                                 tool("Bash", "t1", command="git push"), denied("t1", reason),
+                                 tool("Bash", "t2", command="git push"), result("t2"),
+                                 tool("Bash", "t3", command="gh pr create --fill"),
+                                 denied("t3", [{"type": "text", "text": reason}]),
+                                 tool("Bash", "t4", command="git push -f"), denied("t4", "other error")])
+        data = self.report()
+        s = data["match_sessions"]
+        self.assertEqual((s["procedure_reminders"], s["reran_after_reminder"]), (2, 1))
+        self.assertEqual(data["sessions"][0]["procedure_reminders"], 2)
+        self.assertIn("reminders 2", self.report("--human"))
+
 
 if __name__ == "__main__":
     unittest.main()

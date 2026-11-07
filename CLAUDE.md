@@ -14,7 +14,7 @@ templates. It is NOT a vault. Personal vaults are separate, private repos.
 | .claude-plugin/marketplace.json | Single-plugin marketplace (`/plugin marketplace add <owner>/<repo>`). |
 | skills/ | Workflows (ingest, query, save, handoff, lint, teach-back, review, today, weekly, exam, research-deep, project, playbook) — Phase 2. |
 | output-styles/ | Opt-in output styles (tutor). Never `force-for-plugin`. |
-| hooks/ | Validation + guard hooks (Python, stdlib only) — Phase 2b. |
+| hooks/ | Guard, validator, session-start note and procedure checklist hooks (Python, stdlib only). |
 | lib/ | Shared Python modules (vault_schema.py: schema + page checks) for hooks and skill scripts. |
 | templates/manifest.json | Maps template files to their vault destinations; lists vault dirs. |
 | templates/vault/ | Files copied into a new vault. Live config names carry `.tmpl` so they don't act on this repo. |
@@ -50,7 +50,9 @@ layer (tutor style, teach-back, question-first ingest); challenge once decision 
 3 Search & eval (BM25 + Turkish normalisation, queries.json, recall/MRR): tool built, search not
 connected until a measurement justifies it; raw corpus added for answer tests (v0.4.0) ·
 3b Cross-folder memory (v0.6.0): `vault_path` option, SessionStart hub pointer + work rules, guard
-ask-first and shell checks from project sessions; acceptance-tested with a frozen spec · 4 Custom IDE — deferred
+ask-first and shell checks from project sessions; acceptance-tested with a frozen spec ·
+3c Project layer (v0.7.0): project pages with People/Procedures and due dates, `project standup`,
+`exam` defense/interview, procedure checklist hook before push/PR/merge · 4 Custom IDE — deferred
 indefinitely (2026-10-31; Obsidian + terminal is the interface, no plan) · 5 Advanced.
 
 ## Commits

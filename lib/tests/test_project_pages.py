@@ -93,5 +93,67 @@ class DueItemsTest(unittest.TestCase):
         self.assertEqual(items[0]["step"], "x")
 
 
+OVERVIEW = """# demo overview
+
+## People
+- Ana merges.
+
+## Procedures
+Checklists. The repo's CLAUDE.md wins.
+
+### Before a PR
+- Own branch.
+- Tests green.
+
+### Before a measurement
+- Preregister first.
+
+### Before a Release or browser check
+- Check stale JS.
+
+## Related
+- ### Before a push (not a heading here)
+"""
+
+
+class ChecklistTest(unittest.TestCase):
+    def test_pr_picks_before_a_pr(self):
+        heading, body = pp.checklist(OVERVIEW, "pr")
+        self.assertEqual(heading, "Before a PR")
+        self.assertEqual(body, "- Own branch.\n- Tests green.")
+
+    def test_push_falls_back_to_pr(self):
+        self.assertEqual(pp.checklist(OVERVIEW, "push")[0], "Before a PR")
+
+    def test_push_prefers_its_own_section(self):
+        text = OVERVIEW.replace("### Before a measurement", "### Before a push\n- Rebase.\n\n### Before a measurement")
+        self.assertEqual(pp.checklist(text, "push"), ("Before a push", "- Rebase."))
+
+    def test_merge_uses_release_case_insensitive(self):
+        self.assertEqual(pp.checklist(OVERVIEW, "merge"), ("Before a Release or browser check", "- Check stale JS."))
+
+    def test_merge_prefers_merge_section(self):
+        text = OVERVIEW.replace("### Before a measurement", "### Before merging\n- Squash.\n\n### Before a measurement")
+        self.assertEqual(pp.checklist(text, "merge")[0], "Before merging")
+
+    def test_merge_without_section_is_none(self):
+        text = OVERVIEW.replace("### Before a Release or browser check\n- Check stale JS.\n", "")
+        self.assertIsNone(pp.checklist(text, "merge"))
+
+    def test_no_procedures_section_is_none(self):
+        self.assertIsNone(pp.checklist("# x\n\n### Before a PR\n- a\n", "pr"))
+
+    def test_empty_body_is_none(self):
+        self.assertIsNone(pp.checklist("## Procedures\n### Before a PR\n\n### Before a push\n- a\n", "pr"))
+
+    def test_pull_request_wording_and_unknown_kind(self):
+        text = "## Procedures\n### Before a pull request\n- a\n"
+        self.assertEqual(pp.checklist(text, "pr")[0], "Before a pull request")
+        self.assertIsNone(pp.checklist(text, "deploy"))
+
+    def test_word_must_be_whole(self):
+        self.assertIsNone(pp.checklist("## Procedures\n### Before a preview\n- a\n", "pr"))
+
+
 if __name__ == "__main__":
     unittest.main()

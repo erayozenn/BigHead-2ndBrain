@@ -1,5 +1,5 @@
 {
-  "description": "BigHead 2ndBrain: guard (protects raw/, author: me notes, .obsidian/, ask-first vault paths written from other folders, shell deletes in the vault), schema validator for vault pages, and a session-start pointer to the project hub when a session opens outside the vault.",
+  "description": "BigHead 2ndBrain: guard (protects raw/, author: me notes, .obsidian/, ask-first vault paths written from other folders, shell deletes in the vault), schema validator for vault pages, a session-start pointer to the project hub when a session opens outside the vault, and a once-per-session procedure checklist before git push, gh pr create and gh pr merge in project sessions.",
   "hooks": {
     "SessionStart": [
       {
@@ -19,6 +19,39 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" guard",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git push*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" procedures",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(gh pr create*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" procedures",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(gh pr merge*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" procedures",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" procedures",
             "timeout": 10
           }
         ]

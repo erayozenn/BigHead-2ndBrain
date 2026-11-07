@@ -86,6 +86,11 @@ Bundan sonra bir proje klasöründe açılan oturumda:
   eşleşmezse hub adı vermez. Tek hub eşleşince tarihi geçmiş ya da 7 gün içinde dolan sıradaki
   adımları da gösterir (`📅 YYYY-MM-DD`, Obsidian Tasks biçimi) ve projenin `## People` ile
   `## Procedures` bölümlerini işaret eder; böylece "PR öncesi" gibi listeler doğru anda okunur.
+- **Kontrol listesi:** Claude bir oturumda ilk kez `git push`, `gh pr create` ya da `gh pr merge`
+  çalıştırdığında bir hook o tek çağrıyı durdurur ve projenin `## Procedures` bölümündeki uygun
+  `### Before ...` listesini gösterir (push için yoksa "Before a PR"; merge için "Before a merge" ya
+  da "Before a release"). Claude her maddeye cevap verir, sonra komutu tekrar çalıştırır ve komut
+  geçer. Oturum ve komut türü başına bir kez; liste yoksa durdurmaz. Bu bir hatırlatma, kilit değil.
 - **project, save, handoff, playbook, query, ingest, research-deep ve exam** orada çalışır; diğer
   skill'ler yalnızca vault içinde çalışır.
 - **"Bunu kaydet"** slash komut olmadan çalışır: proje kararları hub'a (değişikliği onaylayınca),
@@ -113,7 +118,8 @@ arkadaşlarına mesajları senin göndermen için taslak olarak yazar.
 **Hub gerçek işte kullanılıyor mu?** Kit klasöründe `python skills/project/scripts/usage_report.py --human`
 Claude Code oturum kayıtlarını okur ve notunda hub adı geçen oturumlar için sayar: hub okundu mu,
 proje dosyaları düzenlendi mi, hub güncellendi mi ve proje dosyaları kaç kez hub güncellenmeden
-değişti. Yalnızca okur, model çağırmaz, hiçbir şey yazmaz ve `--names` eklemedikçe proje adı
+değişti; ayrıca kaç kontrol listesi hatırlatması gösterildiğini ve hatırlatılan komutların kaçının
+tekrar çalıştırıldığını sayar. Yalnızca okur, model çağırmaz, hiçbir şey yazmaz ve `--names` eklemedikçe proje adı
 vermez. Varsayılan aralık 14 gün (`--days 0` hepsi). Kayıt biçimi belgelenmemiş olduğu için
 sayıları kanıt değil, işaret olarak al.
 
@@ -199,6 +205,13 @@ görünür, bu yüzden korunmaz.
 
 **Oturum başlangıcı.** Bir `SessionStart` hook'u "Başka proje klasörlerinden kullanım" bölümündeki
 kısa notu ekler. **Vault folder** boşsa, vault içinde ya da herhangi bir hatada sessiz kalır.
+
+**Kontrol listesi.** Proje oturumunda `git push`, `gh pr create` ve `gh pr merge` üzerinde çalışan
+bir `PreToolUse` hook'u, oturum ve tür başına ilk çağrıyı bir kez reddeder; gerekçe, projenin
+overview sayfasındaki uygun kontrol listesidir. Düz bir bağlam notu Claude'a ancak komut çalıştıktan
+sonra ulaşırdı. Vault içinde, tek bir hub eşleşmediğinde, liste olmadığında ve kendi hatasında
+sessiz kalır; durumu, eklentinin veri klasöründe oturum ve tür başına boş bir dosyadır ve 7 gün sonra
+silinir.
 
 **Validator.** Bir `PostToolUse` hook'u, Claude'un az önce yazdığı veya düzenlediği her vault
 sayfasını şemaya göre kontrol eder: zorunlu frontmatter alanları ve izin verilen değerler, geçerli

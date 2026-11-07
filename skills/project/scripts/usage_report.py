@@ -14,6 +14,8 @@ For sessions whose note named a hub, after the first note:
   edited_project       a successful Write/Edit/NotebookEdit outside the vault
   hub_updated          a successful Write/Edit of the hub (the user approved it)
   edited_without_hub_update  edited_project and not hub_updated
+  procedure_reminders  shell calls the procedure hook denied with its checklist (WP7)
+  reran_after_reminder reminded commands later run again with success (same command text)
 
 The transcript format is undocumented and may change; lines it cannot read are counted under
 `skipped_lines`. Nothing is written anywhere. Output names no project or path unless --names.
@@ -31,6 +33,7 @@ from pathlib import Path
 WRITE_TOOLS = {"Write", "Edit", "NotebookEdit"}
 SHELL_TOOLS = {"Bash", "PowerShell"}
 NOTE_START = "[bighead] "
+PROCEDURE_TAG = "[bighead procedures]"
 MATCH_RE = re.compile(r'^This folder belongs to the project "([^"]+)"\. Hub: (.+)$', re.MULTILINE)
 VAULT_RE = re.compile(r"^\[bighead\] Your vault \(second brain\) is at (.+?)\.$", re.MULTILINE)
 
@@ -73,12 +76,22 @@ def is_prompt(record: dict) -> bool:
     return False
 
 
+def result_text(c: dict) -> str:
+    content = c.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(str(x.get("text", "")) for x in content if isinstance(x, dict))
+    return ""
+
+
 def scan(path: Path) -> tuple[dict | None, int]:
     """One session's facts, or None if the BigHead note never appears."""
     skipped = 0
     s = None
     calls: dict[str, tuple[str, dict]] = {}
     ok: set[str] = set()
+    reminded: set[str] = set()
     with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
             try:
@@ -111,8 +124,11 @@ def scan(path: Path) -> tuple[dict | None, int]:
                     continue
                 if c.get("type") == "tool_use" and isinstance(c.get("input"), dict):
                     calls[c.get("id", "")] = (c.get("name", ""), c["input"])
-                elif c.get("type") == "tool_result" and not c.get("is_error"):
-                    ok.add(c.get("tool_use_id", ""))
+                elif c.get("type") == "tool_result":
+                    if not c.get("is_error"):
+                        ok.add(c.get("tool_use_id", ""))
+                    elif PROCEDURE_TAG in result_text(c):
+                        reminded.add(c.get("tool_use_id", ""))
     if s is None:
         return None, skipped
     hub, vault = s["hub"], s["vault"]
@@ -130,7 +146,17 @@ def scan(path: Path) -> tuple[dict | None, int]:
             read = True
         elif hub and name in SHELL_TOOLS and hub in norm(str(inp.get("command", ""))):
             shell = True
-    s.update(hub_read=read, hub_read_with_shell=read or shell, edited_project=edited, hub_updated=updated)
+    order = list(calls)
+    reran = 0
+    for tid in reminded:
+        if tid not in calls:
+            continue
+        cmd = calls[tid][1].get("command")
+        later = order[order.index(tid) + 1:]
+        if any(t in ok and calls[t][1].get("command") == cmd for t in later):
+            reran += 1
+    s.update(hub_read=read, hub_read_with_shell=read or shell, edited_project=edited, hub_updated=updated,
+             procedure_reminders=len(reminded), reran_after_reminder=reran)
     return s, skipped
 
 
@@ -167,9 +193,12 @@ def main() -> None:
         "edited_project": sum(s["edited_project"] for s in match),
         "hub_updated": sum(s["hub_updated"] for s in match),
         "edited_without_hub_update": sum(s["edited_project"] and not s["hub_updated"] for s in match),
+        "procedure_reminders": sum(s["procedure_reminders"] for s in match),
+        "reran_after_reminder": sum(s["reran_after_reminder"] for s in match),
     }
     rows = [{"date": s["date"], "kind": s["kind"], "prompts": s["prompts"],
-             **{k: s[k] for k in ("hub_read", "hub_read_with_shell", "edited_project", "hub_updated")},
+             **{k: s[k] for k in ("hub_read", "hub_read_with_shell", "edited_project", "hub_updated",
+                                  "procedure_reminders")},
              **({"project": s["project"]} if args.names else {})} for s in sessions]
 
     if not args.human:
@@ -183,12 +212,14 @@ def main() -> None:
     if match:
         print(f"Hub matched ({summary['count']}): read {summary['hub_read']} "
               f"(with shell {summary['hub_read_with_shell']}); edited project files {summary['edited_project']}; "
-              f"hub updated {summary['hub_updated']}; edited without hub update {summary['edited_without_hub_update']}")
+              f"hub updated {summary['hub_updated']}; edited without hub update {summary['edited_without_hub_update']}; "
+              f"procedure reminders {summary['procedure_reminders']} (rerun {summary['reran_after_reminder']})")
     yn = lambda b: "yes" if b else "-"  # noqa: E731
     for r in rows:
         name = f"  {r['project']}" if args.names and r.get("project") else ""
         print(f"{r['date']}  {r['kind']:<7} prompts {r['prompts']:>3}  read {yn(r['hub_read']):<3} "
-              f"edited {yn(r['edited_project']):<3} hub updated {yn(r['hub_updated'])}{name}")
+              f"edited {yn(r['edited_project']):<3} hub updated {yn(r['hub_updated']):<3} "
+              f"reminders {r['procedure_reminders']}{name}")
     if skipped:
         print(f"Skipped unreadable lines: {skipped}")
 

@@ -68,6 +68,15 @@ can use the same memory:
   queries with `-R owner/repo` from the hub's `**Remote.**`, never run inside the repo, never at
   session start; `gh` failures come back as `ok: false` with the reason. `/today` stays offline
   and only offers it.
+- `hooks/procedures.py` (PreToolUse on Bash and PowerShell; `if` filters `git push*`,
+  `gh pr create*`, `gh pr merge*` on Bash, and the script checks the command itself for clients
+  without `if`): in a session with exactly one matching hub it denies the first call per session
+  and kind once, with the `### Before ...` checklist from `<name>-overview.md` as the reason
+  (`lib/project_pages.checklist`: push falls back to the PR list, merge takes merge then release).
+  Deny, not `additionalContext`, because a PreToolUse context note reaches Claude next to the tool
+  result, after the command ran. State: an empty marker per (session, kind) under
+  `CLAUDE_PLUGIN_DATA`, pruned after 7 days. Silent on its own errors; a reminder, not a control
+  (a command written another way is not seen). `usage_report.py` counts the reminders.
 - The project, save, handoff, playbook, query, ingest, research-deep and exam skills fall back to
   `vault_path` when the current folder is not a vault. The other skills stay vault-only.
 - Matching is code, not an instruction, because a wrong hub would be passed on with confidence.

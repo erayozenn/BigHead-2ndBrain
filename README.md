@@ -85,6 +85,11 @@ Then, in a session opened in a project folder:
   none it names no hub. With one hub it also lists Next step items that are overdue or due within
   7 days (`📅 YYYY-MM-DD`, the Obsidian Tasks format) and points to the project's `## People` and
   `## Procedures` sections, so checklists such as "before a PR" are read at the right time.
+- **Procedure checklist:** the first time in a session Claude runs `git push`, `gh pr create` or
+  `gh pr merge`, a hook stops that one call and shows the matching `### Before ...` list from the
+  project's `## Procedures` (push falls back to "Before a PR"; merge uses "Before a merge" or
+  "Before a release"). Claude answers each item, then runs the command again, which passes. Once
+  per session per kind; no list, no stop. It is a reminder, not a lock.
 - **project, save, handoff, playbook, query, ingest, research-deep and exam** work there; the other
   skills stay vault-only.
 - **"Save this"** works without a slash command: project decisions go to the hub (after you approve
@@ -110,7 +115,8 @@ when asked, and never posts anything; messages to teammates are drafted for you 
 **Is the hub used in real work?** `python skills/project/scripts/usage_report.py --human` (from the
 kit folder) reads your Claude Code session transcripts and counts, for sessions whose note named a
 hub: was the hub read, were project files edited, was the hub updated, and how often project files
-changed with no hub update. It reads only, calls no model, writes nothing, and names no project
+changed with no hub update, plus how many procedure reminders were shown and how many reminded
+commands were run again. It reads only, calls no model, writes nothing, and names no project
 unless you add `--names`. The default window is 14 days (`--days 0` for all). The transcript format
 is undocumented, so treat the counts as a signal, not proof.
 
@@ -196,6 +202,13 @@ A hard link to a raw file made outside `raw/` looks like an ordinary file, so it
 
 **Session start.** A `SessionStart` hook adds the short note described in "Using it from other
 project folders". It is silent with no **Vault folder** set, inside a vault, or on any error.
+
+**Procedure checklist.** A `PreToolUse` hook on `git push`, `gh pr create` and `gh pr merge` in a
+project session denies the first such call per session and kind once, with the matching checklist
+from the project's overview page as the reason. A plain context note would reach Claude only after
+the command ran. It is silent inside a vault, with no single matching hub, with no checklist, and on
+any error of its own; its state is one empty file per session and kind in the plugin's data folder,
+removed after 7 days.
 
 **Validator.** A `PostToolUse` hook checks every vault page Claude just wrote or edited against
 the schema: required frontmatter keys and allowed values, valid dates (`updated` not before

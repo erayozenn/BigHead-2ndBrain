@@ -46,6 +46,40 @@ def section(text: str, heading: str) -> str | None:
     return "\n".join(body) if inside else None
 
 
+# Command kind -> words a `### Before ...` heading may name, best first.
+CHECKLIST_WORDS = {
+    "pr": ("pr", "pull request"),
+    "push": ("push", "pr", "pull request"),
+    "merge": ("merge", "merging", "release"),
+}
+
+
+def checklist(overview_text: str, kind: str) -> tuple[str, str] | None:
+    """(heading, body) of the `### Before ...` subsection of `## Procedures` for a command kind.
+
+    `push` falls back to the PR list; `merge` takes a merge, then a release list. None when the
+    kind is unknown, there is no matching subsection or its body is empty.
+    """
+    body = section(overview_text, "Procedures")
+    words = CHECKLIST_WORDS.get(kind)
+    if body is None or not words:
+        return None
+    subs, current = [], None
+    for line in body.splitlines():
+        if re.match(r"^###\s", line):
+            current = [line[3:].strip(), []]
+            subs.append(current)
+        elif current is not None:
+            current[1].append(line)
+    for word in words:
+        pattern = re.compile(rf"^before\s+(?:(?:a|an|the)\s+)?{re.escape(word)}\b", re.IGNORECASE)
+        for heading, lines in subs:
+            if pattern.match(heading):
+                text = "\n".join(lines).strip()
+                return (heading, text) if text else None
+    return None
+
+
 def due_items(hub_text: str, today: date, window: int = DUE_WINDOW) -> list[dict]:
     """Next step items that are overdue or due within `window` days, oldest date first.
 
