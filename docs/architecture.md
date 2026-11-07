@@ -68,7 +68,7 @@ can use the same memory:
   queries with `-R owner/repo` from the hub's `**Remote.**`, never run inside the repo, never at
   session start; `gh` failures come back as `ok: false` with the reason. `/today` stays offline
   and only offers it.
-- The project, save, handoff, playbook, query, ingest and research-deep skills fall back to
+- The project, save, handoff, playbook, query, ingest, research-deep and exam skills fall back to
   `vault_path` when the current folder is not a vault. The other skills stay vault-only.
 - Matching is code, not an instruction, because a wrong hub would be passed on with confidence.
 - "The session's folder" is `CLAUDE_PROJECT_DIR` when Claude Code sets it, not the event `cwd`:
