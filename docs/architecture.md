@@ -64,6 +64,10 @@ can use the same memory:
   up to 3 Next step items that are overdue or due within 7 days (`📅 YYYY-MM-DD`) and a pointer to
   the `## Procedures` and `## People` sections of `<name>-overview.md`, never their content
   (`lib/project_pages.py`). About 2,100 characters, capped at 3,200. It is silent with no option set, inside a vault, or on any error, and never blocks.
+- `project standup` reads GitHub through `skills/project/scripts/standup.py`: only read-only `gh`
+  queries with `-R owner/repo` from the hub's `**Remote.**`, never run inside the repo, never at
+  session start; `gh` failures come back as `ok: false` with the reason. `/today` stays offline
+  and only offers it.
 - The project, save, handoff, playbook, query, ingest and research-deep skills fall back to
   `vault_path` when the current folder is not a vault. The other skills stay vault-only.
 - Matching is code, not an instruction, because a wrong hub would be passed on with confidence.

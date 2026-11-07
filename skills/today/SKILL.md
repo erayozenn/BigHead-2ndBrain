@@ -44,7 +44,9 @@ Do not read wiki pages for this; the brief is about state, not content.
 Keep it under ~15 lines:
 1. **Carry-over** — uncommitted work, half-done items from "Now" (one line each).
    **Due** — project steps that are overdue or due within 7 days, oldest first, each with its
-   project and `overdue by N days`, `due today` or `in N days`.
+   project and `overdue by N days`, `due today` or `in N days`. This brief stays offline: if an
+   active hub has a `**Remote.**` line, offer a project standup (open PRs, reviews waiting on the
+   user) instead of querying GitHub here.
 2. **Plan for today** — 3–5 items, ordered, each startable now (something Claude can do on a yes, such
    as ingesting a named file, a file to open, or a decision to make). Put the user's focus
    (argument or daily note) first; then hot.md NEXT; then active projects' next steps not already

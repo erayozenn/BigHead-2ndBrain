@@ -100,6 +100,13 @@ before building, saving without slash commands, knowledge saved in one project f
 blocked. The first run failed five scenarios because project sessions never load the vault's
 `CLAUDE.md`; the session note now carries those rules. One vault, one model, Windows only.
 
+**Standup.** Ask "what should I do today on this project" (or for a standup) and Claude runs
+`project standup`: the hub's due steps, the People section, commits since the hub was updated, and
+read-only `gh` queries on the hub's `**Remote.**` (your open PRs and what each waits on, reviews
+requested from you, issues assigned to you with milestone dates) become at most three things to do
+today and a list of who waits on whom. It needs the GitHub CLI logged in, uses the network only
+when asked, and never posts anything; messages to teammates are drafted for you to send.
+
 **Is the hub used in real work?** `python skills/project/scripts/usage_report.py --human` (from the
 kit folder) reads your Claude Code session transcripts and counts, for sessions whose note named a
 hub: was the hub read, were project files edited, was the hub updated, and how often project files
@@ -136,7 +143,7 @@ is undocumented, so treat the counts as a signal, not proof.
 | `/bighead:review make <page> \| quiz [deck]` | Flashcards: draft recall cards from a wiki page and append the ones you approve to `cards/` (Obsidian [Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition) format), or quiz you in the chat, due cards first. Never edits existing cards or their schedule. |
 | `/bighead:exam <page> [n] [one-by-one]` | Practice exam from a source or topic page and its linked concepts: mixed questions (definitions, calculations, why/when, comparisons), graded with a rubric citing the pages, weak topics and follow-ups. Writes nothing but a log line. |
 | `/bighead:research-deep <question> [quick\|deep]` | Research beyond the vault: wiki first, then the web for the gaps within a search budget; returns a cited brief with sources ranked by authority. Writes nothing itself — you pick sources to ingest and can save the brief. |
-| `/bighead:project new <name> \| open [name] \| update <name>` | Project memory: one hub page per project (goal, repo pointer, current state, next step, decisions, lessons) that a cold session can continue from, plus an optional overview page with `## People` and `## Procedures` checklists and a status page. Next steps can carry a `📅` due date. `open` writes nothing and counts repo commits the hub has not seen; changes are written only after you approve them. |
+| `/bighead:project new <name> \| open [name] \| standup [name] \| update <name>` | Project memory: one hub page per project (goal, repo pointer, current state, next step, decisions, lessons) that a cold session can continue from, plus an optional overview page with `## People` and `## Procedures` checklists and a status page. Next steps can carry a `📅` due date. `open` writes nothing and counts repo commits the hub has not seen; changes are written only after you approve them. |
 | `/bighead:playbook save <slug> \| use [slug] \| record <slug> \| retire <slug>` | Tested procedures: one page per reusable way of doing a job, with evidence tags on each step, the contexts it was tested in and its version history. `use` checks the procedure against its sources and gives a verdict first; only outcomes you approve are counted; it can propose promoting a playbook to a skill, but you decide. Nothing is deleted. |
 | `/bighead:today [focus]` | Start-of-day brief: hot cache, open threads, recent log, today's daily note, due cards and project steps due within 7 days → a short plan and one recall question. Writes nothing. |
 | `/bighead:weekly [YYYY-Www]` | Weekly review: what was added, changed and decided, gaps, threads, cards, three suggestions for next week; saved to `archive/` if you approve. |

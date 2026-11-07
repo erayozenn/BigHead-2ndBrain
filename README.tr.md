@@ -102,6 +102,14 @@ vault metni yok, shell silmeleri engelli. İlk çalıştırma beş senaryoda kal
 oturumları vault'un `CLAUDE.md` dosyasını hiç yüklemiyor; artık oturum notu bu kuralları taşıyor.
 Tek vault, tek model, yalnızca Windows.
 
+**Standup.** "Bu projede bugün ne yapmalıyım" dediğinde (ya da standup istediğinde) Claude
+`project standup` çalıştırır: hub'daki tarihli adımlar, People bölümü, hub güncellendiğinden beri
+gelen commit'ler ve hub'daki `**Remote.**` üzerinde salt okunur `gh` sorguları (açık PR'ların ve
+her birinin neyi beklediği, senden istenen incelemeler, sana atanan issue'lar ve milestone
+tarihleri) birleşip bugün yapılacak en fazla üç iş ve kimin kimi beklediği listesine dönüşür.
+GitHub CLI'de oturum açık olmalı; ağa sadece istendiğinde çıkar ve hiçbir şey göndermez. Takım
+arkadaşlarına mesajları senin göndermen için taslak olarak yazar.
+
 **Hub gerçek işte kullanılıyor mu?** Kit klasöründe `python skills/project/scripts/usage_report.py --human`
 Claude Code oturum kayıtlarını okur ve notunda hub adı geçen oturumlar için sayar: hub okundu mu,
 proje dosyaları düzenlendi mi, hub güncellendi mi ve proje dosyaları kaç kez hub güncellenmeden
@@ -138,7 +146,7 @@ sayıları kanıt değil, işaret olarak al.
 | `/bighead:review make <sayfa> \| quiz [deste]` | Bilgi kartları: bir wiki sayfasından hatırlama kartları taslağı çıkarır, onayladıklarını `cards/` içine ekler (Obsidian [Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition) formatı) ya da sohbette, vadesi gelenlerden başlayarak seni sınar. Mevcut kartlara ve zamanlamalarına asla dokunmaz. |
 | `/bighead:exam <sayfa> [n] [one-by-one]` | Bir kaynak veya konu sayfasından ve linklediği kavramlardan deneme sınavı: karışık sorular (tanım, hesaplama, neden/ne zaman, karşılaştırma), sayfalara atıflı rubrikle puanlama, zayıf konular ve takip önerileri. Log satırı dışında hiçbir şey yazmaz. |
 | `/bighead:research-deep <soru> [quick\|deep]` | Vault'un ötesinde araştırma: önce wiki, sonra eksikler için arama bütçesi içinde web; kaynakları otoriteye göre sıralanmış, atıflı bir rapor döner. Kendisi bir şey yazmaz — ingest edilecek kaynakları sen seçersin, raporu kaydedebilirsin. |
-| `/bighead:project new <ad> \| open [ad] \| update <ad>` | Proje belleği: her proje için temiz bir oturumun kaldığı yerden devam edebileceği tek bir ana sayfa (hedef, repo pointer'ı, güncel durum, sıradaki adım, kararlar, dersler); isteğe bağlı olarak `## People` ve `## Procedures` kontrol listeleri olan bir overview sayfası ve bir durum sayfası. Sıradaki adımlara `📅` teslim tarihi eklenebilir. `open` hiçbir şey yazmaz ve ana sayfanın görmediği repo commit'lerini sayar; değişiklikler ancak sen onaylayınca yazılır. |
+| `/bighead:project new <ad> \| open [ad] \| standup [ad] \| update <ad>` | Proje belleği: her proje için temiz bir oturumun kaldığı yerden devam edebileceği tek bir ana sayfa (hedef, repo pointer'ı, güncel durum, sıradaki adım, kararlar, dersler); isteğe bağlı olarak `## People` ve `## Procedures` kontrol listeleri olan bir overview sayfası ve bir durum sayfası. Sıradaki adımlara `📅` teslim tarihi eklenebilir. `open` hiçbir şey yazmaz ve ana sayfanın görmediği repo commit'lerini sayar; değişiklikler ancak sen onaylayınca yazılır. |
 | `/bighead:playbook save <slug> \| use [slug] \| record <slug> \| retire <slug>` | Denenmiş prosedürler: bir işi yapmanın tekrar kullanılabilir her yolu için bir sayfa; adımlarda kanıt etiketleri, denendiği bağlamlar ve sürüm geçmişi. `use` önce prosedürü kaynaklarıyla karşılaştırıp bir hüküm verir; yalnızca onayladığın sonuçlar sayılır; bir playbook'u skill'e yükseltmeyi önerebilir ama kararı sen verirsin. Hiçbir şey silinmez. |
 | `/bighead:today [odak]` | Güne başlangıç: hot cache, açık thread'ler, son log, bugünkü daily note, vadesi gelen kartlar ve 7 gün içinde dolan proje adımları → kısa bir plan ve bir hatırlama sorusu. Hiçbir şey yazmaz. |
 | `/bighead:weekly [YYYY-Www]` | Haftalık değerlendirme: eklenen, değişen ve karar verilen şeyler, eksikler, thread'ler, kartlar, gelecek hafta için üç öneri; onaylarsan `archive/` içine kaydedilir. |
