@@ -2,7 +2,7 @@
 
 ![BigHead 2ndBrain — kaynakların girer, bağlantılı ve kaynaklı bir wiki çıkar](docs/images/hero.svg)
 
-> **Durum: v0.6 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
+> **Durum: v0.7 — deneysel.** Skill'ler ve vault şeması 0.x sürümleri arasında hâlâ
 > değişebilir. Güncellemeler mevcut bir vault'u asla yeniden yazmaz; vault'unun `CLAUDE.md`
 > dosyasının ilk satırı hangi şablondan kurulduğunu gösterir. Şimdiye kadar Windows'ta test
 > edildi; macOS ve Linux geri bildirimleri memnuniyetle karşılanır.

@@ -2,7 +2,7 @@
 
 ![BigHead 2ndBrain — your sources in, a linked, cited wiki out](docs/images/hero.svg)
 
-> **Status: v0.6 — experimental.** Skills and the vault schema may still change between 0.x
+> **Status: v0.7 — experimental.** Skills and the vault schema may still change between 0.x
 > versions. Updates never rewrite an existing vault; the first line of your vault's `CLAUDE.md`
 > shows which template it was made from. Tested on Windows so far; macOS and Linux reports are
 > welcome.
