@@ -100,6 +100,16 @@ class ProceduresTest(unittest.TestCase):
         self.assertIn(self.overview.replace("\\", "/"), reason)
         self.assertIn("again", reason)
 
+    def test_instructions_come_before_the_checklist(self):
+        # Live check 2026-11-08: with the instructions after the list, Claude reran the command
+        # before answering every item and went past a "not done" item without asking.
+        reason = self.denied(self.run_hook("git push"))
+        first_item = reason.index("PR-ITEM own branch")
+        for phrase in ("Do not run", "one line per item", "not done", "ask the user",
+                       "wait for", "the user said to go on", "same command again"):
+            self.assertIn(phrase, reason)
+            self.assertLess(reason.index(phrase), first_item, phrase)
+
     def test_rerun_in_same_session_passes(self):
         self.denied(self.run_hook("git push"))
         self.silent(self.run_hook("git push"))

@@ -89,8 +89,8 @@ Bundan sonra bir proje klasöründe açılan oturumda:
 - **Kontrol listesi:** Claude bir oturumda ilk kez `git push`, `gh pr create` ya da `gh pr merge`
   çalıştırdığında bir hook o tek çağrıyı durdurur ve projenin `## Procedures` bölümündeki uygun
   `### Before ...` listesini gösterir (push için yoksa "Before a PR"; merge için "Before a merge" ya
-  da "Before a release"). Claude her maddeye cevap verir, sonra komutu tekrar çalıştırır ve komut
-  geçer. Oturum ve komut türü başına bir kez; liste yoksa durdurmaz. Bu bir hatırlatma, kilit değil.
+  da "Before a release"). Claude her maddeye bir satırla cevap verir, yapılmamış madde varsa sana
+  sorar, ancak ondan sonra komutu tekrar çalıştırır ve komut geçer. Oturum ve komut türü başına bir kez; liste yoksa durdurmaz. Bu bir hatırlatma, kilit değil.
 - **project, save, handoff, playbook, query, ingest, research-deep ve exam** orada çalışır; diğer
   skill'ler yalnızca vault içinde çalışır.
 - **"Bunu kaydet"** slash komut olmadan çalışır: proje kararları hub'a (değişikliği onaylayınca),

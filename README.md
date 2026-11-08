@@ -88,7 +88,8 @@ Then, in a session opened in a project folder:
 - **Procedure checklist:** the first time in a session Claude runs `git push`, `gh pr create` or
   `gh pr merge`, a hook stops that one call and shows the matching `### Before ...` list from the
   project's `## Procedures` (push falls back to "Before a PR"; merge uses "Before a merge" or
-  "Before a release"). Claude answers each item, then runs the command again, which passes. Once
+  "Before a release"). Claude answers each item in one line, asks you about any item not done, and
+  only then runs the command again, which passes. Once
   per session per kind; no list, no stop. It is a reminder, not a lock.
 - **project, save, handoff, playbook, query, ingest, research-deep and exam** work there; the other
   skills stay vault-only.

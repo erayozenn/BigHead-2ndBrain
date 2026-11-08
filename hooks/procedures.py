@@ -4,7 +4,8 @@
 Before `git push`, `gh pr create` or `gh pr merge` in a session opened outside the vault whose
 folder matches exactly one project hub, the matching `### Before ...` checklist from the hub's
 `<name>-overview.md` (`## Procedures`) is put in front of Claude by denying the call ONCE with
-the checklist as the reason. Claude answers each item, then runs the command again, and the rerun
+the checklist as the reason. Claude answers each item, asks the user about any item not done,
+then runs the command again, and the rerun
 passes: the reminder shows once per session per kind of command.
 
 Why deny and not additionalContext: a PreToolUse additionalContext reaches Claude next to the
@@ -143,18 +144,23 @@ def build(event: dict, env: dict) -> str | None:
         return None
 
     commands = " / ".join(f"`{LABELS[k]}`" for k in due)
-    parts = [f'{TAG} Before {commands} in project "{name}", go through this checklist from '
-             f'{overview.replace(os.sep, "/")} ("## Procedures"):']
+    # Instructions before the list: in the 2026-11-08 live check, with them after the list,
+    # Claude reran before answering every item and went past a "not done" item.
+    parts = [f'{TAG} Stopped once: before {commands} in project "{name}", go through the '
+             f'checklist below from {overview.replace(os.sep, "/")} ("## Procedures").',
+             "Do not run the command again yet. Steps, in order:",
+             "1. Reply in chat with one line per item: done, not needed (why), or not done.",
+             "2. If any item is not done: fix it, or stop, ask the user and wait for their answer.",
+             "3. Only when every item has a line and each not-done item is fixed or the user "
+             "said to go on, run the same command again."]
     room = MAX_BODY
     for heading, body in lists:
         if len(body) > room:
             body = body[:max(room, 0)].rstrip() + "\n(... cut here; read the rest in the overview.)"
         room -= len(body)
         parts.append(f"### {heading}\n{body}")
-    parts.append("Answer each item in chat: done, not needed (why), or not done. If an item is not "
-                 "done, fix it or ask the user before going on. Then run the same command again; this "
-                 "reminder shows once per session for this kind of command. This repo's CLAUDE.md "
-                 "wins on conflict.")
+    parts.append("This reminder shows once per session for this kind of command, so the rerun "
+                 "passes. This repo's CLAUDE.md wins on conflict.")
     return "\n".join(parts)
 
 
