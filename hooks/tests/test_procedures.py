@@ -130,7 +130,7 @@ class ProceduresTest(unittest.TestCase):
 
     def test_answer_on_same_line_and_powershell(self):
         self.denied(self.run_hook("git push", tool="PowerShell"))
-        self.silent(self.run_hook("git push # bighead-checklist: done; user ok: Eray said go",
+        self.silent(self.run_hook("git push # bighead-checklist: done; user ok: the user said go",
                                   tool="PowerShell"))
 
     def test_answer_before_the_reminder_does_not_skip_it(self):
