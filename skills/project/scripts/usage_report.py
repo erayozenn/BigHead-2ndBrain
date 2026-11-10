@@ -15,7 +15,11 @@ For sessions whose note named a hub, after the first note:
   hub_updated          a successful Write/Edit of the hub (the user approved it)
   edited_without_hub_update  edited_project and not hub_updated
   procedure_reminders  shell calls the procedure hook denied with its checklist (WP7)
-  reran_after_reminder reminded commands later run again with success (same command text)
+  reran_after_reminder reminders followed by a successful shell call of the same kind (push, pr,
+                       merge); the command text may differ
+  checklist_answered   reminders followed by a successful call of a reminded kind holding a valid
+                       `# bighead-checklist:` line (WP8); answer_n_a / answer_user_ok count its entries
+  checklist_refused    reruns the hook refused for a missing or malformed answer line
 
 The transcript format is undocumented and may change; lines it cannot read are counted under
 `skipped_lines`. Nothing is written anywhere. Output names no project or path unless --names.
@@ -29,6 +33,9 @@ import re
 import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
+import project_pages as pp  # noqa: E402
 
 WRITE_TOOLS = {"Write", "Edit", "NotebookEdit"}
 SHELL_TOOLS = {"Bash", "PowerShell"}
@@ -92,6 +99,7 @@ def scan(path: Path) -> tuple[dict | None, int]:
     calls: dict[str, tuple[str, dict]] = {}
     ok: set[str] = set()
     reminded: set[str] = set()
+    refused = 0
     with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
             try:
@@ -128,7 +136,10 @@ def scan(path: Path) -> tuple[dict | None, int]:
                     if not c.get("is_error"):
                         ok.add(c.get("tool_use_id", ""))
                     elif PROCEDURE_TAG in result_text(c):
-                        reminded.add(c.get("tool_use_id", ""))
+                        if "Rerun refused" in result_text(c):
+                            refused += 1
+                        else:
+                            reminded.add(c.get("tool_use_id", ""))
     if s is None:
         return None, skipped
     hub, vault = s["hub"], s["vault"]
@@ -147,16 +158,34 @@ def scan(path: Path) -> tuple[dict | None, int]:
         elif hub and name in SHELL_TOOLS and hub in norm(str(inp.get("command", ""))):
             shell = True
     order = list(calls)
-    reran = 0
+
+    def kinds(t: str) -> set[str]:
+        cmd = calls[t][1].get("command")
+        return set(pp.kinds_in(cmd)) if calls[t][0] in SHELL_TOOLS and isinstance(cmd, str) else set()
+
+    # A rerun is a later successful shell call with a reminded kind; Claude often edits the
+    # command text in between (2026-11-10 finding), so exact text is not required.
+    reran, answered_ids = 0, set()
     for tid in reminded:
         if tid not in calls:
             continue
-        cmd = calls[tid][1].get("command")
-        later = order[order.index(tid) + 1:]
-        if any(t in ok and calls[t][1].get("command") == cmd for t in later):
-            reran += 1
+        want = kinds(tid)
+        for t in order[order.index(tid) + 1:]:
+            if t in ok and want & kinds(t):
+                reran += 1
+                break
+        for t in order[order.index(tid) + 1:]:
+            if t in ok and kinds(t) and pp.parse_answer(calls[t][1]["command"], None)["ok"]:
+                answered_ids.add(t)
+                break
+    n_a = user_ok = 0
+    for t in answered_ids:
+        a = pp.parse_answer(calls[t][1]["command"], None)
+        n_a, user_ok = n_a + a["n_a"], user_ok + a["user_ok"]
     s.update(hub_read=read, hub_read_with_shell=read or shell, edited_project=edited, hub_updated=updated,
-             procedure_reminders=len(reminded), reran_after_reminder=reran)
+             procedure_reminders=len(reminded), reran_after_reminder=reran,
+             checklist_refused=refused, checklist_answered=len(answered_ids),
+             answer_n_a=n_a, answer_user_ok=user_ok)
     return s, skipped
 
 
@@ -195,6 +224,8 @@ def main() -> None:
         "edited_without_hub_update": sum(s["edited_project"] and not s["hub_updated"] for s in match),
         "procedure_reminders": sum(s["procedure_reminders"] for s in match),
         "reran_after_reminder": sum(s["reran_after_reminder"] for s in match),
+        **{k: sum(s[k] for s in match)
+           for k in ("checklist_refused", "checklist_answered", "answer_n_a", "answer_user_ok")},
     }
     rows = [{"date": s["date"], "kind": s["kind"], "prompts": s["prompts"],
              **{k: s[k] for k in ("hub_read", "hub_read_with_shell", "edited_project", "hub_updated",
@@ -213,7 +244,9 @@ def main() -> None:
         print(f"Hub matched ({summary['count']}): read {summary['hub_read']} "
               f"(with shell {summary['hub_read_with_shell']}); edited project files {summary['edited_project']}; "
               f"hub updated {summary['hub_updated']}; edited without hub update {summary['edited_without_hub_update']}; "
-              f"procedure reminders {summary['procedure_reminders']} (rerun {summary['reran_after_reminder']})")
+              f"procedure reminders {summary['procedure_reminders']} (rerun {summary['reran_after_reminder']}, "
+              f"answered {summary['checklist_answered']}, refused reruns {summary['checklist_refused']}, "
+              f"n/a {summary['answer_n_a']}, user ok {summary['answer_user_ok']})")
     yn = lambda b: "yes" if b else "-"  # noqa: E731
     for r in rows:
         name = f"  {r['project']}" if args.names and r.get("project") else ""

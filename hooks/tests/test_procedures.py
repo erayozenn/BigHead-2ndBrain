@@ -29,6 +29,9 @@ Checklists.
 """
 
 
+ANSWER2 = "\n# bighead-checklist: 1 done; 2 n/a: no tests touched"
+
+
 def write(path, text=""):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -105,15 +108,98 @@ class ProceduresTest(unittest.TestCase):
         # before answering every item and went past a "not done" item without asking.
         reason = self.denied(self.run_hook("git push"))
         first_item = reason.index("PR-ITEM own branch")
-        for phrase in ("Do not run", "one line per item", "not done", "ask the user",
-                       "wait for", "the user said to go on", "same command again"):
+        for phrase in ("Do not run", "not done", "ask the user", "wait for", "same command again",
+                       "# bighead-checklist:", "n/a:", "user ok:", "2 entries"):
             self.assertIn(phrase, reason)
             self.assertLess(reason.index(phrase), first_item, phrase)
 
-    def test_rerun_in_same_session_passes(self):
+    # --- WP8: the answer line in the rerun (real use 2026-11-08..09: 0 of 7 answered per item) ---
+
+    def test_rerun_without_answer_is_refused_briefly(self):
         self.denied(self.run_hook("git push"))
-        self.silent(self.run_hook("git push"))
+        reason = self.denied(self.run_hook("git push"))
+        self.assertIn("# bighead-checklist:", reason)
+        self.assertIn("2 entries", reason)
+        self.assertNotIn("PR-ITEM", reason)  # the list is not shown again
+        self.assertIn(self.overview.replace("\\", "/"), reason)
+
+    def test_rerun_with_answer_passes_then_kind_is_free(self):
+        self.denied(self.run_hook("git push"))
+        self.silent(self.run_hook("git push" + ANSWER2))
         self.silent(self.run_hook("git push origin other"))
+
+    def test_answer_on_same_line_and_powershell(self):
+        self.denied(self.run_hook("git push", tool="PowerShell"))
+        self.silent(self.run_hook("git push # bighead-checklist: done; user ok: Eray said go",
+                                  tool="PowerShell"))
+
+    def test_answer_before_the_reminder_does_not_skip_it(self):
+        reason = self.denied(self.run_hook("git push" + ANSWER2))
+        self.assertIn("PR-ITEM own branch", reason)
+
+    def test_wrong_count_is_refused(self):
+        self.denied(self.run_hook("git push"))
+        reason = self.denied(self.run_hook("git push # bighead-checklist: 1 done"))
+        self.assertIn("2 entries", reason)
+        self.assertIn("1", reason)
+
+    def test_bare_not_done_is_refused_with_ask_the_user(self):
+        self.denied(self.run_hook("git push"))
+        reason = self.denied(self.run_hook("git push # bighead-checklist: 1 done; 2 not done"))
+        self.assertIn("ask the user", reason)
+        self.silent(self.run_hook("git push # bighead-checklist: 1 done; 2 user ok: go on"))
+
+    def test_entry_without_reason_is_refused(self):
+        self.denied(self.run_hook("git push"))
+        self.denied(self.run_hook("git push # bighead-checklist: 1 done; 2 n/a"))
+
+    def test_items_of_two_different_lists_add_up(self):
+        write(self.overview, OVERVIEW.replace("### Before a measurement",
+                                              "### Before a push\n- PUSH-ITEM rebase.\n\n### Before a measurement"))
+        reason = self.denied(self.run_hook("git push && gh pr create --fill"))
+        self.assertIn("3 entries", reason)
+        self.denied(self.run_hook("git push && gh pr create --fill" + ANSWER2))
+        self.silent(self.run_hook("git push && gh pr create --fill # bighead-checklist: done; done; done"))
+        self.silent(self.run_hook("gh pr create --fill"))
+
+    def test_rerun_with_a_new_kind_shows_that_list(self):
+        self.denied(self.run_hook("git push"))
+        reason = self.denied(self.run_hook("git push && gh pr create --fill" + ANSWER2))
+        self.assertIn("Stopped once", reason)  # PR not reminded yet: no answer is checked
+
+    def test_checklist_without_list_lines_needs_one_entry(self):
+        write(self.overview, "## Procedures\n### Before a PR\nRun the full test suite.\n")
+        self.assertIn("1 entry", self.denied(self.run_hook("git push")))
+        self.silent(self.run_hook("git push # bighead-checklist: done"))
+
+    def test_example_line_has_the_needed_entry_count(self):
+        # Spec-only test 2026-11-10: a fixed 3-entry example could lead Claude to write 3 entries.
+        import re
+
+        def example(reason):
+            return re.search(r"`(# bighead-checklist: 1 [^`]*)`", reason).group(1)
+        write(self.overview, "## Procedures\n### Before a PR\n- ONE-ITEM only.\n")
+        for reason in (self.denied(self.run_hook("git push")),
+                       self.denied(self.run_hook("git push"))):
+            self.assertEqual(example(reason), "# bighead-checklist: 1 <answer>")
+        write(self.overview, OVERVIEW)
+        self.assertEqual(example(self.denied(self.run_hook("git push", sid="s2"))),
+                         "# bighead-checklist: 1 <answer>; 2 <answer>")
+        long = "\n".join(f"- ITEM {i}" for i in range(9))
+        write(self.overview, "## Procedures\n### Before a PR\n" + long + "\n")
+        self.assertEqual(example(self.denied(self.run_hook("git push", sid="s3"))),
+                         "# bighead-checklist: 1 <answer>; 2 <answer>; …; 9 <answer>")
+
+    def test_semicolon_rule_is_stated(self):
+        # Spec-only test 2026-11-10: `;` separates entries, so it cannot appear inside one.
+        self.assertIn("no `;` inside an entry", self.denied(self.run_hook("git push")))
+        self.assertIn("no `;` inside an entry", self.denied(self.run_hook("git push")))
+
+    def test_marker_from_0_7_0_counts_as_answered(self):
+        import hashlib
+        folder = os.path.join(self.state, "procedures")
+        write(os.path.join(folder, hashlib.sha256("s1\0push".encode()).hexdigest()[:32]), "")
+        self.silent(self.run_hook("git push"))
 
     def test_other_session_is_reminded_again(self):
         self.denied(self.run_hook("git push", sid="s1"))
@@ -122,7 +208,7 @@ class ProceduresTest(unittest.TestCase):
     def test_kinds_are_counted_separately(self):
         self.denied(self.run_hook("git push"))
         self.denied(self.run_hook('gh pr create --title "x" --body "y"'))
-        self.silent(self.run_hook("gh pr create --fill"))
+        self.silent(self.run_hook("gh pr create --fill" + ANSWER2))
 
     def test_push_section_preferred(self):
         write(self.overview, OVERVIEW.replace("### Before a measurement",
@@ -154,6 +240,8 @@ class ProceduresTest(unittest.TestCase):
     def test_two_kinds_in_one_command(self):
         reason = self.denied(self.run_hook("git push -u origin x && gh pr create --fill"))
         self.assertEqual(reason.count("PR-ITEM own branch"), 1)  # same section listed once
+        self.assertIn("2 entries", reason)
+        self.silent(self.run_hook("git push -u origin x && gh pr create --fill" + ANSWER2))
         self.silent(self.run_hook("git push"))
         self.silent(self.run_hook("gh pr create --fill"))
 

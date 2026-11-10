@@ -88,9 +88,13 @@ Then, in a session opened in a project folder:
 - **Procedure checklist:** the first time in a session Claude runs `git push`, `gh pr create` or
   `gh pr merge`, a hook stops that one call and shows the matching `### Before ...` list from the
   project's `## Procedures` (push falls back to "Before a PR"; merge uses "Before a merge" or
-  "Before a release"). Claude answers each item in one line, asks you about any item not done, and
-  only then runs the command again, which passes. Once
-  per session per kind; no list, no stop. It is a reminder, not a lock.
+  "Before a release"). Claude checks each item, asks you about any item not done, and reruns the
+  command with one added comment line that answers every item, for example
+  `# bighead-checklist: 1 done; 2 n/a: no CSS changed; 3 user ok: push without the screenshot`.
+  The hook counts the entries (`;` separates them, so it cannot appear inside one): a missing
+  line, a wrong count or a bare `not done` is refused.
+  Once the line is valid, that kind of command passes for the rest of the session; no list, no
+  stop. It checks the form of the answer, not its truth.
 - **project, save, handoff, playbook, query, ingest, research-deep and exam** work there; the other
   skills stay vault-only.
 - **"Save this"** works without a slash command: project decisions go to the hub (after you approve
@@ -207,9 +211,11 @@ project folders". It is silent with no **Vault folder** set, inside a vault, or 
 **Procedure checklist.** A `PreToolUse` hook on `git push`, `gh pr create` and `gh pr merge` in a
 project session denies the first such call per session and kind once, with the matching checklist
 from the project's overview page as the reason. A plain context note would reach Claude only after
-the command ran. It is silent inside a vault, with no single matching hub, with no checklist, and on
-any error of its own; its state is one empty file per session and kind in the plugin's data folder,
-removed after 7 days.
+the command ran. The rerun must carry a `# bighead-checklist:` comment line with one entry per
+top-level list item (`done`, `n/a: <why>` or `user ok: <what the user allowed>`); in real use a deny
+text alone got per-item answers in none of 7 reminders. It is silent inside a vault, with no single
+matching hub, with no checklist, and on any error of its own; its state is one small file per
+session and kind in the plugin's data folder, removed after 7 days.
 
 **Validator.** A `PostToolUse` hook checks every vault page Claude just wrote or edited against
 the schema: required frontmatter keys and allowed values, valid dates (`updated` not before

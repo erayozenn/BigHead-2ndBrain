@@ -155,5 +155,66 @@ class ChecklistTest(unittest.TestCase):
         self.assertIsNone(pp.checklist("## Procedures\n### Before a preview\n- a\n", "pr"))
 
 
+class KindsInTest(unittest.TestCase):
+    def test_kinds_in_order_without_repeats(self):
+        self.assertEqual(pp.kinds_in("git push && gh pr create --fill; git push"), ["push", "pr"])
+        self.assertEqual(pp.kinds_in("gh -R a/b pr merge 3"), ["merge"])
+
+    def test_quoted_and_lookalike_text_is_not_a_kind(self):
+        for cmd in ["echo 'git push'", "git commit -m \"git push later\"", "git pushd", "gh pr view 3"]:
+            with self.subTest(cmd=cmd):
+                self.assertEqual(pp.kinds_in(cmd), [])
+
+    def test_answer_comment_is_not_a_kind(self):
+        self.assertEqual(pp.kinds_in("git push\n# bighead-checklist: 1 done; 2 done"), ["push"])
+
+
+class CountItemsTest(unittest.TestCase):
+    def test_top_level_list_lines(self):
+        body = "Intro line.\n- a\n  - nested, not counted\n* b\n+ c\n1. d\n2) e\n- [ ] f\n"
+        self.assertEqual(pp.count_items(body), 6)
+
+    def test_prose_and_fenced_lines_are_not_items(self):
+        self.assertEqual(pp.count_items("Just check the tests.\n```\n- not an item\n```\n"), 0)
+
+
+class ParseAnswerTest(unittest.TestCase):
+    def check(self, command, expected):
+        return pp.parse_answer(command, expected)
+
+    def test_valid_line_with_all_entry_kinds(self):
+        a = self.check("git push\n# bighead-checklist: 1 done; 2 n/a: no CSS; 3 user ok: push anyway",
+                       3)
+        self.assertTrue(a["ok"], a)
+        self.assertEqual((a["done"], a["n_a"], a["user_ok"]), (1, 1, 1))
+
+    def test_numbers_optional_case_and_spaces_free(self):
+        self.assertTrue(self.check("git push   #bighead-checklist:Done ;N/A : x", 2)["ok"])
+
+    def test_missing_line(self):
+        self.assertEqual(self.check("git push", 2)["problem"], "missing")
+
+    def test_wrong_count(self):
+        self.assertEqual(self.check("git push # bighead-checklist: 1 done", 2)["problem"], "count")
+
+    def test_bare_not_done_is_refused(self):
+        a = self.check("git push # bighead-checklist: 1 done; 2 not done", 2)
+        self.assertFalse(a["ok"])
+        self.assertEqual(a["problem"], "not done")
+
+    def test_reason_required(self):
+        for entry in ("n/a", "n/a:", "user ok", "user ok:  "):
+            with self.subTest(entry=entry):
+                a = self.check(f"git push # bighead-checklist: 1 done; 2 {entry}", 2)
+                self.assertEqual(a["problem"], "entry")
+
+    def test_unknown_entry(self):
+        self.assertEqual(self.check("git push # bighead-checklist: 1 ok; 2 done", 2)["problem"], "entry")
+
+    def test_zero_items_needs_one_entry(self):
+        self.assertTrue(self.check("git push # bighead-checklist: done", 0)["ok"])
+        self.assertEqual(self.check("git push # bighead-checklist:", 0)["problem"], "count")
+
+
 if __name__ == "__main__":
     unittest.main()

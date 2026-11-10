@@ -74,9 +74,15 @@ can use the same memory:
   and kind once, with the `### Before ...` checklist from `<name>-overview.md` as the reason
   (`lib/project_pages.checklist`: push falls back to the PR list, merge takes merge then release).
   Deny, not `additionalContext`, because a PreToolUse context note reaches Claude next to the tool
-  result, after the command ran. State: an empty marker per (session, kind) under
-  `CLAUDE_PLUGIN_DATA`, pruned after 7 days. Silent on its own errors; a reminder, not a control
-  (a command written another way is not seen). `usage_report.py` counts the reminders.
+  result, after the command ran. Since 0.7.1 (WP8) the rerun must carry a `# bighead-checklist:`
+  comment line with one entry per top-level item of the shown lists (`done`, `n/a: <why>`,
+  `user ok: <what>`; `lib/project_pages.parse_answer`), else it is refused with a short reason and
+  no list. Why: in real use 2026-11-08..09 a deny text alone got per-item answers in 0 of 7
+  reminders; a line in the command needs no transcript parsing. State: a marker per (session,
+  kind) under `CLAUDE_PLUGIN_DATA` holding `reminded` or `answered` (an empty 0.7.0 marker counts
+  as answered), pruned after 7 days. Silent on its own errors; it checks the form of the answer,
+  not its truth, and a command written another way is not seen. `usage_report.py` counts
+  reminders, reruns by kind, answers, refused reruns and `n/a` / `user ok` entries.
 - The project, save, handoff, playbook, query, ingest, research-deep and exam skills fall back to
   `vault_path` when the current folder is not a vault. The other skills stay vault-only.
 - Matching is code, not an instruction, because a wrong hub would be passed on with confidence.

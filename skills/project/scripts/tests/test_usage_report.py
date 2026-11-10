@@ -152,10 +152,11 @@ class UsageReportTest(unittest.TestCase):
         def denied(tid, content):
             return {"type": "user", "message": {"role": "user", "content": [
                 {"type": "tool_result", "tool_use_id": tid, "is_error": True, "content": content}]}}
-        reason = '[bighead procedures] Before "git push" in project "demo": ...'
+        reason = '[bighead procedures] Stopped once: before `git push` in project "demo": ...'
         self.session("p1", "a", [note(), prompt(),
                                  tool("Bash", "t1", command="git push"), denied("t1", reason),
-                                 tool("Bash", "t2", command="git push"), result("t2"),
+                                 # an edited command still counts as the rerun (2026-11-10 finding)
+                                 tool("Bash", "t2", command="cd x && git push -q origin b"), result("t2"),
                                  tool("Bash", "t3", command="gh pr create --fill"),
                                  denied("t3", [{"type": "text", "text": reason}]),
                                  tool("Bash", "t4", command="git push -f"), denied("t4", "other error")])
@@ -164,6 +165,27 @@ class UsageReportTest(unittest.TestCase):
         self.assertEqual((s["procedure_reminders"], s["reran_after_reminder"]), (2, 1))
         self.assertEqual(data["sessions"][0]["procedure_reminders"], 2)
         self.assertIn("reminders 2", self.report("--human"))
+
+    def test_checklist_answers_and_refusals(self):
+        def denied(tid, content):
+            return {"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": tid, "is_error": True, "content": content}]}}
+        full = '[bighead procedures] Stopped once: before `git push` in project "demo": ...'
+        refused = "[bighead procedures] Rerun refused: add the line ..."
+        self.session("p1", "a", [note(), prompt(),
+                                 tool("Bash", "t1", command="git push"), denied("t1", full),
+                                 tool("Bash", "t2", command="git push"), denied("t2", refused),
+                                 tool("Bash", "t3", command="git push\n# bighead-checklist: 1 done; "
+                                                            "2 n/a: no CSS; 3 user ok: go"), result("t3"),
+                                 tool("Bash", "t4", command="echo '# bighead-checklist: done'"), result("t4")])
+        data = self.report()
+        s = data["match_sessions"]
+        self.assertEqual(s["procedure_reminders"], 1)       # the refusal is not a new reminder
+        self.assertEqual(s["checklist_refused"], 1)
+        self.assertEqual(s["checklist_answered"], 1)        # only a reminded kind with a valid line
+        self.assertEqual((s["answer_n_a"], s["answer_user_ok"]), (1, 1))
+        self.assertEqual(s["reran_after_reminder"], 1)
+        self.assertIn("answered 1", self.report("--human"))
 
 
 if __name__ == "__main__":

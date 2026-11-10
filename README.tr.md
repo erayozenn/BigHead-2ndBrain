@@ -89,8 +89,13 @@ Bundan sonra bir proje klasöründe açılan oturumda:
 - **Kontrol listesi:** Claude bir oturumda ilk kez `git push`, `gh pr create` ya da `gh pr merge`
   çalıştırdığında bir hook o tek çağrıyı durdurur ve projenin `## Procedures` bölümündeki uygun
   `### Before ...` listesini gösterir (push için yoksa "Before a PR"; merge için "Before a merge" ya
-  da "Before a release"). Claude her maddeye bir satırla cevap verir, yapılmamış madde varsa sana
-  sorar, ancak ondan sonra komutu tekrar çalıştırır ve komut geçer. Oturum ve komut türü başına bir kez; liste yoksa durdurmaz. Bu bir hatırlatma, kilit değil.
+  da "Before a release"). Claude her maddeyi kontrol eder, yapılmamış madde varsa sana sorar ve
+  komutu her maddeye cevap veren bir yorum satırı ekleyerek tekrar çalıştırır, örneğin
+  `# bighead-checklist: 1 done; 2 n/a: CSS değişmedi; 3 user ok: ekran görüntüsüz push`.
+  Hook girişleri sayar (`;` girişleri ayırır, bu yüzden bir girişin içinde geçemez): satır yoksa,
+  sayı yanlışsa ya da çıplak `not done` varsa reddeder. Satır
+  geçerli olunca o komut türü oturumun geri kalanında geçer; liste yoksa durdurmaz. Cevabın
+  biçimini kontrol eder, doğruluğunu değil.
 - **project, save, handoff, playbook, query, ingest, research-deep ve exam** orada çalışır; diğer
   skill'ler yalnızca vault içinde çalışır.
 - **"Bunu kaydet"** slash komut olmadan çalışır: proje kararları hub'a (değişikliği onaylayınca),
@@ -209,8 +214,11 @@ kısa notu ekler. **Vault folder** boşsa, vault içinde ya da herhangi bir hata
 **Kontrol listesi.** Proje oturumunda `git push`, `gh pr create` ve `gh pr merge` üzerinde çalışan
 bir `PreToolUse` hook'u, oturum ve tür başına ilk çağrıyı bir kez reddeder; gerekçe, projenin
 overview sayfasındaki uygun kontrol listesidir. Düz bir bağlam notu Claude'a ancak komut çalıştıktan
-sonra ulaşırdı. Vault içinde, tek bir hub eşleşmediğinde, liste olmadığında ve kendi hatasında
-sessiz kalır; durumu, eklentinin veri klasöründe oturum ve tür başına boş bir dosyadır ve 7 gün sonra
+sonra ulaşırdı. Tekrar çalıştırılan komut, her üst düzey liste maddesi için bir giriş içeren bir
+`# bighead-checklist:` yorum satırı taşımalıdır (`done`, `n/a: <neden>` ya da `user ok: <kullanıcının
+izin verdiği şey>`); gerçek kullanımda yalnızca ret metni, 7 hatırlatmanın hiçbirinde madde madde
+cevap almadı. Vault içinde, tek bir hub eşleşmediğinde, liste olmadığında ve kendi hatasında sessiz
+kalır; durumu, eklentinin veri klasöründe oturum ve tür başına küçük bir dosyadır ve 7 gün sonra
 silinir.
 
 **Validator.** Bir `PostToolUse` hook'u, Claude'un az önce yazdığı veya düzenlediği her vault
